@@ -22,6 +22,9 @@ import {
 import { staffRoleOptions } from "@/config/roles";
 import { staffFormSchema, type StaffFormInput } from "@/schemas/onboarding";
 import { useOnboardingStore } from "@/store/onboarding-store";
+import { toSelectItems } from "@/lib/utils";
+
+const staffRoleItems = toSelectItems(staffRoleOptions);
 
 export default function StaffSetupPage() {
   const router = useRouter();
@@ -59,7 +62,11 @@ export default function StaffSetupPage() {
                 control={form.control}
                 name="role"
                 render={({ field }) => (
-                  <Select value={field.value ?? null} onValueChange={field.onChange}>
+                  <Select
+                    items={staffRoleItems}
+                    value={field.value ?? null}
+                    onValueChange={field.onChange}
+                  >
                     <SelectTrigger id="role" className="w-full">
                       <SelectValue placeholder="Select a role" />
                     </SelectTrigger>

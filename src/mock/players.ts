@@ -1,21 +1,40 @@
 export type Position = "Goalkeeper" | "Defender" | "Midfielder" | "Forward";
 
+export type PreferredFoot = "Left" | "Right" | "Both";
+
+export type PlayerStatus = "Active" | "Injured" | "Inactive";
+
+export type StatusChange = {
+  status: PlayerStatus;
+  date: string;
+};
+
 export type Player = {
   id: string;
   teamId: string;
   fullName: string;
+  nickname?: string;
+  photo?: string;
   position: Position;
+  secondaryPosition?: Position;
   jerseyNumber: number;
-  preferredFoot: "Left" | "Right" | "Both";
+  preferredFoot: PreferredFoot;
   dateOfBirth: string;
-  phone: string;
+  phone?: string;
+  emergencyContact?: string;
+  village?: string;
+  previousClub?: string;
+  status: PlayerStatus;
+  statusHistory: StatusChange[];
+  createdAt: string;
+  /**
+   * Match-derived numbers (matchesPlayed/goals/assists/cards) are computed
+   * live from matchesStore via getPlayerMatchStats — see lib/matches.ts.
+   * Only attendance and rating are stored here, since attendance tracking
+   * and ratings aren't sourced from match events.
+   */
   stats: {
-    matchesPlayed: number;
-    goals: number;
-    assists: number;
     attendancePercentage: number;
-    yellowCards: number;
-    redCards: number;
     rating: number;
   };
 };
@@ -25,23 +44,33 @@ export const players: Player[] = [
     id: "player_001",
     teamId: "team_001",
     fullName: "Kwesi Mensah",
+    nickname: "KM9",
     position: "Forward",
     jerseyNumber: 9,
     preferredFoot: "Right",
     dateOfBirth: "2005-05-12",
     phone: "+233241234567",
-    stats: { matchesPlayed: 15, goals: 8, assists: 3, attendancePercentage: 92, yellowCards: 1, redCards: 0, rating: 8.1 },
+    village: "Ellembelle",
+    status: "Active",
+    statusHistory: [{ status: "Active", date: "2024-02-10T09:00:00Z" }],
+    createdAt: "2024-02-10T09:00:00Z",
+    stats: { attendancePercentage: 92, rating: 8.1 },
   },
   {
     id: "player_002",
     teamId: "team_001",
     fullName: "Yaw Darko",
     position: "Midfielder",
+    secondaryPosition: "Defender",
     jerseyNumber: 8,
     preferredFoot: "Right",
     dateOfBirth: "2004-11-02",
     phone: "+233209876543",
-    stats: { matchesPlayed: 14, goals: 2, assists: 6, attendancePercentage: 88, yellowCards: 2, redCards: 0, rating: 7.6 },
+    village: "Nkroful",
+    status: "Active",
+    statusHistory: [{ status: "Active", date: "2024-02-10T09:00:00Z" }],
+    createdAt: "2024-02-10T09:00:00Z",
+    stats: { attendancePercentage: 88, rating: 7.6 },
   },
   {
     id: "player_003",
@@ -52,18 +81,30 @@ export const players: Player[] = [
     preferredFoot: "Left",
     dateOfBirth: "2003-02-20",
     phone: "+233551122334",
-    stats: { matchesPlayed: 16, goals: 1, assists: 0, attendancePercentage: 95, yellowCards: 3, redCards: 0, rating: 7.4 },
+    previousClub: "Axim Stars Youth",
+    status: "Injured",
+    statusHistory: [
+      { status: "Active", date: "2024-03-05T09:00:00Z" },
+      { status: "Injured", date: "2025-01-15T09:00:00Z" },
+    ],
+    createdAt: "2024-03-05T09:00:00Z",
+    stats: { attendancePercentage: 95, rating: 7.4 },
   },
   {
     id: "player_004",
     teamId: "team_001",
     fullName: "Abdul Rahman Iddrisu",
+    nickname: "Rahman",
     position: "Goalkeeper",
     jerseyNumber: 1,
     preferredFoot: "Right",
     dateOfBirth: "2002-08-15",
     phone: "+233267788990",
-    stats: { matchesPlayed: 16, goals: 0, assists: 0, attendancePercentage: 97, yellowCards: 0, redCards: 0, rating: 7.9 },
+    emergencyContact: "+233267700000",
+    status: "Active",
+    statusHistory: [{ status: "Active", date: "2024-01-20T09:00:00Z" }],
+    createdAt: "2024-01-20T09:00:00Z",
+    stats: { attendancePercentage: 97, rating: 7.9 },
   },
   {
     id: "player_005",
@@ -74,29 +115,176 @@ export const players: Player[] = [
     preferredFoot: "Right",
     dateOfBirth: "2005-01-30",
     phone: "+233246655443",
-    stats: { matchesPlayed: 13, goals: 3, assists: 4, attendancePercentage: 85, yellowCards: 1, redCards: 0, rating: 7.5 },
+    village: "Bonsaso",
+    status: "Active",
+    statusHistory: [{ status: "Active", date: "2025-06-14T09:00:00Z" }],
+    createdAt: "2025-06-14T09:00:00Z",
+    stats: { attendancePercentage: 85, rating: 7.5 },
   },
   {
     id: "player_006",
     teamId: "team_001",
     fullName: "Fiifi Arthur",
     position: "Defender",
+    secondaryPosition: "Midfielder",
     jerseyNumber: 5,
     preferredFoot: "Right",
     dateOfBirth: "2004-06-18",
     phone: "+233201239876",
-    stats: { matchesPlayed: 15, goals: 0, assists: 1, attendancePercentage: 90, yellowCards: 2, redCards: 1, rating: 7.0 },
+    status: "Inactive",
+    statusHistory: [
+      { status: "Active", date: "2024-05-01T09:00:00Z" },
+      { status: "Inactive", date: "2025-04-01T09:00:00Z" },
+    ],
+    createdAt: "2024-05-01T09:00:00Z",
+    stats: { attendancePercentage: 90, rating: 7.0 },
   },
   {
     id: "player_007",
     teamId: "team_001",
     fullName: "Nana Kwame Boadi",
+    nickname: "Showboy",
     position: "Forward",
     jerseyNumber: 11,
     preferredFoot: "Left",
     dateOfBirth: "2006-03-09",
     phone: "+233544321098",
-    stats: { matchesPlayed: 12, goals: 5, assists: 2, attendancePercentage: 80, yellowCards: 0, redCards: 0, rating: 7.7 },
+    previousClub: "Half Assini United",
+    status: "Active",
+    statusHistory: [{ status: "Active", date: "2025-07-01T09:00:00Z" }],
+    createdAt: "2025-07-01T09:00:00Z",
+    stats: { attendancePercentage: 80, rating: 7.7 },
+  },
+  {
+    id: "player_008",
+    teamId: "team_001",
+    fullName: "Samuel Tetteh",
+    position: "Goalkeeper",
+    jerseyNumber: 12,
+    preferredFoot: "Right",
+    dateOfBirth: "2005-09-22",
+    phone: "+233245566778",
+    village: "Nkroful",
+    status: "Active",
+    statusHistory: [{ status: "Active", date: "2024-08-12T09:00:00Z" }],
+    createdAt: "2024-08-12T09:00:00Z",
+    stats: { attendancePercentage: 91, rating: 7.2 },
+  },
+  {
+    id: "player_009",
+    teamId: "team_001",
+    fullName: "Isaac Amoah",
+    position: "Defender",
+    jerseyNumber: 2,
+    preferredFoot: "Right",
+    dateOfBirth: "2003-11-11",
+    phone: "+233248811223",
+    village: "Ellembelle",
+    status: "Active",
+    statusHistory: [{ status: "Active", date: "2024-01-20T09:00:00Z" }],
+    createdAt: "2024-01-20T09:00:00Z",
+    stats: { attendancePercentage: 93, rating: 7.3 },
+  },
+  {
+    id: "player_010",
+    teamId: "team_001",
+    fullName: "Prince Yeboah",
+    position: "Defender",
+    jerseyNumber: 3,
+    preferredFoot: "Left",
+    dateOfBirth: "2004-04-04",
+    phone: "+233209988776",
+    status: "Active",
+    statusHistory: [{ status: "Active", date: "2024-01-20T09:00:00Z" }],
+    createdAt: "2024-01-20T09:00:00Z",
+    stats: { attendancePercentage: 89, rating: 7.2 },
+  },
+  {
+    id: "player_011",
+    teamId: "team_001",
+    fullName: "Ibrahim Mahama",
+    position: "Defender",
+    jerseyNumber: 15,
+    preferredFoot: "Right",
+    dateOfBirth: "2003-07-19",
+    phone: "+233267112233",
+    village: "Nkroful",
+    status: "Active",
+    statusHistory: [{ status: "Active", date: "2024-01-20T09:00:00Z" }],
+    createdAt: "2024-01-20T09:00:00Z",
+    stats: { attendancePercentage: 87, rating: 7.1 },
+  },
+  {
+    id: "player_012",
+    teamId: "team_001",
+    fullName: "Yaw Sarpong",
+    position: "Defender",
+    jerseyNumber: 14,
+    preferredFoot: "Right",
+    dateOfBirth: "2005-02-27",
+    phone: "+233541122998",
+    status: "Active",
+    statusHistory: [{ status: "Active", date: "2024-03-05T09:00:00Z" }],
+    createdAt: "2024-03-05T09:00:00Z",
+    stats: { attendancePercentage: 90, rating: 7.0 },
+  },
+  {
+    id: "player_013",
+    teamId: "team_001",
+    fullName: "Yaw Boateng",
+    position: "Midfielder",
+    jerseyNumber: 10,
+    preferredFoot: "Left",
+    dateOfBirth: "2004-09-08",
+    phone: "+233248877665",
+    village: "Bonsaso",
+    status: "Active",
+    statusHistory: [{ status: "Active", date: "2024-02-10T09:00:00Z" }],
+    createdAt: "2024-02-10T09:00:00Z",
+    stats: { attendancePercentage: 94, rating: 7.8 },
+  },
+  {
+    id: "player_014",
+    teamId: "team_001",
+    fullName: "Daniel Owusu",
+    position: "Midfielder",
+    jerseyNumber: 7,
+    preferredFoot: "Right",
+    dateOfBirth: "2005-12-01",
+    phone: "+233201122556",
+    status: "Active",
+    statusHistory: [{ status: "Active", date: "2024-02-10T09:00:00Z" }],
+    createdAt: "2024-02-10T09:00:00Z",
+    stats: { attendancePercentage: 86, rating: 7.3 },
+  },
+  {
+    id: "player_015",
+    teamId: "team_001",
+    fullName: "Kojo Antwi",
+    position: "Forward",
+    jerseyNumber: 17,
+    preferredFoot: "Right",
+    dateOfBirth: "2006-06-30",
+    phone: "+233549900112",
+    village: "Ellembelle",
+    status: "Active",
+    statusHistory: [{ status: "Active", date: "2025-06-14T09:00:00Z" }],
+    createdAt: "2025-06-14T09:00:00Z",
+    stats: { attendancePercentage: 82, rating: 7.2 },
+  },
+  {
+    id: "player_016",
+    teamId: "team_001",
+    fullName: "Solomon Frimpong",
+    position: "Forward",
+    jerseyNumber: 19,
+    preferredFoot: "Both",
+    dateOfBirth: "2005-10-05",
+    phone: "+233267334455",
+    status: "Active",
+    statusHistory: [{ status: "Active", date: "2025-07-01T09:00:00Z" }],
+    createdAt: "2025-07-01T09:00:00Z",
+    stats: { attendancePercentage: 78, rating: 6.9 },
   },
 ];
 
