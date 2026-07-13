@@ -1,9 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Camera } from "lucide-react";
 
 import {
   Field,
@@ -24,6 +22,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox";
+import { AvatarUpload } from "@/components/common/AvatarUpload";
 import { ghanaRegions } from "@/config/regions";
 import { teamDetailsSchema, type TeamDetailsInput } from "@/schemas/onboarding";
 import { getInitials } from "@/lib/utils";
@@ -37,9 +36,6 @@ type TeamFormProps = {
 };
 
 function TeamForm({ defaultValues, onSubmit }: TeamFormProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [logoPreview, setLogoPreview] = useState<string | undefined>(defaultValues?.logo);
-
   const form = useForm<TeamFormValues, unknown, TeamDetailsInput>({
     resolver: zodResolver(teamDetailsSchema),
     defaultValues: {
@@ -56,47 +52,17 @@ function TeamForm({ defaultValues, onSubmit }: TeamFormProps) {
   });
 
   const teamName = useWatch({ control: form.control, name: "name" });
-
-  function handleLogoChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      setLogoPreview(dataUrl);
-      form.setValue("logo", dataUrl);
-    };
-    reader.readAsDataURL(file);
-  }
+  const logo = useWatch({ control: form.control, name: "logo" });
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
-      <div className="flex flex-col items-center gap-2">
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="relative flex size-20 items-center justify-center overflow-hidden rounded-full bg-muted text-lg font-semibold text-muted-foreground ring-1 ring-foreground/10"
-        >
-          {logoPreview ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoPreview} alt="Team logo preview" className="size-full object-cover" />
-          ) : (
-            <span>{teamName ? getInitials(teamName) : <Camera className="size-6" />}</span>
-          )}
-          <div className="absolute inset-x-0 bottom-0 bg-black/50 py-1 text-center text-[10px] font-medium text-white">
-            Upload
-          </div>
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleLogoChange}
-        />
-        <span className="text-xs text-muted-foreground">Team logo (optional)</span>
-      </div>
+      <AvatarUpload
+        value={logo}
+        onChange={(dataUrl) => form.setValue("logo", dataUrl)}
+        fallbackText={teamName ? getInitials(teamName) : undefined}
+        label="Team logo (optional)"
+        alt="Team logo preview"
+      />
 
       <FieldGroup>
         <Field data-invalid={!!form.formState.errors.name}>
