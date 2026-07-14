@@ -12,7 +12,7 @@ import { Stagger } from "@/components/common/Stagger";
 const quickActions = [
   { label: "Add Player", icon: <UserPlus />, href: "/players/new" },
   { label: "Create Match", icon: <CalendarPlus />, href: "/matches/new" },
-  { label: "Record Attendance", icon: <ClipboardCheck />, href: "/attendance" },
+  { label: "Record Attendance", icon: <ClipboardCheck />, href: "/training" },
   { label: "Generate Report", icon: <FileBarChart />, href: "/reports" },
 ];
 

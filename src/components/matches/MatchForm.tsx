@@ -88,7 +88,7 @@ function MatchForm({ defaultValues, competitions, onSubmit, submitLabel = "Creat
               <Input
                 id="competition"
                 list="competition-suggestions"
-                placeholder="e.g. Ellembelle District League"
+                placeholder="e.g. District League"
                 {...form.register("competition")}
               />
               <datalist id="competition-suggestions">

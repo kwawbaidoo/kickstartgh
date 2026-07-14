@@ -2,7 +2,12 @@ import { ArrowLeftRight, Goal, Square, Stethoscope, type LucideIcon } from "luci
 
 import type { Formation, MatchEventType, MatchStatus, MatchType } from "@/mock/matches";
 
-export const matchTypeOptions: MatchType[] = ["Friendly", "League", "Tournament", "Knockout"];
+export const matchTypeOptions: MatchType[] = [
+  "Friendly",
+  "League",
+  "Tournament",
+  "Knockout",
+];
 
 export const matchStatusOptions: MatchStatus[] = ["upcoming", "completed", "cancelled"];
 

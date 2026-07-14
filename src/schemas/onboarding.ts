@@ -23,6 +23,10 @@ export const teamDetailsSchema = z.object({
     .max(120, "Keep your slogan under 120 characters.")
     .trim()
     .optional(),
+  facebook: z.string().trim().optional(),
+  instagram: z.string().trim().optional(),
+  tiktok: z.string().trim().optional(),
+  website: z.string().trim().optional(),
 });
 
 export type TeamDetailsInput = z.infer<typeof teamDetailsSchema>;

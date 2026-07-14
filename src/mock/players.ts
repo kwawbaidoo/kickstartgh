@@ -30,11 +30,11 @@ export type Player = {
   /**
    * Match-derived numbers (matchesPlayed/goals/assists/cards) are computed
    * live from matchesStore via getPlayerMatchStats — see lib/matches.ts.
-   * Only attendance and rating are stored here, since attendance tracking
-   * and ratings aren't sourced from match events.
+   * Attendance is computed live too, from attendanceStore + matchesStore —
+   * see getPlayerAttendanceStats in lib/attendance.ts. Only rating is stored
+   * here, since it isn't sourced from any event/session data.
    */
   stats: {
-    attendancePercentage: number;
     rating: number;
   };
 };
@@ -54,7 +54,7 @@ export const players: Player[] = [
     status: "Active",
     statusHistory: [{ status: "Active", date: "2024-02-10T09:00:00Z" }],
     createdAt: "2024-02-10T09:00:00Z",
-    stats: { attendancePercentage: 92, rating: 8.1 },
+    stats: { rating: 8.1 },
   },
   {
     id: "player_002",
@@ -70,7 +70,7 @@ export const players: Player[] = [
     status: "Active",
     statusHistory: [{ status: "Active", date: "2024-02-10T09:00:00Z" }],
     createdAt: "2024-02-10T09:00:00Z",
-    stats: { attendancePercentage: 88, rating: 7.6 },
+    stats: { rating: 7.6 },
   },
   {
     id: "player_003",
@@ -88,7 +88,7 @@ export const players: Player[] = [
       { status: "Injured", date: "2025-01-15T09:00:00Z" },
     ],
     createdAt: "2024-03-05T09:00:00Z",
-    stats: { attendancePercentage: 95, rating: 7.4 },
+    stats: { rating: 7.4 },
   },
   {
     id: "player_004",
@@ -104,7 +104,7 @@ export const players: Player[] = [
     status: "Active",
     statusHistory: [{ status: "Active", date: "2024-01-20T09:00:00Z" }],
     createdAt: "2024-01-20T09:00:00Z",
-    stats: { attendancePercentage: 97, rating: 7.9 },
+    stats: { rating: 7.9 },
   },
   {
     id: "player_005",
@@ -119,7 +119,7 @@ export const players: Player[] = [
     status: "Active",
     statusHistory: [{ status: "Active", date: "2025-06-14T09:00:00Z" }],
     createdAt: "2025-06-14T09:00:00Z",
-    stats: { attendancePercentage: 85, rating: 7.5 },
+    stats: { rating: 7.5 },
   },
   {
     id: "player_006",
@@ -137,7 +137,7 @@ export const players: Player[] = [
       { status: "Inactive", date: "2025-04-01T09:00:00Z" },
     ],
     createdAt: "2024-05-01T09:00:00Z",
-    stats: { attendancePercentage: 90, rating: 7.0 },
+    stats: { rating: 7.0 },
   },
   {
     id: "player_007",
@@ -153,7 +153,7 @@ export const players: Player[] = [
     status: "Active",
     statusHistory: [{ status: "Active", date: "2025-07-01T09:00:00Z" }],
     createdAt: "2025-07-01T09:00:00Z",
-    stats: { attendancePercentage: 80, rating: 7.7 },
+    stats: { rating: 7.7 },
   },
   {
     id: "player_008",
@@ -168,7 +168,7 @@ export const players: Player[] = [
     status: "Active",
     statusHistory: [{ status: "Active", date: "2024-08-12T09:00:00Z" }],
     createdAt: "2024-08-12T09:00:00Z",
-    stats: { attendancePercentage: 91, rating: 7.2 },
+    stats: { rating: 7.2 },
   },
   {
     id: "player_009",
@@ -183,7 +183,7 @@ export const players: Player[] = [
     status: "Active",
     statusHistory: [{ status: "Active", date: "2024-01-20T09:00:00Z" }],
     createdAt: "2024-01-20T09:00:00Z",
-    stats: { attendancePercentage: 93, rating: 7.3 },
+    stats: { rating: 7.3 },
   },
   {
     id: "player_010",
@@ -197,7 +197,7 @@ export const players: Player[] = [
     status: "Active",
     statusHistory: [{ status: "Active", date: "2024-01-20T09:00:00Z" }],
     createdAt: "2024-01-20T09:00:00Z",
-    stats: { attendancePercentage: 89, rating: 7.2 },
+    stats: { rating: 7.2 },
   },
   {
     id: "player_011",
@@ -212,7 +212,7 @@ export const players: Player[] = [
     status: "Active",
     statusHistory: [{ status: "Active", date: "2024-01-20T09:00:00Z" }],
     createdAt: "2024-01-20T09:00:00Z",
-    stats: { attendancePercentage: 87, rating: 7.1 },
+    stats: { rating: 7.1 },
   },
   {
     id: "player_012",
@@ -226,7 +226,7 @@ export const players: Player[] = [
     status: "Active",
     statusHistory: [{ status: "Active", date: "2024-03-05T09:00:00Z" }],
     createdAt: "2024-03-05T09:00:00Z",
-    stats: { attendancePercentage: 90, rating: 7.0 },
+    stats: { rating: 7.0 },
   },
   {
     id: "player_013",
@@ -241,7 +241,7 @@ export const players: Player[] = [
     status: "Active",
     statusHistory: [{ status: "Active", date: "2024-02-10T09:00:00Z" }],
     createdAt: "2024-02-10T09:00:00Z",
-    stats: { attendancePercentage: 94, rating: 7.8 },
+    stats: { rating: 7.8 },
   },
   {
     id: "player_014",
@@ -255,7 +255,7 @@ export const players: Player[] = [
     status: "Active",
     statusHistory: [{ status: "Active", date: "2024-02-10T09:00:00Z" }],
     createdAt: "2024-02-10T09:00:00Z",
-    stats: { attendancePercentage: 86, rating: 7.3 },
+    stats: { rating: 7.3 },
   },
   {
     id: "player_015",
@@ -270,7 +270,7 @@ export const players: Player[] = [
     status: "Active",
     statusHistory: [{ status: "Active", date: "2025-06-14T09:00:00Z" }],
     createdAt: "2025-06-14T09:00:00Z",
-    stats: { attendancePercentage: 82, rating: 7.2 },
+    stats: { rating: 7.2 },
   },
   {
     id: "player_016",
@@ -284,7 +284,7 @@ export const players: Player[] = [
     status: "Active",
     statusHistory: [{ status: "Active", date: "2025-07-01T09:00:00Z" }],
     createdAt: "2025-07-01T09:00:00Z",
-    stats: { attendancePercentage: 78, rating: 6.9 },
+    stats: { rating: 6.9 },
   },
 ];
 
