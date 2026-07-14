@@ -391,3 +391,17 @@ KickStartGH should feel like:
 
 
 # GPS check-in and player self-check-in via QR code
+
+# Moment.js and Luxon for time zone management, and Froala as our WYSIWYG content editor.
+
+# Stripe, PayPal, and Bambora for payments;
+# Firebase Cloud Messaging and OneSignal for notifications;
+# FullCalendar for scheduling;
+# Froala Editor for editable content areas;
+# Internal REST APIs for event, booking, and reporting logic.
+
+# Each club instance can be branded and managed independently through an admin superlayer.
+
+# Define what analytics and metrics to track. These can be attendance rates, matches, or time played, injuries or medical stories, goals, and player ratings.
+
+# Visualize the data via Chart.js, Recharts, Victory Native, or D3.js. Enable analytics and reports for your users.

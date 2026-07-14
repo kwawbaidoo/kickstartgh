@@ -207,8 +207,13 @@ export function getMatchResult(match: Match): MatchResult | null {
   return "draw";
 }
 
-export function getUpcomingMatch(teamId: string, matchList: Match[] = matches): Match | undefined {
-  return matchList
+export function getUpcomingMatches(teamId: string, matchList: Match[] = matches, limit?: number): Match[] {
+  const sorted = matchList
     .filter((match) => match.teamId === teamId && match.status === "upcoming")
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  return limit ? sorted.slice(0, limit) : sorted;
+}
+
+export function getUpcomingMatch(teamId: string, matchList: Match[] = matches): Match | undefined {
+  return getUpcomingMatches(teamId, matchList)[0];
 }

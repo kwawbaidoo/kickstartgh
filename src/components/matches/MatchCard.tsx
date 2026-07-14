@@ -7,6 +7,7 @@ import { CalendarDays, MapPin } from "lucide-react";
 
 import type { Match, MatchResult } from "@/mock/matches";
 import { getMatchResult } from "@/mock/matches";
+import { MatchQuickActions } from "@/components/matches/MatchQuickActions";
 import { fadeInUp } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -20,11 +21,11 @@ function MatchCard({ match }: { match: Match }) {
   const result = getMatchResult(match);
 
   return (
-    <motion.div variants={fadeInUp}>
-      <Link
-        href={`/matches/${match.id}`}
-        className="flex flex-col gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10 transition-colors hover:ring-foreground/20"
-      >
+    <motion.div
+      variants={fadeInUp}
+      className="flex flex-col gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10 transition-colors hover:ring-foreground/20"
+    >
+      <Link href={`/matches/${match.id}`} className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
           <span className="truncate text-xs font-medium text-muted-foreground">
             {match.competition}
@@ -71,6 +72,10 @@ function MatchCard({ match }: { match: Match }) {
           </span>
         </div>
       </Link>
+
+      <div className="flex items-center justify-end gap-1 border-t border-border pt-2">
+        <MatchQuickActions match={match} />
+      </div>
     </motion.div>
   );
 }
