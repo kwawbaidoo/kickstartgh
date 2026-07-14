@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CalendarPlus, Goal, Percent, ShieldOff, Trophy } from "lucide-react";
+import { CalendarPlus, ShieldOff } from "lucide-react";
 
 import { SectionHeader } from "@/components/dashboard/SectionHeader";
-import { StatisticCard } from "@/components/dashboard/StatisticCard";
 import { Stagger } from "@/components/common/Stagger";
 import { SearchBar } from "@/components/common/SearchBar";
 import { MatchCard } from "@/components/matches/MatchCard";
+import { MatchesTable } from "@/components/matches/MatchesTable";
+import { MatchViewToggle, type MatchView } from "@/components/matches/MatchViewToggle";
+import { SeasonPerformanceCard } from "@/components/matches/SeasonPerformanceCard";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useMatchesStore } from "@/store/matches-store";
-import { defaultMatchFilters, filterMatches, getCompetitions, getTeamStats } from "@/lib/matches";
+import { defaultMatchFilters, filterMatches, getCompetitions, getSeasonPerformance } from "@/lib/matches";
 import type { MatchStatus } from "@/mock/matches";
 import { toSelectItems } from "@/lib/utils";
 
@@ -50,11 +52,12 @@ const homeAwayItems = { All: "All venues", Home: "Home", Away: "Away" };
 export default function MatchesPage() {
   const matches = useMatchesStore((state) => state.matches);
   const [status, setStatus] = useState<MatchStatus>("upcoming");
+  const [view, setView] = useState<MatchView>("card");
   const [filters, setFilters] = useState(defaultMatchFilters);
 
   const competitions = getCompetitions(matches);
   const competitionItems = { All: "All competitions", ...toSelectItems(competitions) };
-  const teamStats = getTeamStats(matches);
+  const seasonPerformance = getSeasonPerformance(matches);
 
   const filtered = filterMatches(matches, status, filters);
 
@@ -71,31 +74,21 @@ export default function MatchesPage() {
         }
       />
 
-      <Stagger className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatisticCard title="Matches Played" value={teamStats.played} icon={<Trophy />} />
-        <StatisticCard title="Wins" value={teamStats.wins} icon={<Goal />} />
-        <StatisticCard title="Goals For" value={teamStats.goalsFor} icon={<Goal />} />
-        <StatisticCard
-          title="Win Rate"
-          value={`${teamStats.winPercentage}%`}
-          icon={<Percent />}
-          trend={
-            teamStats.trend
-              ? { value: teamStats.trend === "up" ? "Improving" : "Dipping", direction: teamStats.trend }
-              : undefined
-          }
-        />
-      </Stagger>
+      <SeasonPerformanceCard performance={seasonPerformance} />
 
-      <Tabs value={status} onValueChange={(value) => setStatus(value as MatchStatus)}>
-        <TabsList>
-          {statusTabs.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value}>
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Tabs value={status} onValueChange={(value) => setStatus(value as MatchStatus)}>
+          <TabsList>
+            {statusTabs.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+
+        <MatchViewToggle value={view} onChange={setView} />
+      </div>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <SearchBar
@@ -146,12 +139,14 @@ export default function MatchesPage() {
           actionLabel={status === "upcoming" ? "Create Match" : undefined}
           actionHref={status === "upcoming" ? "/matches/new" : undefined}
         />
-      ) : (
+      ) : view === "card" ? (
         <Stagger className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((match) => (
             <MatchCard key={match.id} match={match} />
           ))}
         </Stagger>
+      ) : (
+        <MatchesTable matches={filtered} />
       )}
     </div>
   );

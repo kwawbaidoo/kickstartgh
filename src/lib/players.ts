@@ -1,4 +1,4 @@
-import type { AgeGroup } from "@/config/players";
+import { positionOptions, type AgeGroup } from "@/config/players";
 import type { Player, PlayerStatus, Position } from "@/mock/players";
 
 export function getAge(dateOfBirth: string): number {
@@ -72,4 +72,13 @@ export function sortPlayers(players: Player[], sort: PlayerSort): Player[] {
     default:
       return sorted.sort((a, b) => a.fullName.localeCompare(b.fullName));
   }
+}
+
+export type PositionBreakdown = { position: Position; count: number };
+
+export function getPositionBreakdown(players: Player[]): PositionBreakdown[] {
+  return positionOptions.map((position) => ({
+    position,
+    count: players.filter((player) => player.position === position).length,
+  }));
 }
