@@ -26,8 +26,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { PlayerStatus } from "@/mock/players";
 import { usePlayersStore } from "@/store/players-store";
 import { useMatchesStore } from "@/store/matches-store";
+import { useAttendanceStore } from "@/store/attendance-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { getPlayerMatchStats } from "@/lib/matches";
+import { getPlayerAttendanceStats } from "@/lib/attendance";
 
 const statusTimelineIcon: Record<PlayerStatus, typeof CircleCheck> = {
   Active: CircleCheck,
@@ -41,6 +43,7 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
   const players = usePlayersStore((state) => state.players);
   const deletePlayer = usePlayersStore((state) => state.deletePlayer);
   const matches = useMatchesStore((state) => state.matches);
+  const sessions = useAttendanceStore((state) => state.sessions);
   const teamName = useOnboardingStore((state) => state.activeTeam.name);
   const player = players.find((candidate) => candidate.id === id);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -72,9 +75,10 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
   const whatsappHref = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`;
 
   const matchStats = getPlayerMatchStats(player.id, matches);
+  const attendanceStats = getPlayerAttendanceStats(player.id, sessions, matches);
   const statsForCard = {
     ...matchStats,
-    attendancePercentage: player.stats.attendancePercentage,
+    attendancePercentage: attendanceStats.attendancePercentage,
     rating: player.stats.rating,
   };
 

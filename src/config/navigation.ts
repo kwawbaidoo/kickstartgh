@@ -21,7 +21,7 @@ export const sidebarNavItems: NavItem[] = [
   { label: "Team", href: "/team", icon: Shield },
   { label: "Players", href: "/players", icon: Users },
   { label: "Matches", href: "/matches", icon: CalendarDays },
-  { label: "Attendance", href: "/attendance", icon: ClipboardCheck },
+  { label: "Attendance", href: "/training", icon: ClipboardCheck },
   { label: "Reports", href: "/reports", icon: FileBarChart },
   { label: "Settings", href: "/settings", icon: Settings },
 ];

@@ -16,7 +16,6 @@ type PlayersState = {
 };
 
 const emptyStats = {
-  attendancePercentage: 0,
   rating: 0,
 };
 

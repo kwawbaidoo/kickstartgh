@@ -388,3 +388,6 @@ The MVP is successful if:
 KickStartGH should feel like:
 
 "Professional football management software simplified for Ghanaian grassroots football."
+
+
+# GPS check-in and player self-check-in via QR code

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 import type { RoleId } from "@/config/roles";
 import type { StaffMember, TeamDetailsInput } from "@/schemas/onboarding";
@@ -16,6 +17,10 @@ export type ActiveTeam = {
   colorPrimary?: string;
   colorSecondary?: string;
   slogan?: string;
+  facebook?: string;
+  instagram?: string;
+  tiktok?: string;
+  website?: string;
   staff: StaffMember[];
 };
 
@@ -30,6 +35,8 @@ type OnboardingState = {
   hasOnboarded: boolean;
   activeTeam: ActiveTeam;
   draft: OnboardingDraft;
+  hasHydrated: boolean;
+  setHasHydrated: (value: boolean) => void;
   setRole: (role: RoleId) => void;
   setTeamDetails: (team: TeamDetailsInput) => void;
   addStaffMember: (member: StaffMember) => void;
@@ -37,6 +44,10 @@ type OnboardingState = {
   setInviteCode: (code: string) => void;
   completeOnboarding: () => void;
   resetDraft: () => void;
+  updateTeam: (team: TeamDetailsInput) => void;
+  addActiveStaffMember: (member: StaffMember) => void;
+  removeActiveStaffMember: (id: string) => void;
+  updateActiveStaffMemberRole: (id: string, role: RoleId) => void;
 };
 
 const initialDraft: OnboardingDraft = {
@@ -46,7 +57,9 @@ const initialDraft: OnboardingDraft = {
   inviteCode: null,
 };
 
-export const useOnboardingStore = create<OnboardingState>((set, get) => ({
+export const useOnboardingStore = create<OnboardingState>()(
+  persist(
+    (set, get) => ({
   hasOnboarded: false,
   activeTeam: {
     name: currentTeam.name,
@@ -58,6 +71,8 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     staff: [],
   },
   draft: initialDraft,
+  hasHydrated: false,
+  setHasHydrated: (value) => set({ hasHydrated: value }),
 
   setRole: (role) => set((state) => ({ draft: { ...state.draft, role } })),
 
@@ -90,10 +105,54 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
         colorPrimary: team.colorPrimary,
         colorSecondary: team.colorSecondary,
         slogan: team.slogan,
+        facebook: team.facebook,
+        instagram: team.instagram,
+        tiktok: team.tiktok,
+        website: team.website,
         staff,
       },
     });
   },
 
   resetDraft: () => set({ draft: initialDraft }),
-}));
+
+  updateTeam: (team) =>
+    set((state) => ({
+      activeTeam: {
+        ...state.activeTeam,
+        ...team,
+        nickname: team.nickname || state.activeTeam.nickname,
+      },
+    })),
+
+  addActiveStaffMember: (member) =>
+    set((state) => ({
+      activeTeam: { ...state.activeTeam, staff: [...state.activeTeam.staff, member] },
+    })),
+
+  removeActiveStaffMember: (id) =>
+    set((state) => ({
+      activeTeam: {
+        ...state.activeTeam,
+        staff: state.activeTeam.staff.filter((member) => member.id !== id),
+      },
+    })),
+
+  updateActiveStaffMemberRole: (id, role) =>
+    set((state) => ({
+      activeTeam: {
+        ...state.activeTeam,
+        staff: state.activeTeam.staff.map((member) =>
+          member.id === id ? { ...member, role } : member
+        ),
+      },
+    })),
+    }),
+    {
+      name: "kickstartgh-onboarding",
+      storage: createJSONStorage(() => localStorage),
+      skipHydration: true,
+      onRehydrateStorage: () => (state) => state?.setHasHydrated(true),
+    }
+  )
+);
