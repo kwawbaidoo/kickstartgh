@@ -4,16 +4,16 @@ import { LayoutGrid, List } from "lucide-react";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export type MatchView = "card" | "list";
+export type CardListView = "card" | "list";
 
-type MatchViewToggleProps = {
-  value: MatchView;
-  onChange: (view: MatchView) => void;
+type ViewToggleProps = {
+  value: CardListView;
+  onChange: (view: CardListView) => void;
 };
 
-function MatchViewToggle({ value, onChange }: MatchViewToggleProps) {
+function ViewToggle({ value, onChange }: ViewToggleProps) {
   return (
-    <Tabs value={value} onValueChange={(next) => onChange(next as MatchView)}>
+    <Tabs value={value} onValueChange={(next) => onChange(next as CardListView)}>
       <TabsList>
         <TabsTrigger value="card" aria-label="Card view">
           <LayoutGrid className="size-4" />
@@ -26,4 +26,4 @@ function MatchViewToggle({ value, onChange }: MatchViewToggleProps) {
   );
 }
 
-export { MatchViewToggle };
+export { ViewToggle };

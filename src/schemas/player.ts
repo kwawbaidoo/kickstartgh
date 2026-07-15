@@ -13,6 +13,12 @@ const statusEnum = z.enum(statusOptions as [PlayerStatus, ...PlayerStatus[]], {
   error: "Please select a status.",
 });
 
+const emergencyContactFormSchema = z.object({
+  name: z.string().trim().optional(),
+  phone: z.string().trim().optional(),
+  email: z.email("Please enter a valid email.").optional().or(z.literal("")),
+});
+
 const basePlayerFormSchema = z.object({
   fullName: z.string().min(2, "Please enter the player's full name."),
   nickname: z.string().trim().optional(),
@@ -22,7 +28,8 @@ const basePlayerFormSchema = z.object({
     .refine((value) => new Date(value) <= new Date(), "Date of birth can't be in the future."),
   photo: z.string().optional(),
   phone: z.string().trim().optional(),
-  emergencyContact: z.string().trim().optional(),
+  email: z.email("Please enter a valid email.").optional().or(z.literal("")),
+  emergencyContact: emergencyContactFormSchema.optional(),
   jerseyNumber: z.coerce
     .number({ error: "Please enter a jersey number." })
     .int("Jersey number must be a whole number.")

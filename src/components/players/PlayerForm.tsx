@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
@@ -26,7 +26,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AvatarUpload } from "@/components/common/AvatarUpload";
-import { positionOptions, preferredFootOptions, statusOptions } from "@/config/players";
+import { ProgressStepper } from "@/components/onboarding/ProgressStepper";
+import {
+  positionOptions,
+  preferredFootOptions,
+  statusOptions,
+} from "@/config/players";
 import type { Player } from "@/mock/players";
 import { createPlayerFormSchema, type PlayerFormInput } from "@/schemas/player";
 import { getInitials, toSelectItems } from "@/lib/utils";
@@ -36,6 +41,22 @@ type PlayerFormValues = z.input<PlayerFormSchema>;
 
 const positionItems = toSelectItems(positionOptions);
 const statusItems = toSelectItems(statusOptions);
+
+const stepLabels = ["Personal Info", "Football Info", "Additional Info"];
+
+const stepFields: (keyof PlayerFormInput)[][] = [
+  [
+    "fullName",
+    "nickname",
+    "dateOfBirth",
+    "phone",
+    "email",
+    "emergencyContact",
+    "photo",
+  ],
+  ["jerseyNumber", "position", "secondaryPosition", "preferredFoot"],
+  ["village", "previousClub", "status"],
+];
 
 type PlayerFormProps = {
   defaultValues?: Partial<PlayerFormInput>;
@@ -52,9 +73,11 @@ function PlayerForm({
   onSubmit,
   submitLabel = "Register Player",
 }: PlayerFormProps) {
+  const [step, setStep] = useState(0);
+
   const schema = useMemo(
     () => createPlayerFormSchema(existingPlayers, excludeId),
-    [existingPlayers, excludeId]
+    [existingPlayers, excludeId],
   );
 
   const form = useForm<PlayerFormValues, unknown, PlayerFormInput>({
@@ -63,7 +86,8 @@ function PlayerForm({
       fullName: "",
       nickname: "",
       phone: "",
-      emergencyContact: "",
+      email: "",
+      emergencyContact: { name: "", phone: "", email: "" },
       village: "",
       previousClub: "",
       preferredFoot: "Right",
@@ -75,195 +99,302 @@ function PlayerForm({
   const fullName = useWatch({ control: form.control, name: "fullName" });
   const photo = useWatch({ control: form.control, name: "photo" });
 
+  async function handleNext() {
+    const valid = await form.trigger(stepFields[step]);
+    if (valid)
+      setStep((current) => Math.min(stepLabels.length - 1, current + 1));
+  }
+
+  function handleBack() {
+    setStep((current) => Math.max(0, current - 1));
+  }
+
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-8">
-      <FieldSet>
-        <FieldLegend>Personal Information</FieldLegend>
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="flex flex-col gap-8"
+    >
+      <ProgressStepper steps={stepLabels} currentStep={step} />
 
-        <AvatarUpload
-          value={photo}
-          onChange={(dataUrl) => form.setValue("photo", dataUrl)}
-          fallbackText={fullName ? getInitials(fullName) : undefined}
-          label="Player photo (optional)"
-          alt="Player photo preview"
-        />
+      {step === 0 && (
+        <FieldSet>
+          <FieldLegend>Personal Information</FieldLegend>
 
-        <FieldGroup>
-          <Field data-invalid={!!form.formState.errors.fullName}>
-            <FieldLabel htmlFor="fullName">Full name</FieldLabel>
-            <FieldContent>
-              <Input id="fullName" placeholder="e.g. Kwesi Mensah" {...form.register("fullName")} />
-              <FieldError errors={[form.formState.errors.fullName]} />
-            </FieldContent>
-          </Field>
+          <AvatarUpload
+            value={photo}
+            onChange={(dataUrl) => form.setValue("photo", dataUrl)}
+            fallbackText={fullName ? getInitials(fullName) : undefined}
+            label="Player photo (optional)"
+            alt="Player photo preview"
+          />
 
-          <Field orientation="responsive">
-            <FieldLabel htmlFor="nickname">Nickname</FieldLabel>
-            <FieldContent>
-              <Input id="nickname" placeholder="e.g. KM9" {...form.register("nickname")} />
-              <FieldDescription>Optional</FieldDescription>
-            </FieldContent>
-          </Field>
+          <FieldGroup className="grid md:grid-cols-2 grid-cols-1 gap-4">
+            <Field data-invalid={!!form.formState.errors.fullName}>
+              <FieldLabel htmlFor="fullName">Full name</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="fullName"
+                  placeholder="e.g. Kwesi Mensah"
+                  {...form.register("fullName")}
+                />
+                <FieldError errors={[form.formState.errors.fullName]} />
+              </FieldContent>
+            </Field>
 
-          <Field data-invalid={!!form.formState.errors.dateOfBirth}>
-            <FieldLabel htmlFor="dateOfBirth">Date of birth</FieldLabel>
-            <FieldContent>
-              <Input id="dateOfBirth" type="date" {...form.register("dateOfBirth")} />
-              <FieldError errors={[form.formState.errors.dateOfBirth]} />
-            </FieldContent>
-          </Field>
+            <Field>
+              <FieldLabel htmlFor="nickname">Nickname </FieldLabel>
+              <FieldContent>
+                <Input
+                  id="nickname"
+                  placeholder="e.g. KM9"
+                  {...form.register("nickname")}
+                />
+                <FieldDescription>Optional</FieldDescription>
+              </FieldContent>
+            </Field>
+          </FieldGroup>
 
-          <Field orientation="responsive">
-            <FieldLabel htmlFor="phone">Phone number</FieldLabel>
-            <FieldContent>
-              <Input id="phone" placeholder="e.g. 024 123 4567" {...form.register("phone")} />
-              <FieldDescription>Optional</FieldDescription>
-            </FieldContent>
-          </Field>
+          <FieldGroup className="grid md:grid-cols-2 grid-cols-1 gap-4">
+            <Field data-invalid={!!form.formState.errors.dateOfBirth}>
+              <FieldLabel htmlFor="dateOfBirth">Date of birth</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="dateOfBirth"
+                  type="date"
+                  {...form.register("dateOfBirth")}
+                />
+                <FieldError errors={[form.formState.errors.dateOfBirth]} />
+              </FieldContent>
+            </Field>
 
-          <Field orientation="responsive">
-            <FieldLabel htmlFor="emergencyContact">Emergency contact</FieldLabel>
+            <Field>
+              <FieldLabel htmlFor="phone">Phone number</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="phone"
+                  placeholder="e.g. 024 123 4567"
+                  {...form.register("phone")}
+                />
+                <FieldDescription>Optional</FieldDescription>
+              </FieldContent>
+            </Field>
+          </FieldGroup>
+          <Field
+            orientation="responsive"
+            data-invalid={!!form.formState.errors.email}
+          >
+            <FieldLabel htmlFor="email">Player email</FieldLabel>
             <FieldContent>
               <Input
-                id="emergencyContact"
-                placeholder="e.g. 024 000 0000"
-                {...form.register("emergencyContact")}
+                id="email"
+                type="email"
+                placeholder="e.g. player@example.com"
+                {...form.register("email")}
+              />
+              <FieldError errors={[form.formState.errors.email]} />
+              <FieldDescription>Optional</FieldDescription>
+            </FieldContent>
+          </Field>
+
+          <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            Emergency Contact
+          </span>
+
+          <FieldGroup className="grid md:grid-cols-2 grid-cols-1 gap-4">
+            <Field>
+              <FieldLabel htmlFor="emergencyContactName">
+                Contact name
+              </FieldLabel>
+              <FieldContent>
+                <Input
+                  id="emergencyContactName"
+                  placeholder="e.g. Comfort Mensah"
+                  {...form.register("emergencyContact.name")}
+                />
+                <FieldDescription>Optional</FieldDescription>
+              </FieldContent>
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="emergencyContactPhone">
+                Contact phone
+              </FieldLabel>
+              <FieldContent>
+                <Input
+                  id="emergencyContactPhone"
+                  placeholder="e.g. 024 000 0000"
+                  {...form.register("emergencyContact.phone")}
+                />
+                <FieldDescription>Optional</FieldDescription>
+              </FieldContent>
+            </Field>
+          </FieldGroup>
+          <Field
+            orientation="responsive"
+            data-invalid={!!form.formState.errors.emergencyContact?.email}
+          >
+            <FieldLabel htmlFor="emergencyContactEmail">
+              Contact email
+            </FieldLabel>
+            <FieldContent>
+              <Input
+                id="emergencyContactEmail"
+                type="email"
+                placeholder="e.g. contact@example.com"
+                {...form.register("emergencyContact.email")}
+              />
+              <FieldError
+                errors={[form.formState.errors.emergencyContact?.email]}
               />
               <FieldDescription>Optional</FieldDescription>
             </FieldContent>
           </Field>
-        </FieldGroup>
-      </FieldSet>
+        </FieldSet>
+      )}
 
-      <FieldSet>
-        <FieldLegend>Football Information</FieldLegend>
+      {step === 1 && (
+        <FieldSet>
+          <FieldLegend>Football Information</FieldLegend>
 
-        <FieldGroup>
-          <Field data-invalid={!!form.formState.errors.jerseyNumber}>
-            <FieldLabel htmlFor="jerseyNumber">Jersey number</FieldLabel>
-            <FieldContent>
-              <Input
-                id="jerseyNumber"
-                type="number"
-                inputMode="numeric"
-                placeholder="e.g. 9"
-                {...form.register("jerseyNumber")}
-              />
-              <FieldError errors={[form.formState.errors.jerseyNumber]} />
-            </FieldContent>
-          </Field>
+          <FieldGroup>
+            <Field data-invalid={!!form.formState.errors.jerseyNumber}>
+              <FieldLabel htmlFor="jerseyNumber">Jersey number</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="jerseyNumber"
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="e.g. 9"
+                  {...form.register("jerseyNumber")}
+                />
+                <FieldError errors={[form.formState.errors.jerseyNumber]} />
+              </FieldContent>
+            </Field>
 
-          <Field data-invalid={!!form.formState.errors.position}>
-            <FieldLabel htmlFor="position">Primary position</FieldLabel>
-            <FieldContent>
-              <Controller
-                control={form.control}
-                name="position"
-                render={({ field }) => (
-                  <Select
-                    items={positionItems}
-                    value={field.value ?? null}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger id="position" className="w-full">
-                      <SelectValue placeholder="Select a position" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {positionOptions.map((position) => (
-                        <SelectItem key={position} value={position}>
-                          {position}
-                        </SelectItem>
+            <Field data-invalid={!!form.formState.errors.position}>
+              <FieldLabel htmlFor="position">Primary position</FieldLabel>
+              <FieldContent>
+                <Controller
+                  control={form.control}
+                  name="position"
+                  render={({ field }) => (
+                    <Select
+                      items={positionItems}
+                      value={field.value ?? null}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger id="position" className="w-full">
+                        <SelectValue placeholder="Select a position" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {positionOptions.map((position) => (
+                          <SelectItem key={position} value={position}>
+                            {position}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                <FieldError errors={[form.formState.errors.position]} />
+              </FieldContent>
+            </Field>
+
+            <Field data-invalid={!!form.formState.errors.secondaryPosition}>
+              <FieldLabel htmlFor="secondaryPosition">
+                Secondary position
+              </FieldLabel>
+              <FieldContent>
+                <Controller
+                  control={form.control}
+                  name="secondaryPosition"
+                  render={({ field }) => (
+                    <Select
+                      items={positionItems}
+                      value={field.value ?? null}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger id="secondaryPosition" className="w-full">
+                        <SelectValue placeholder="None" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {positionOptions.map((position) => (
+                          <SelectItem key={position} value={position}>
+                            {position}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                <FieldError
+                  errors={[form.formState.errors.secondaryPosition]}
+                />
+                <FieldDescription>Optional</FieldDescription>
+              </FieldContent>
+            </Field>
+
+            <Field data-invalid={!!form.formState.errors.preferredFoot}>
+              <FieldLabel>Preferred foot</FieldLabel>
+              <FieldContent>
+                <Controller
+                  control={form.control}
+                  name="preferredFoot"
+                  render={({ field }) => (
+                    <RadioGroup
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      className="grid-flow-col"
+                    >
+                      {preferredFootOptions.map((foot) => (
+                        <FieldLabel key={foot} className="font-normal">
+                          <RadioGroupItem value={foot} />
+                          {foot}
+                        </FieldLabel>
                       ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              <FieldError errors={[form.formState.errors.position]} />
-            </FieldContent>
-          </Field>
+                    </RadioGroup>
+                  )}
+                />
+                <FieldError errors={[form.formState.errors.preferredFoot]} />
+              </FieldContent>
+            </Field>
+          </FieldGroup>
+        </FieldSet>
+      )}
 
-          <Field data-invalid={!!form.formState.errors.secondaryPosition}>
-            <FieldLabel htmlFor="secondaryPosition">Secondary position</FieldLabel>
-            <FieldContent>
-              <Controller
-                control={form.control}
-                name="secondaryPosition"
-                render={({ field }) => (
-                  <Select
-                    items={positionItems}
-                    value={field.value ?? null}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger id="secondaryPosition" className="w-full">
-                      <SelectValue placeholder="None" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {positionOptions.map((position) => (
-                        <SelectItem key={position} value={position}>
-                          {position}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              <FieldError errors={[form.formState.errors.secondaryPosition]} />
-              <FieldDescription>Optional</FieldDescription>
-            </FieldContent>
-          </Field>
+      {step === 2 && (
+        <FieldSet>
+          <FieldLegend>Additional Information</FieldLegend>
 
-          <Field data-invalid={!!form.formState.errors.preferredFoot}>
-            <FieldLabel>Preferred foot</FieldLabel>
-            <FieldContent>
-              <Controller
-                control={form.control}
-                name="preferredFoot"
-                render={({ field }) => (
-                  <RadioGroup
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    className="grid-flow-col"
-                  >
-                    {preferredFootOptions.map((foot) => (
-                      <FieldLabel key={foot} className="font-normal">
-                        <RadioGroupItem value={foot} />
-                        {foot}
-                      </FieldLabel>
-                    ))}
-                  </RadioGroup>
-                )}
-              />
-              <FieldError errors={[form.formState.errors.preferredFoot]} />
-            </FieldContent>
-          </Field>
-        </FieldGroup>
-      </FieldSet>
+          <FieldGroup className="grid md:grid-cols-2 grid-cols-1 gap-4">
+            <Field>
+              <FieldLabel htmlFor="village">Village / Town</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="village"
+                  placeholder="e.g. Ellembelle"
+                  {...form.register("village")}
+                />
+                <FieldDescription>Optional</FieldDescription>
+              </FieldContent>
+            </Field>
 
-      <FieldSet>
-        <FieldLegend>Additional Information</FieldLegend>
-
-        <FieldGroup>
-          <Field orientation="responsive">
-            <FieldLabel htmlFor="village">Village / Town</FieldLabel>
-            <FieldContent>
-              <Input id="village" placeholder="e.g. Ellembelle" {...form.register("village")} />
-              <FieldDescription>Optional</FieldDescription>
-            </FieldContent>
-          </Field>
-
-          <Field orientation="responsive">
-            <FieldLabel htmlFor="previousClub">Previous club</FieldLabel>
-            <FieldContent>
-              <Input
-                id="previousClub"
-                placeholder="e.g. Axim Stars Youth"
-                {...form.register("previousClub")}
-              />
-              <FieldDescription>Optional</FieldDescription>
-            </FieldContent>
-          </Field>
-
-          <Field data-invalid={!!form.formState.errors.status}>
+            <Field>
+              <FieldLabel htmlFor="previousClub">Previous club</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="previousClub"
+                  placeholder="e.g. Axim Stars Youth"
+                  {...form.register("previousClub")}
+                />
+                <FieldDescription>Optional</FieldDescription>
+              </FieldContent>
+            </Field>
+          </FieldGroup>
+          <Field
+            orientation="responsive"
+            data-invalid={!!form.formState.errors.status}
+          >
             <FieldLabel htmlFor="status">Player status</FieldLabel>
             <FieldContent>
               <Controller
@@ -291,12 +422,28 @@ function PlayerForm({
               <FieldError errors={[form.formState.errors.status]} />
             </FieldContent>
           </Field>
-        </FieldGroup>
-      </FieldSet>
+        </FieldSet>
+      )}
 
-      <Button type="submit" size="lg" className="w-full">
-        {submitLabel}
-      </Button>
+      <div className="flex items-center justify-between gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleBack}
+          disabled={step === 0}
+        >
+          Back
+        </Button>
+        {step < stepLabels.length - 1 ? (
+          <Button key="next" type="button" onClick={handleNext}>
+            Next
+          </Button>
+        ) : (
+          <Button key="submit" type="submit">
+            {submitLabel}
+          </Button>
+        )}
+      </div>
     </form>
   );
 }

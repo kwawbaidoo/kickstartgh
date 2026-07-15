@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { Plus, X } from "lucide-react";
 
 import { FormationSelector } from "@/components/matches/FormationSelector";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   Select,
@@ -13,17 +15,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Player } from "@/mock/players";
-import type { Formation, Lineup } from "@/mock/matches";
-import { getFormationSlots } from "@/lib/matches";
+import type { BenchOfficial, Formation, Lineup } from "@/mock/matches";
+import type { StaffMember } from "@/schemas/onboarding";
+import { getFormationSlots, resolveBenchOfficials } from "@/lib/matches";
+import { staffRoleOptions } from "@/config/roles";
 import { cn, getInitials } from "@/lib/utils";
 
 type LineupBuilderProps = {
   squad: Player[];
+  staff: StaffMember[];
   initialLineup: Lineup | null;
   onSave: (lineup: Lineup) => void;
 };
 
-function LineupBuilder({ squad, initialLineup, onSave }: LineupBuilderProps) {
+function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderProps) {
   const [formation, setFormation] = useState<Formation>(initialLineup?.formation ?? "4-4-2");
   const initialSlotCount = getFormationSlots(formation).length;
   const [startingXI, setStartingXI] = useState<(string | null)[]>(() =>
@@ -34,6 +39,11 @@ function LineupBuilder({ squad, initialLineup, onSave }: LineupBuilderProps) {
   const [substitutes, setSubstitutes] = useState<string[]>(initialLineup?.substitutes ?? []);
   const [captainId, setCaptainId] = useState<string | undefined>(initialLineup?.captainId);
   const [pickerSlotIndex, setPickerSlotIndex] = useState<number | null>(null);
+  const [benchOfficials, setBenchOfficials] = useState<BenchOfficial[]>(
+    initialLineup?.benchOfficials ?? []
+  );
+  const [adhocName, setAdhocName] = useState("");
+  const [adhocRole, setAdhocRole] = useState("");
 
   const slots = getFormationSlots(formation);
   const playerMap = new Map(squad.map((player) => [player.id, player]));
@@ -41,6 +51,12 @@ function LineupBuilder({ squad, initialLineup, onSave }: LineupBuilderProps) {
   const availablePlayers = squad.filter((player) => !assignedIds.has(player.id));
   const filledCount = startingXI.filter(Boolean).length;
   const canSave = filledCount === slots.length;
+
+  const resolvedOfficials = resolveBenchOfficials(benchOfficials, staff);
+  const addedStaffIds = new Set(
+    benchOfficials.filter((official) => official.source === "staff").map((official) => official.staffId)
+  );
+  const availableStaff = staff.filter((member) => !addedStaffIds.has(member.id));
 
   function handleFormationChange(next: Formation) {
     setFormation(next);
@@ -71,12 +87,36 @@ function LineupBuilder({ squad, initialLineup, onSave }: LineupBuilderProps) {
     );
   }
 
+  function toggleStaffOfficial(staffId: string) {
+    setBenchOfficials((prev) => {
+      const exists = prev.some((official) => official.source === "staff" && official.staffId === staffId);
+      if (exists) {
+        return prev.filter((official) => !(official.source === "staff" && official.staffId === staffId));
+      }
+      return [...prev, { id: crypto.randomUUID(), source: "staff", staffId }];
+    });
+  }
+
+  function addAdhocOfficial() {
+    const fullName = adhocName.trim();
+    const role = adhocRole.trim();
+    if (!fullName || !role) return;
+    setBenchOfficials((prev) => [...prev, { id: crypto.randomUUID(), source: "adhoc", fullName, role }]);
+    setAdhocName("");
+    setAdhocRole("");
+  }
+
+  function removeOfficial(officialId: string) {
+    setBenchOfficials((prev) => prev.filter((official) => official.id !== officialId));
+  }
+
   function handleSave() {
     onSave({
       formation,
       startingXI: startingXI.filter((id): id is string => !!id),
       substitutes,
       captainId,
+      benchOfficials,
     });
   }
 
@@ -152,6 +192,9 @@ function LineupBuilder({ squad, initialLineup, onSave }: LineupBuilderProps) {
 
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium text-foreground">Substitutes</span>
+        <p className="text-xs text-muted-foreground">
+          Pick from the remaining squad — anyone not in the starting XI.
+        </p>
         <div className="flex flex-wrap gap-2">
           {availablePlayers.length === 0 && (
             <span className="text-sm text-muted-foreground">No players available.</span>
@@ -175,6 +218,86 @@ function LineupBuilder({ squad, initialLineup, onSave }: LineupBuilderProps) {
               </button>
             );
           })}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <span className="text-sm font-medium text-foreground">Bench Officials</span>
+          <p className="text-xs text-muted-foreground">
+            Add from your staff, or add someone just for this match.
+          </p>
+        </div>
+
+        {resolvedOfficials.length > 0 && (
+          <div className="flex flex-col gap-1.5">
+            {resolvedOfficials.map((official) => (
+              <div key={official.id} className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
+                  {getInitials(official.fullName)}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm text-foreground">{official.fullName}</span>
+                <span className="text-xs text-muted-foreground">{official.role}</span>
+                <button
+                  type="button"
+                  onClick={() => removeOfficial(official.id)}
+                  aria-label={`Remove ${official.fullName}`}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {availableStaff.length > 0 && (
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-muted-foreground">From your staff</span>
+            <div className="flex flex-wrap gap-2">
+              {availableStaff.map((member) => (
+                <button
+                  key={member.id}
+                  type="button"
+                  onClick={() => toggleStaffOfficial(member.id)}
+                  className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors"
+                >
+                  {member.fullName}
+                  <span className="text-xs">
+                    {staffRoleOptions.find((option) => option.value === member.role)?.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs font-medium text-muted-foreground">Add for this match</span>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Input
+              placeholder="Full name"
+              value={adhocName}
+              onChange={(event) => setAdhocName(event.target.value)}
+              className="flex-1"
+            />
+            <Input
+              placeholder="Role, e.g. Physio"
+              value={adhocRole}
+              onChange={(event) => setAdhocRole(event.target.value)}
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              aria-label="Add bench official"
+              onClick={addAdhocOfficial}
+              disabled={!adhocName.trim() || !adhocRole.trim()}
+            >
+              <Plus />
+            </Button>
+          </div>
         </div>
       </div>
 

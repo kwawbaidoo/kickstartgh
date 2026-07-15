@@ -248,6 +248,53 @@ Display:
 
 ---
 
+### TeamSettingsForm
+
+Multi-step form. Long single-page forms are avoided by splitting into steps.
+
+Steps:
+
+1. Identity (logo, name, nickname, slogan, colors).
+2. Location & History (region, district, home ground, year established).
+3. Social Links (Facebook, Instagram, TikTok, website).
+
+Features:
+
+* Step progress indicator (`ProgressStepper`, shared with onboarding).
+* Back / Next navigation between steps, with per-step validation before advancing.
+* Final step submits; earlier steps only advance.
+
+Used by both `/team/edit` and `/settings/team`.
+
+---
+
+### Team Page Tabs
+
+The Team page (`/team`) shows the team profile card, then tabs:
+
+* Staff & Roles — add, remove, and change staff roles.
+* Permissions — read-only role/action matrix.
+* Gallery — see `TeamGallery` below.
+
+Every edit screen reachable from the Team page includes its own back link, so users
+never have to rely on the sidebar to return.
+
+---
+
+### TeamGallery / GalleryTile
+
+Display:
+
+* Staff and players as photo tiles, grouped into two grids.
+* Falls back to initials-on-brand-color when no photo is set.
+
+Interaction:
+
+* Hovering (or focusing/tapping) a tile reveals its identification as an overlay.
+* Format: `Role - Full Name`, e.g. `Head Coach - Kofi Emmanuel`.
+
+---
+
 # Player Components
 
 ### PlayerCard

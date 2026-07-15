@@ -6,12 +6,22 @@ export type MatchResult = "win" | "draw" | "loss";
 
 export type Formation = "4-4-2" | "4-3-3" | "3-5-2" | "5-3-2";
 
+/**
+ * A bench official is either an existing staff member (looked up live by id, so
+ * role/name edits in Settings/Team stay reflected) or a one-off addition for this
+ * match only, since not every matchday helper is on the permanent staff roster.
+ */
+export type BenchOfficial =
+  | { id: string; source: "staff"; staffId: string }
+  | { id: string; source: "adhoc"; fullName: string; role: string };
+
 export type Lineup = {
   formation: Formation;
   /** Player ids, ordered FWD → MID → DEF → GK to match config/matches.ts's formationRows slot order. */
   startingXI: string[];
   substitutes: string[];
   captainId?: string;
+  benchOfficials: BenchOfficial[];
 };
 
 export type MatchEventType = "goal" | "yellow_card" | "red_card" | "substitution" | "injury";
@@ -65,6 +75,9 @@ const coreLineup: Lineup = {
   ],
   substitutes: ["player_008", "player_015", "player_016"],
   captainId: "player_001",
+  benchOfficials: [
+    { id: "bench_001", source: "adhoc", fullName: "Dr. Nana Yaw", role: "Team Physio" },
+  ],
 };
 
 export const matches: Match[] = [

@@ -38,6 +38,7 @@ export const staffFormSchema = z.object({
     .string()
     .min(9, "Please enter a valid phone number.")
     .regex(/^[0-9+\s-]+$/, "Please enter a valid phone number."),
+  email: z.email("Please enter a valid email.").optional().or(z.literal("")),
 });
 
 export type StaffFormInput = z.infer<typeof staffFormSchema>;

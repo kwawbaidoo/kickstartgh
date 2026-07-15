@@ -3,6 +3,7 @@ import { Pencil } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { MatchTimelineModal } from "@/components/matches/MatchTimelineModal";
+import { MatchLineupModal } from "@/components/matches/MatchLineupModal";
 import { MatchActionsMenu } from "@/components/matches/MatchActionsMenu";
 import type { Match } from "@/mock/matches";
 
@@ -10,6 +11,7 @@ function MatchQuickActions({ match }: { match: Match }) {
   return (
     <div className="flex items-center gap-1">
       <MatchTimelineModal match={match} />
+      <MatchLineupModal match={match} />
       <Link
         href={`/matches/${match.id}/edit`}
         className={buttonVariants({ variant: "ghost", size: "icon-sm" })}

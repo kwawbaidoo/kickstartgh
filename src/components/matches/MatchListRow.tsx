@@ -20,7 +20,7 @@ function MatchListRow({ match }: { match: Match }) {
 
   return (
     <TableRow>
-      <TableCell className="text-muted-foreground">{format(new Date(match.date), "d MMM")}</TableCell>
+      <TableCell className="text-muted-foreground">{format(new Date(match.date), "d MMM yyyy")}</TableCell>
       <TableCell>
         <Link href={`/matches/${match.id}`} className="font-medium text-foreground hover:text-primary">
           {match.opponent}

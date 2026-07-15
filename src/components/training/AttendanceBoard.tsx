@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { AttendancePlayerCard } from "@/components/training/AttendancePlayerCard";
+import { SearchBar } from "@/components/common/SearchBar";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -28,8 +30,24 @@ type AttendanceBoardProps = {
 };
 
 function AttendanceBoard({ players, records, onSetAttendance, onSetBulkAttendance }: AttendanceBoardProps) {
+  const [search, setSearch] = useState("");
+  const [unmarkedOnly, setUnmarkedOnly] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<AttendanceStatus>("present");
+
+  const markedCount = players.filter((player) => records[player.id]).length;
+  const unmarkedCount = players.length - markedCount;
+
+  const visiblePlayers = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return players.filter((player) => {
+      if (unmarkedOnly && records[player.id]) return false;
+      if (!query) return true;
+      return (
+        player.fullName.toLowerCase().includes(query) || String(player.jerseyNumber).includes(query)
+      );
+    });
+  }, [players, records, search, unmarkedOnly]);
 
   function toggleSelect(playerId: string) {
     setSelected((prev) => {
@@ -46,8 +64,6 @@ function AttendanceBoard({ players, records, onSetAttendance, onSetBulkAttendanc
     setSelected(new Set());
   }
 
-  const markedCount = players.filter((player) => records[player.id]).length;
-
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -58,10 +74,26 @@ function AttendanceBoard({ players, records, onSetAttendance, onSetBulkAttendanc
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => onSetBulkAttendance(players.map((player) => player.id), "present")}
+          onClick={() => onSetBulkAttendance(visiblePlayers.map((player) => player.id), "present")}
         >
           Mark all present
         </Button>
+      </div>
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <SearchBar value={search} onChange={setSearch} placeholder="Search by name or jersey number" />
+        <label className="flex shrink-0 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm text-foreground">
+          <Checkbox
+            checked={unmarkedOnly}
+            onCheckedChange={(checked) => setUnmarkedOnly(checked === true)}
+          />
+          Unmarked only
+          {unmarkedCount > 0 && (
+            <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+              {unmarkedCount}
+            </span>
+          )}
+        </label>
       </div>
 
       {selected.size > 0 && (
@@ -89,18 +121,24 @@ function AttendanceBoard({ players, records, onSetAttendance, onSetBulkAttendanc
         </div>
       )}
 
-      <div className="flex flex-col gap-2">
-        {players.map((player) => (
-          <AttendancePlayerCard
-            key={player.id}
-            player={player}
-            status={records[player.id]}
-            onStatusChange={(status) => onSetAttendance(player.id, status)}
-            selected={selected.has(player.id)}
-            onToggleSelect={() => toggleSelect(player.id)}
-          />
-        ))}
-      </div>
+      {visiblePlayers.length === 0 ? (
+        <p className="py-6 text-center text-sm text-muted-foreground">
+          {unmarkedOnly ? "Everyone is marked. 🎉" : "No players match your search."}
+        </p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {visiblePlayers.map((player) => (
+            <AttendancePlayerCard
+              key={player.id}
+              player={player}
+              status={records[player.id]}
+              onStatusChange={(status) => onSetAttendance(player.id, status)}
+              selected={selected.has(player.id)}
+              onToggleSelect={() => toggleSelect(player.id)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

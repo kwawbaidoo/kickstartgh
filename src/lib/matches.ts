@@ -1,8 +1,10 @@
 import { format } from "date-fns";
 
-import type { Formation, Match, MatchEvent, MatchStatus } from "@/mock/matches";
+import type { BenchOfficial, Formation, Match, MatchEvent, MatchStatus } from "@/mock/matches";
 import { getMatchResult } from "@/mock/matches";
 import { formationRows, rowYPosition } from "@/config/matches";
+import { staffRoleOptions } from "@/config/roles";
+import type { StaffMember } from "@/schemas/onboarding";
 
 export type FormationSlot = { row: "FWD" | "MID" | "DEF" | "GK"; x: number; y: number };
 
@@ -14,6 +16,31 @@ export function getFormationSlots(formation: Formation): FormationSlot[] {
     }
   }
   return slots;
+}
+
+export type ResolvedBenchOfficial = { id: string; fullName: string; role: string };
+
+/**
+ * Staff-sourced bench officials only store a staffId, so their name/role always
+ * reflects the current staff roster; ad-hoc ones carry their own fields directly.
+ */
+export function resolveBenchOfficials(
+  benchOfficials: BenchOfficial[] | undefined,
+  staff: StaffMember[]
+): ResolvedBenchOfficial[] {
+  return (benchOfficials ?? []).map((official) => {
+    if (official.source === "adhoc") {
+      return { id: official.id, fullName: official.fullName, role: official.role };
+    }
+    const member = staff.find((candidate) => candidate.id === official.staffId);
+    return {
+      id: official.id,
+      fullName: member?.fullName ?? "Unknown",
+      role: member
+        ? (staffRoleOptions.find((option) => option.value === member.role)?.label ?? member.role)
+        : "Staff",
+    };
+  });
 }
 
 export type PlayerMatchStats = {
@@ -292,7 +319,8 @@ export function buildResultShareMessage(
 export function buildLineupShareMessage(
   match: Match,
   teamName: string,
-  playerNames: Record<string, string>
+  playerNames: Record<string, string>,
+  benchOfficials: ResolvedBenchOfficial[] = []
 ): string {
   if (!match.lineup) {
     return `${teamName} lineup for ${match.opponent} hasn't been set yet.`;
@@ -303,6 +331,9 @@ export function buildLineupShareMessage(
     return id === match.lineup?.captainId ? `${name} (C)` : name;
   });
 
+  const substituteNames = match.lineup.substitutes.map((id) => playerName(id, playerNames));
+  const officialLines = benchOfficials.map((official) => `${official.fullName} (${official.role})`);
+
   return [
     `⚽ ${teamName} Starting XI`,
     "",
@@ -310,6 +341,8 @@ export function buildLineupShareMessage(
     `Formation: ${match.lineup.formation}`,
     "",
     ...names,
+    ...(substituteNames.length > 0 ? ["", "Substitutes:", ...substituteNames] : []),
+    ...(officialLines.length > 0 ? ["", "Bench Officials:", ...officialLines] : []),
   ].join("\n");
 }
 
