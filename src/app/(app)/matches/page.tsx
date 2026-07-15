@@ -9,7 +9,7 @@ import { Stagger } from "@/components/common/Stagger";
 import { SearchBar } from "@/components/common/SearchBar";
 import { MatchCard } from "@/components/matches/MatchCard";
 import { MatchesTable } from "@/components/matches/MatchesTable";
-import { MatchViewToggle, type MatchView } from "@/components/matches/MatchViewToggle";
+import { ViewToggle, type CardListView } from "@/components/common/ViewToggle";
 import { SeasonPerformanceCard } from "@/components/matches/SeasonPerformanceCard";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { buttonVariants } from "@/components/ui/button";
@@ -52,7 +52,7 @@ const homeAwayItems = { All: "All venues", Home: "Home", Away: "Away" };
 export default function MatchesPage() {
   const matches = useMatchesStore((state) => state.matches);
   const [status, setStatus] = useState<MatchStatus>("upcoming");
-  const [view, setView] = useState<MatchView>("card");
+  const [view, setView] = useState<CardListView>("card");
   const [filters, setFilters] = useState(defaultMatchFilters);
 
   const competitions = getCompetitions(matches);
@@ -87,7 +87,7 @@ export default function MatchesPage() {
           </TabsList>
         </Tabs>
 
-        <MatchViewToggle value={view} onChange={setView} />
+        <ViewToggle value={view} onChange={setView} />
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">

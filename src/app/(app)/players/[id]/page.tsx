@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import {
+  ArrowLeft,
+  Ban,
   CircleCheck,
   Flag,
   HeartPulse,
@@ -23,6 +25,7 @@ import { PlayerStatusControl } from "@/components/players/PlayerStatusControl";
 import { Modal } from "@/components/common/Modal";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { PlayerStatus } from "@/mock/players";
 import { usePlayersStore } from "@/store/players-store";
 import { useMatchesStore } from "@/store/matches-store";
@@ -35,6 +38,7 @@ const statusTimelineIcon: Record<PlayerStatus, typeof CircleCheck> = {
   Active: CircleCheck,
   Injured: HeartPulse,
   Inactive: Moon,
+  Suspended: Ban,
 };
 
 export default function PlayerProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -121,6 +125,14 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+      <Link
+        href="/players"
+        className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        Back to Players
+      </Link>
+
       <PlayerProfileHeader player={player} />
 
       <PlayerStatusControl playerId={player.id} status={player.status} />
@@ -163,31 +175,45 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
         />
       </div>
 
-      <PlayerInfoCard player={player} />
+      <Tabs defaultValue="info">
+        <TabsList>
+          <TabsTrigger value="info">Personal Info</TabsTrigger>
+          <TabsTrigger value="stats">Stats</TabsTrigger>
+          <TabsTrigger value="timeline">Timeline</TabsTrigger>
+        </TabsList>
 
-      <PlayerStatsCard stats={statsForCard} />
+        <TabsContent value="info" className="pt-4">
+          <PlayerInfoCard player={player} />
+        </TabsContent>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Activity Timeline</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          {timeline.map((item, index) => (
-            <div key={`${item.label}-${item.date}-${index}`} className="flex items-start gap-3">
-              <div className="flex flex-col items-center">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                  <item.icon className="size-4" />
+        <TabsContent value="stats" className="pt-4">
+          <PlayerStatsCard stats={statsForCard} />
+        </TabsContent>
+
+        <TabsContent value="timeline" className="pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Activity Timeline</CardTitle>
+            </CardHeader>
+            <CardContent className="flex max-h-80 flex-col gap-4 overflow-y-auto pr-1">
+              {timeline.map((item, index) => (
+                <div key={`${item.label}-${item.date}-${index}`} className="flex items-start gap-3">
+                  <div className="flex flex-col items-center">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                      <item.icon className="size-4" />
+                    </div>
+                    {index < timeline.length - 1 && <div className="mt-1 h-6 w-px bg-border" />}
+                  </div>
+                  <div className="flex flex-col pt-1.5">
+                    <span className="text-sm font-medium text-foreground">{item.label}</span>
+                    <span className="text-xs text-muted-foreground">{item.date}</span>
+                  </div>
                 </div>
-                {index < timeline.length - 1 && <div className="mt-1 h-6 w-px bg-border" />}
-              </div>
-              <div className="flex flex-col pt-1.5">
-                <span className="text-sm font-medium text-foreground">{item.label}</span>
-                <span className="text-xs text-muted-foreground">{item.date}</span>
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

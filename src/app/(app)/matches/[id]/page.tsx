@@ -5,12 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import {
+  ArrowLeft,
   CalendarClock,
+  Download,
   Goal,
   ListChecks,
   MapPin,
   MessageCircle,
   Pencil,
+  RotateCcw,
   Square,
   Trash2,
   Trophy,
@@ -22,12 +25,14 @@ import { EmptyState } from "@/components/dashboard/EmptyState";
 import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import { ScoreBoard } from "@/components/matches/ScoreBoard";
 import { MatchTimeline } from "@/components/matches/MatchTimeline";
+import { LineupView } from "@/components/matches/LineupView";
 import { StatisticWidget } from "@/components/matches/StatisticWidget";
 import { Modal } from "@/components/common/Modal";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePlayersStore } from "@/store/players-store";
 import { useMatchesStore } from "@/store/matches-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
@@ -35,7 +40,9 @@ import {
   buildFixtureShareMessage,
   buildLineupShareMessage,
   buildResultShareMessage,
+  resolveBenchOfficials,
 } from "@/lib/matches";
+import { exportLineupPdf } from "@/lib/export";
 
 export default function MatchSummaryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -44,11 +51,13 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
   const deleteMatch = useMatchesStore((state) => state.deleteMatch);
   const completeMatch = useMatchesStore((state) => state.completeMatch);
   const cancelMatch = useMatchesStore((state) => state.cancelMatch);
+  const reactivateMatch = useMatchesStore((state) => state.reactivateMatch);
   const players = usePlayersStore((state) => state.players);
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
   const match = matches.find((candidate) => candidate.id === id);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
   const [finishOpen, setFinishOpen] = useState(false);
   const [teamScoreInput, setTeamScoreInput] = useState("");
   const [opponentScoreInput, setOpponentScoreInput] = useState("");
@@ -71,9 +80,17 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
   const cards = match.events.filter((event) => event.type === "yellow_card" || event.type === "red_card").length;
   const subs = match.events.filter((event) => event.type === "substitution").length;
 
+  const resolvedBenchOfficials = match.lineup
+    ? resolveBenchOfficials(match.lineup.benchOfficials, activeTeam.staff)
+    : [];
   const fixtureMessage = buildFixtureShareMessage(match, activeTeam.name);
   const resultMessage = buildResultShareMessage(match, activeTeam.name, playerNames);
-  const lineupMessage = buildLineupShareMessage(match, activeTeam.name, playerNames);
+  const lineupMessage = buildLineupShareMessage(match, activeTeam.name, playerNames, resolvedBenchOfficials);
+
+  function handleDownloadLineup() {
+    if (!match || !match.lineup) return;
+    exportLineupPdf(match, activeTeam, players, resolvedBenchOfficials);
+  }
 
   function handleDelete() {
     deleteMatch(id);
@@ -90,45 +107,23 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
 
   function handleCancel() {
     cancelMatch(id);
+    setCancelOpen(false);
+  }
+
+  function handleReactivate() {
+    reactivateMatch(id);
   }
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+      <Link
+        href="/matches"
+        className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        Back to Matches
+      </Link>
       <SectionHeader title="Match Summary" />
-
-      <Card>
-        <CardContent className="flex flex-col gap-4">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-            <Trophy className="size-3.5" />
-            {match.competition} · {match.matchType}
-          </div>
-          <ScoreBoard
-            teamName={activeTeam.name}
-            teamLogo={activeTeam.logo}
-            opponent={match.opponent}
-            teamScore={match.teamScore}
-            opponentScore={match.opponentScore}
-            status={match.status}
-          />
-          <div className="flex flex-col gap-2 rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <CalendarClock className="size-4" />
-              {format(new Date(match.date), "EEE, d MMM yyyy")} · {match.kickoffTime}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <MapPin className="size-4" />
-              {match.venue} ({match.isHome ? "Home" : "Away"})
-            </span>
-            {match.referee && (
-              <span className="flex items-center gap-1.5">
-                <UserCheck className="size-4" />
-                Referee: {match.referee}
-              </span>
-            )}
-          </div>
-          {match.notes && <p className="text-sm text-muted-foreground">{match.notes}</p>}
-        </CardContent>
-      </Card>
 
       <div className="flex flex-wrap gap-2">
         <Link href={`/matches/${id}/edit`} className={buttonVariants({ variant: "outline" })}>
@@ -166,6 +161,40 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
           }
         />
       </div>
+
+      <Card>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <Trophy className="size-3.5" />
+            {match.competition} · {match.matchType}
+          </div>
+          <ScoreBoard
+            teamName={activeTeam.name}
+            teamLogo={activeTeam.logo}
+            opponent={match.opponent}
+            teamScore={match.teamScore}
+            opponentScore={match.opponentScore}
+            status={match.status}
+          />
+          <div className="flex flex-col gap-2 rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <CalendarClock className="size-4" />
+              {format(new Date(match.date), "EEE, d MMM yyyy")} · {match.kickoffTime}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <MapPin className="size-4" />
+              {match.venue} ({match.isHome ? "Home" : "Away"})
+            </span>
+            {match.referee && (
+              <span className="flex items-center gap-1.5">
+                <UserCheck className="size-4" />
+                Referee: {match.referee}
+              </span>
+            )}
+          </div>
+          {match.notes && <p className="text-sm text-muted-foreground">{match.notes}</p>}
+        </CardContent>
+      </Card>
 
       {match.status === "upcoming" && (
         <div className="flex flex-wrap gap-2">
@@ -212,8 +241,31 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
               </Field>
             </div>
           </Modal>
-          <Button variant="ghost" onClick={handleCancel}>
-            Cancel Match
+          <Modal
+            open={cancelOpen}
+            onOpenChange={setCancelOpen}
+            trigger={<Button variant="ghost">Cancel Match</Button>}
+            title="Cancel this match?"
+            description={`The fixture vs ${match.opponent} will be marked as cancelled. You can reactivate it later.`}
+            footer={
+              <>
+                <Button variant="outline" onClick={() => setCancelOpen(false)}>
+                  Keep Match
+                </Button>
+                <Button variant="destructive" onClick={handleCancel}>
+                  Cancel Match
+                </Button>
+              </>
+            }
+          />
+        </div>
+      )}
+
+      {match.status === "cancelled" && (
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={handleReactivate}>
+            <RotateCcw />
+            Reactivate Match
           </Button>
         </div>
       )}
@@ -234,11 +286,32 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
       )}
 
       <Card>
-        <CardHeader>
-          <CardTitle>Timeline</CardTitle>
-        </CardHeader>
         <CardContent>
-          <MatchTimeline events={match.events} playerNames={playerNames} />
+          <Tabs defaultValue="timeline">
+            <TabsList>
+              <TabsTrigger value="timeline">Timeline</TabsTrigger>
+              <TabsTrigger value="lineup">Lineup</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="timeline" className="pt-4">
+              <MatchTimeline events={match.events} playerNames={playerNames} />
+            </TabsContent>
+
+            <TabsContent value="lineup" className="pt-4">
+              {match.lineup ? (
+                <div className="max-h-125 overflow-y-auto pr-1">
+                  <LineupView lineup={match.lineup} players={players} staff={activeTeam.staff} />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-3 py-6 text-center">
+                  <p className="text-sm text-muted-foreground">No lineup has been set for this match yet.</p>
+                  <Link href={`/matches/${id}/lineup`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+                    Build Lineup
+                  </Link>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
@@ -275,6 +348,12 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
             <MessageCircle />
             Share Lineup
           </a>
+        )}
+        {match.lineup && (
+          <Button type="button" variant="outline" onClick={handleDownloadLineup}>
+            <Download />
+            Download Lineup
+          </Button>
         )}
       </div>
     </div>

@@ -1,7 +1,9 @@
 "use client";
 
 import { use } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -38,6 +40,7 @@ export default function EditPlayerPage({ params }: { params: Promise<{ id: strin
     dateOfBirth: player.dateOfBirth,
     photo: player.photo,
     phone: player.phone,
+    email: player.email,
     emergencyContact: player.emergencyContact,
     jerseyNumber: player.jerseyNumber,
     position: player.position,
@@ -50,6 +53,13 @@ export default function EditPlayerPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+      <Link
+        href="/players"
+        className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        Back to Players
+      </Link>
       <SectionHeader title="Edit Player" description={`Update ${player.fullName}'s details.`} />
       <PlayerForm
         existingPlayers={players}

@@ -82,6 +82,68 @@ Optional:
 
 ---
 
+## Team Profile Management
+
+Goal:
+
+Update team details without facing one long form.
+
+Flow:
+
+```
+Team Page
+
+↓
+
+Edit Team
+
+↓
+
+Step 1: Identity
+
+↓
+
+Step 2: Location & History
+
+↓
+
+Step 3: Social Links
+
+↓
+
+Save Changes
+
+↓
+
+Back to Team Page
+```
+
+Back navigation:
+
+Every screen reached from the Team page has its own back link, so the manager never
+needs the sidebar to return to where they started.
+
+---
+
+## Team Page Sections
+
+The Team page is organized into tabs so profile, staff, and media each get their own
+space instead of one long scroll:
+
+```
+Staff & Roles | Permissions | Gallery
+```
+
+Gallery:
+
+Hover (or tap, on touch devices) a staff or player photo to reveal who they are.
+
+```
+[ photo ]  →  hover  →  Head Coach - Kofi Emmanuel
+```
+
+---
+
 ## Dashboard Experience
 
 After login, show:

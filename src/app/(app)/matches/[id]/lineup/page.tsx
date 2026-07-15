@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/dashboard/EmptyState";
 import { LineupBuilder } from "@/components/matches/LineupBuilder";
 import { usePlayersStore } from "@/store/players-store";
 import { useMatchesStore } from "@/store/matches-store";
+import { useOnboardingStore } from "@/store/onboarding-store";
 import type { Lineup } from "@/mock/matches";
 
 export default function MatchLineupPage({ params }: { params: Promise<{ id: string }> }) {
@@ -16,6 +17,7 @@ export default function MatchLineupPage({ params }: { params: Promise<{ id: stri
   const matches = useMatchesStore((state) => state.matches);
   const setLineup = useMatchesStore((state) => state.setLineup);
   const players = usePlayersStore((state) => state.players);
+  const activeTeam = useOnboardingStore((state) => state.activeTeam);
   const match = matches.find((candidate) => candidate.id === id);
 
   if (!match) {
@@ -39,7 +41,12 @@ export default function MatchLineupPage({ params }: { params: Promise<{ id: stri
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <SectionHeader title="Build Lineup" description={`vs ${match.opponent} · ${match.venue}`} />
-      <LineupBuilder squad={squad} initialLineup={match.lineup} onSave={handleSave} />
+      <LineupBuilder
+        squad={squad}
+        staff={activeTeam.staff}
+        initialLineup={match.lineup}
+        onSave={handleSave}
+      />
     </div>
   );
 }

@@ -17,7 +17,10 @@ import { StatisticCard } from "@/components/dashboard/StatisticCard";
 import { Stagger } from "@/components/common/Stagger";
 import { SearchBar } from "@/components/common/SearchBar";
 import { ListRowSkeleton } from "@/components/common/LoadingSkeleton";
+import { ViewToggle, type CardListView } from "@/components/common/ViewToggle";
+import { Pagination } from "@/components/common/Pagination";
 import { PlayerCard } from "@/components/players/PlayerCard";
+import { PlayersTable } from "@/components/players/PlayersTable";
 import { PlayerFilter } from "@/components/players/PlayerFilter";
 import { EmptyPlayerState } from "@/components/players/EmptyPlayerState";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -50,17 +53,38 @@ const sortItems: Record<PlayerSort, string> = {
   recent: "Recently added",
 };
 
+const PAGE_SIZE = 10;
+
 export default function PlayersPage() {
   const players = usePlayersStore((state) => state.players);
   const hasHydrated = usePlayersStore((state) => state.hasHydrated);
   const [filters, setFilters] = useState(defaultPlayerFilters);
   const [sort, setSort] = useState<PlayerSort>("name");
+  const [view, setView] = useState<CardListView>("card");
+  const [page, setPage] = useState(1);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
 
   const filteredPlayers = useMemo(
     () => sortPlayers(filterPlayers(players, filters), sort),
     [players, filters, sort]
   );
+
+  const pageCount = Math.max(1, Math.ceil(filteredPlayers.length / PAGE_SIZE));
+  const currentPage = Math.min(Math.max(page, 1), pageCount);
+  const paginatedPlayers = filteredPlayers.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
+  function handleFiltersChange(next: typeof filters) {
+    setFilters(next);
+    setPage(1);
+  }
+
+  function handleSortChange(next: PlayerSort) {
+    setSort(next);
+    setPage(1);
+  }
 
   const activeCount = players.filter((player) => player.status === "Active").length;
 
@@ -175,11 +199,11 @@ export default function PlayersPage() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <SearchBar
               value={filters.search}
-              onChange={(search) => setFilters({ ...filters, search })}
+              onChange={(search) => handleFiltersChange({ ...filters, search })}
               placeholder="Search by name, nickname, or jersey number"
             />
-            <PlayerFilter filters={filters} onChange={setFilters} />
-            <Select items={sortItems} value={sort} onValueChange={(value) => setSort(value as PlayerSort)}>
+            <PlayerFilter filters={filters} onChange={handleFiltersChange} />
+            <Select items={sortItems} value={sort} onValueChange={(value) => handleSortChange(value as PlayerSort)}>
               <SelectTrigger className="w-full sm:w-auto">
                 <ArrowUpDown className="size-4" />
                 <SelectValue placeholder="Sort" />
@@ -190,19 +214,40 @@ export default function PlayersPage() {
                 <SelectItem value="recent">Recently added</SelectItem>
               </SelectContent>
             </Select>
+            <ViewToggle
+              value={view}
+              onChange={(next) => {
+                setView(next);
+                setPage(1);
+              }}
+            />
           </div>
 
           {filteredPlayers.length === 0 ? (
             <EmptyPlayerState
               variant="no-results"
-              onClearFilters={hasActiveFilters ? () => setFilters(defaultPlayerFilters) : undefined}
+              onClearFilters={
+                hasActiveFilters
+                  ? () => {
+                      setFilters(defaultPlayerFilters);
+                      setPage(1);
+                    }
+                  : undefined
+              }
             />
           ) : (
-            <Stagger className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {filteredPlayers.map((player) => (
-                <PlayerCard key={player.id} player={player} />
-              ))}
-            </Stagger>
+            <>
+              {view === "card" ? (
+                <Stagger className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                  {paginatedPlayers.map((player) => (
+                    <PlayerCard key={player.id} player={player} />
+                  ))}
+                </Stagger>
+              ) : (
+                <PlayersTable players={paginatedPlayers} />
+              )}
+              <Pagination page={currentPage} pageCount={pageCount} onPageChange={setPage} />
+            </>
           )}
         </>
       )}

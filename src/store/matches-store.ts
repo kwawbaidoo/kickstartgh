@@ -23,6 +23,7 @@ type MatchesState = {
   removeEvent: (matchId: string, eventId: string) => void;
   completeMatch: (matchId: string, teamScore: number, opponentScore: number) => void;
   cancelMatch: (matchId: string) => void;
+  reactivateMatch: (matchId: string) => void;
 };
 
 function fromFormInput(input: MatchFormInput) {
@@ -100,6 +101,14 @@ export const useMatchesStore = create<MatchesState>()(
         set({
           matches: get().matches.map((match) =>
             match.id === matchId ? { ...match, status: "cancelled" } : match
+          ),
+        });
+      },
+
+      reactivateMatch: (matchId) => {
+        set({
+          matches: get().matches.map((match) =>
+            match.id === matchId ? { ...match, status: "upcoming" } : match
           ),
         });
       },

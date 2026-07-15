@@ -3,11 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
+  Download,
   Eye,
   ListChecks,
   MessageCircle,
   MoreVertical,
   Pencil,
+  RotateCcw,
   Trash2,
   Trophy,
   XCircle,
@@ -29,28 +31,49 @@ import type { Match } from "@/mock/matches";
 import { useMatchesStore } from "@/store/matches-store";
 import { usePlayersStore } from "@/store/players-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
-import { buildFixtureShareMessage, buildLineupShareMessage, buildResultShareMessage } from "@/lib/matches";
+import {
+  buildFixtureShareMessage,
+  buildLineupShareMessage,
+  buildResultShareMessage,
+  resolveBenchOfficials,
+} from "@/lib/matches";
+import { exportLineupPdf } from "@/lib/export";
 
 function MatchActionsMenu({ match }: { match: Match }) {
   const deleteMatch = useMatchesStore((state) => state.deleteMatch);
   const completeMatch = useMatchesStore((state) => state.completeMatch);
   const cancelMatch = useMatchesStore((state) => state.cancelMatch);
+  const reactivateMatch = useMatchesStore((state) => state.reactivateMatch);
   const players = usePlayersStore((state) => state.players);
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
   const [finishOpen, setFinishOpen] = useState(false);
   const [teamScoreInput, setTeamScoreInput] = useState("");
   const [opponentScoreInput, setOpponentScoreInput] = useState("");
 
   const playerNames = Object.fromEntries(players.map((player) => [player.id, player.fullName]));
+  const resolvedBenchOfficials = match.lineup
+    ? resolveBenchOfficials(match.lineup.benchOfficials, activeTeam.staff)
+    : [];
   const fixtureMessage = buildFixtureShareMessage(match, activeTeam.name);
   const resultMessage = buildResultShareMessage(match, activeTeam.name, playerNames);
-  const lineupMessage = buildLineupShareMessage(match, activeTeam.name, playerNames);
+  const lineupMessage = buildLineupShareMessage(match, activeTeam.name, playerNames, resolvedBenchOfficials);
+
+  function handleDownloadLineup() {
+    if (!match.lineup) return;
+    exportLineupPdf(match, activeTeam, players, resolvedBenchOfficials);
+  }
 
   function handleDelete() {
     deleteMatch(match.id);
     setDeleteOpen(false);
+  }
+
+  function handleCancel() {
+    cancelMatch(match.id);
+    setCancelOpen(false);
   }
 
   function handleFinish() {
@@ -95,9 +118,19 @@ function MatchActionsMenu({ match }: { match: Match }) {
                 <Trophy />
                 Enter Final Score
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => cancelMatch(match.id)}>
+              <DropdownMenuItem onClick={() => setCancelOpen(true)}>
                 <XCircle />
                 Cancel Match
+              </DropdownMenuItem>
+            </>
+          )}
+
+          {match.status === "cancelled" && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => reactivateMatch(match.id)}>
+                <RotateCcw />
+                Reactivate Match
               </DropdownMenuItem>
             </>
           )}
@@ -147,6 +180,12 @@ function MatchActionsMenu({ match }: { match: Match }) {
               Share Lineup
             </DropdownMenuItem>
           )}
+          {match.lineup && (
+            <DropdownMenuItem onClick={handleDownloadLineup}>
+              <Download />
+              Download Lineup
+            </DropdownMenuItem>
+          )}
 
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
@@ -168,6 +207,23 @@ function MatchActionsMenu({ match }: { match: Match }) {
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
               Delete Match
+            </Button>
+          </>
+        }
+      />
+
+      <Modal
+        open={cancelOpen}
+        onOpenChange={setCancelOpen}
+        title="Cancel this match?"
+        description={`The fixture vs ${match.opponent} will be marked as cancelled. You can reactivate it later.`}
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setCancelOpen(false)}>
+              Keep Match
+            </Button>
+            <Button variant="destructive" onClick={handleCancel}>
+              Cancel Match
             </Button>
           </>
         }

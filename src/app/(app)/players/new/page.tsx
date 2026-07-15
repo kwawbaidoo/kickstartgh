@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import { PlayerForm } from "@/components/players/PlayerForm";
@@ -19,6 +21,13 @@ export default function NewPlayerPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+      <Link
+        href="/players"
+        className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        Back to Players
+      </Link>
       <SectionHeader title="Add Player" description="Register a new player to your squad." />
       <PlayerForm existingPlayers={players} onSubmit={handleSubmit} submitLabel="Register Player" />
     </div>

@@ -2,11 +2,17 @@ export type Position = "Goalkeeper" | "Defender" | "Midfielder" | "Forward";
 
 export type PreferredFoot = "Left" | "Right" | "Both";
 
-export type PlayerStatus = "Active" | "Injured" | "Inactive";
+export type PlayerStatus = "Active" | "Injured" | "Inactive" | "Suspended";
 
 export type StatusChange = {
   status: PlayerStatus;
   date: string;
+};
+
+export type EmergencyContact = {
+  name?: string;
+  phone?: string;
+  email?: string;
 };
 
 export type Player = {
@@ -21,7 +27,8 @@ export type Player = {
   preferredFoot: PreferredFoot;
   dateOfBirth: string;
   phone?: string;
-  emergencyContact?: string;
+  email?: string;
+  emergencyContact?: EmergencyContact;
   village?: string;
   previousClub?: string;
   status: PlayerStatus;
@@ -100,7 +107,8 @@ export const players: Player[] = [
     preferredFoot: "Right",
     dateOfBirth: "2002-08-15",
     phone: "+233267788990",
-    emergencyContact: "+233267700000",
+    email: "abdul.iddrisu@example.com",
+    emergencyContact: { name: "Comfort Iddrisu", phone: "+233267700000" },
     status: "Active",
     statusHistory: [{ status: "Active", date: "2024-01-20T09:00:00Z" }],
     createdAt: "2024-01-20T09:00:00Z",
