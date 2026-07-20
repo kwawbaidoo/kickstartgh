@@ -154,7 +154,104 @@ Deliverables:
 
 ---
 
+## Sprint 7.5: Player Marketability & Public Profiles ✅ *(delivered)*
+
+Features:
+
+* Marketability profile fields on players (nationality, height, education, work
+  experience, achievements, other sports, social links).
+* Two-pane player detail page: fixed photo panel, scrollable details panel.
+* Activity timeline filterable by month, quarter, year, or all-time.
+* Per-game player report PDF, generated from any match in the timeline.
+* Public, unauthenticated player profile page for WhatsApp sharing.
+
+Deliverables:
+
+* `PlayerMarketabilityDetails`, `PlayerPhotoPanel` components.
+* `/players/[id]/profile` public route.
+* `useOrigin` hook for SSR-safe share-link generation.
+
+---
+
+## Sprint 7.6: Tactical Formation Engine ✅ *(delivered)*
+
+Features:
+
+* Replaced row-based lineup layout with a real `Position`/`Slot`/`FormationLayout`
+  pitch-coordinate system.
+* Eleven named formations (4-4-2, 4-3-3, 3-5-2, 5-3-2, 3-4-3, 4-2-3-1, 4-5-1, 3-4-1-2,
+  3-4-2-1, 5-4-1, 5-2-3), each with tactically accurate slot placement.
+* Lineup builder, pitch view, and PDF export all updated to slot-keyed starting XIs.
+
+Deliverables:
+
+* `Position`/`Slot`/`FormationLayout` types and `formationLayouts` config.
+* Updated `LineupBuilder`, `LineupView`, `EventRecorder`, lineup PDF export.
+
+---
+
+## Sprint 7.7: Team Media ✅ *(delivered)*
+
+Features:
+
+* Hero cover image banner on the Team page.
+* Dedicated photo gallery, separate from the existing staff/player avatar grid
+  (renamed "Roster").
+* Client-side image compression before storage.
+
+Deliverables:
+
+* `CoverImageUpload`, `TeamPhotoManager` components.
+* "Photos" tab on the Team page.
+
+---
+
+## Sprint 8: Season Management & Competition Lifecycle ✅ *(delivered)*
+
+Goal: make **Season** the top-level container — no player registration, match, training
+session, or report exists outside a season.
+
+Features:
+
+* Season CRUD: create, edit, activate (completes the previously-active season),
+  archive, rename, duplicate.
+* Per-season player registration with season-specific jersey numbers, plus "carry
+  forward roster" from a prior season.
+* Season-scoped matches, training, and reports, reusing the existing list/report
+  infrastructure.
+* Season dashboard (stats grid + quick actions), analytics (win trend, form tracker,
+  top scorers/assists, most committed players, squad availability), and side-by-side
+  season comparison.
+* Active-season selector in the header; global Players/Matches/Training/Reports pages
+  always reflect only the active season.
+* Card/list view toggle, search, and pagination (16 items/page) added across every
+  season and roster/match/training list page.
+* Season Roster split into **Players** and **Performance & Stats** tabs — the latter
+  a sortable, season-scoped table of each player's matches played, goals, assists,
+  cards, and attendance %, composed entirely from existing match-event/attendance
+  formulas (no duplicate data entry).
+
+Deliverables:
+
+* `Season`, `PlayerSeasonRecord` data model; `season-store.ts`.
+* `/seasons`, `/seasons/new`, `/seasons/[id]` (+ `players`, `matches`, `training`,
+  `reports`, `analytics`, `settings`) routes.
+* `SeasonCard`, `SeasonForm`, `SeasonSelector`, `SeasonStatsCard`, `SeasonAnalytics`,
+  `SeasonComparison`, `SeasonSettings`, `SeasonPlayerCard`, `SeasonPlayerStatsTable`
+  components.
+* Backward-compatible migration of pre-Season players/matches/sessions onto a default
+  season.
+
+Deferred to a future sprint: Awards, Club Records, auto-detected Milestones, Financial
+Reports.
+
+---
+
 # Phase 2 — Competition Management (Months 3–5)
+
+Note: Sprint 8 delivered single-team **Season** management (one team's own season
+lifecycle). Phase 2 below is the separate, still-future step of multi-team competitions
+(leagues/tournaments spanning several teams).
 
 Features:
 

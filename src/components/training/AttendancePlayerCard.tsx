@@ -41,34 +41,31 @@ function AttendancePlayerCard({
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl bg-card p-3 ring-1 ring-foreground/10">
-      <div
-        className="flex touch-pan-y items-center gap-3"
-        onPointerDown={handlePointerDown}
-        onPointerUp={handlePointerUp}
-      >
-        <Checkbox
-          checked={selected}
-          onCheckedChange={onToggleSelect}
-          aria-label={`Select ${player.fullName}`}
-        />
-        <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-          {player.photo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={player.photo} alt="" className="size-full object-cover" />
-          ) : (
-            getInitials(player.fullName)
-          )}
-        </div>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-sm font-medium text-foreground">{player.fullName}</span>
-          <span className="truncate text-xs text-muted-foreground">
-            #{player.jerseyNumber} · {player.position}
-          </span>
-        </div>
+    <div
+      className="flex touch-pan-y items-center gap-2 rounded-xl bg-card p-2 ring-1 ring-foreground/10"
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+    >
+      <Checkbox
+        checked={selected}
+        onCheckedChange={onToggleSelect}
+        aria-label={`Select ${player.fullName}`}
+      />
+      <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+        {player.photo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={player.photo} alt="" className="size-full object-cover" />
+        ) : (
+          getInitials(player.fullName)
+        )}
       </div>
-
-      <div className="grid grid-cols-5 gap-1.5">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate text-sm font-medium text-foreground">{player.fullName}</span>
+        <span className="truncate text-[11px] text-muted-foreground">
+          #{player.jerseyNumber} · {player.position}
+        </span>
+      </div>
+      <div className="flex shrink-0 gap-1">
         {attendanceStatusOptions.map((option) => {
           const config = attendanceStatusConfig[option];
           const isActive = status === option;
@@ -79,13 +76,13 @@ function AttendancePlayerCard({
               onClick={() => onStatusChange(option)}
               aria-pressed={isActive}
               aria-label={config.label}
+              title={config.label}
               className={cn(
-                "flex flex-col items-center gap-1 rounded-lg py-2 text-[10px] font-medium transition-colors",
+                "flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
                 isActive ? config.colorClass : "bg-muted/60 text-muted-foreground hover:bg-muted"
               )}
             >
               <config.icon className="size-4" />
-              {config.label}
             </button>
           );
         })}

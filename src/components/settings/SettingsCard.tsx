@@ -18,7 +18,7 @@ function SettingsCard({ label, description, href, icon: Icon }: SettingsCardProp
     <motion.div variants={fadeInUp}>
       <Link
         href={href}
-        className="flex items-center gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10 transition-colors hover:bg-muted/60 active:bg-muted"
+        className="flex items-center gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/5 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_4px_12px_rgba(15,23,42,0.05)] transition-colors hover:bg-muted/60 active:bg-muted dark:shadow-none dark:ring-foreground/10"
       >
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
           <Icon className="size-5" />

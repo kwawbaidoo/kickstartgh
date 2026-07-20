@@ -27,6 +27,7 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox";
 import { AvatarUpload } from "@/components/common/AvatarUpload";
+import { CoverImageUpload } from "@/components/common/CoverImageUpload";
 import { ProgressStepper } from "@/components/onboarding/ProgressStepper";
 import { ghanaRegions } from "@/config/regions";
 import { teamDetailsSchema, type TeamDetailsInput } from "@/schemas/onboarding";
@@ -42,7 +43,7 @@ type TeamSettingsFormProps = {
 const stepLabels = ["Identity", "Location & History", "Social Links"];
 
 const stepFields: (keyof TeamDetailsInput)[][] = [
-  ["name", "nickname", "slogan", "colorPrimary", "colorSecondary", "logo"],
+  ["name", "nickname", "slogan", "colorPrimary", "colorSecondary", "logo", "coverImage"],
   ["region", "district", "homeGround", "yearEstablished"],
   ["facebook", "instagram", "tiktok", "website"],
 ];
@@ -57,6 +58,7 @@ function TeamSettingsForm({ defaultValues, onSubmit }: TeamSettingsFormProps) {
 
   const teamName = useWatch({ control: form.control, name: "name" });
   const logo = useWatch({ control: form.control, name: "logo" });
+  const coverImage = useWatch({ control: form.control, name: "coverImage" });
   const socials = useWatch({
     control: form.control,
     name: ["facebook", "instagram", "tiktok", "website"],
@@ -78,6 +80,11 @@ function TeamSettingsForm({ defaultValues, onSubmit }: TeamSettingsFormProps) {
 
       {step === 0 && (
         <>
+          <CoverImageUpload
+            value={coverImage}
+            onChange={(dataUrl) => form.setValue("coverImage", dataUrl)}
+          />
+
           <AvatarUpload
             value={logo}
             onChange={(dataUrl) => form.setValue("logo", dataUrl)}

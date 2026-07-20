@@ -113,6 +113,20 @@ Avoid:
 
 ---
 
+# List Page Convention
+
+Every page that renders a collection as cards or a table follows the same shape:
+
+* A `ViewToggle` (card/list) paired with a `SearchBar`, and any filter `Select`s, above
+  the collection.
+* A `Pagination` component below it, `16` items per page.
+* Every filter, search, sort, or view-toggle change resets the page back to `1`.
+
+Reuse `ViewToggle` (`src/components/common/ViewToggle.tsx`) and `Pagination`
+(`src/components/common/Pagination.tsx`) rather than building page-specific versions.
+
+---
+
 # Naming Convention
 
 Components:
@@ -170,7 +184,7 @@ text-accent
 Bad:
 
 ```
-bg-[#323232]
+bg-[#1e3a8a]
 ```
 
 ---
@@ -180,18 +194,32 @@ bg-[#323232]
 Primary:
 
 ```
-Dark Grey
-#323232
+Navy Blue
+#1e3a8a
 ```
 
 Accent:
 
 ```
-Vivid Yellow
-#ffdb00
+Bright Blue
+#2563eb
 ```
 
-Use yellow for:
+Ink (text):
+
+```
+Slate Ink
+#1f2937
+```
+
+Tint (light surfaces):
+
+```
+Sky Tint
+#e0f2fe
+```
+
+Use accent blue for:
 
 * Primary actions.
 * Highlights.

@@ -16,8 +16,10 @@ import { Stagger } from "@/components/common/Stagger";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMatchesStore } from "@/store/matches-store";
 import { usePlayersStore } from "@/store/players-store";
+import { useSeasonStore } from "@/store/season-store";
 import { getMonthlyGoals, getTeamStats } from "@/lib/matches";
-import { getPositionBreakdown } from "@/lib/players";
+import { getPositionBreakdown, getSeasonRoster } from "@/lib/players";
+import { getSeasonMatches } from "@/lib/seasons";
 
 const quickActions: QuickAction[] = [
   { label: "Add Player", icon: <UserPlus />, href: "/players/new" },
@@ -27,8 +29,9 @@ const quickActions: QuickAction[] = [
 ];
 
 export default function DashboardPage() {
-  const matches = useMatchesStore((state) => state.matches);
-  const players = usePlayersStore((state) => state.players);
+  const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
+  const matches = getSeasonMatches(useMatchesStore((state) => state.matches), activeSeasonId);
+  const players = getSeasonRoster(usePlayersStore((state) => state.players), activeSeasonId);
   const teamStats = getTeamStats(matches);
   const monthlyGoals = getMonthlyGoals(matches);
   const positionBreakdown = getPositionBreakdown(players);

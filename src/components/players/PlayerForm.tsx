@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, X } from "lucide-react";
 import type { z } from "zod";
 
 import {
@@ -26,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AvatarUpload } from "@/components/common/AvatarUpload";
+import { TagListInput } from "@/components/common/TagListInput";
 import { ProgressStepper } from "@/components/onboarding/ProgressStepper";
 import {
   positionOptions,
@@ -42,7 +44,7 @@ type PlayerFormValues = z.input<PlayerFormSchema>;
 const positionItems = toSelectItems(positionOptions);
 const statusItems = toSelectItems(statusOptions);
 
-const stepLabels = ["Personal Info", "Football Info", "Additional Info"];
+const stepLabels = ["Personal Info", "Football Info", "Additional Info", "Marketability"];
 
 const stepFields: (keyof PlayerFormInput)[][] = [
   [
@@ -56,6 +58,7 @@ const stepFields: (keyof PlayerFormInput)[][] = [
   ],
   ["jerseyNumber", "position", "secondaryPosition", "preferredFoot"],
   ["village", "previousClub", "status"],
+  ["profile"],
 ];
 
 type PlayerFormProps = {
@@ -92,12 +95,44 @@ function PlayerForm({
       previousClub: "",
       preferredFoot: "Right",
       status: "Active",
+      profile: {
+        nationality: "",
+        height: "",
+        education: [],
+        workExperience: [],
+        achievements: [],
+        otherSports: [],
+        socialLinks: { instagram: "", twitter: "", facebook: "", tiktok: "" },
+      },
       ...defaultValues,
     },
   });
 
   const fullName = useWatch({ control: form.control, name: "fullName" });
   const photo = useWatch({ control: form.control, name: "photo" });
+  const education = useWatch({ control: form.control, name: "profile.education" }) ?? [];
+  const workExperience = useWatch({ control: form.control, name: "profile.workExperience" }) ?? [];
+  const achievements = useWatch({ control: form.control, name: "profile.achievements" }) ?? [];
+  const otherSports = useWatch({ control: form.control, name: "profile.otherSports" }) ?? [];
+
+  const [educationInstitution, setEducationInstitution] = useState("");
+  const [educationPeriod, setEducationPeriod] = useState("");
+
+  function addEducationEntry() {
+    const institution = educationInstitution.trim();
+    const period = educationPeriod.trim();
+    if (!institution || !period) return;
+    form.setValue("profile.education", [...education, { institution, period }]);
+    setEducationInstitution("");
+    setEducationPeriod("");
+  }
+
+  function removeEducationEntry(index: number) {
+    form.setValue(
+      "profile.education",
+      education.filter((_, i) => i !== index)
+    );
+  }
 
   async function handleNext() {
     const valid = await form.trigger(stepFields[step]);
@@ -422,6 +457,188 @@ function PlayerForm({
               <FieldError errors={[form.formState.errors.status]} />
             </FieldContent>
           </Field>
+        </FieldSet>
+      )}
+
+      {step === 3 && (
+        <FieldSet>
+          <FieldLegend>Marketability</FieldLegend>
+          <FieldDescription>
+            Optional — fill this in for players you want to promote to scouts or other clubs. It shows
+            up on the player&apos;s public shareable profile.
+          </FieldDescription>
+
+          <FieldGroup className="grid md:grid-cols-2 grid-cols-1 gap-4">
+            <Field>
+              <FieldLabel htmlFor="nationality">Nationality</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="nationality"
+                  placeholder="e.g. Ghanaian"
+                  {...form.register("profile.nationality")}
+                />
+                <FieldDescription>Optional</FieldDescription>
+              </FieldContent>
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="height">Height</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="height"
+                  placeholder="e.g. 5ft 10in"
+                  {...form.register("profile.height")}
+                />
+                <FieldDescription>Optional</FieldDescription>
+              </FieldContent>
+            </Field>
+          </FieldGroup>
+
+          <Field>
+            <FieldLabel htmlFor="educationInstitution">Education</FieldLabel>
+            <FieldContent>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Input
+                  id="educationInstitution"
+                  placeholder="Institution"
+                  value={educationInstitution}
+                  onChange={(event) => setEducationInstitution(event.target.value)}
+                  className="flex-1"
+                />
+                <Input
+                  placeholder="Period, e.g. 2019-2022"
+                  value={educationPeriod}
+                  onChange={(event) => setEducationPeriod(event.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={addEducationEntry}
+                  aria-label="Add education entry"
+                  disabled={!educationInstitution.trim() || !educationPeriod.trim()}
+                >
+                  <Plus />
+                </Button>
+              </div>
+              {education.length > 0 && (
+                <div className="flex flex-col gap-1.5 pt-1">
+                  {education.map((entry, index) => (
+                    <div
+                      key={`${entry.institution}-${index}`}
+                      className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2 text-sm"
+                    >
+                      <span className="min-w-0 flex-1 truncate text-foreground">{entry.institution}</span>
+                      <span className="shrink-0 text-xs text-muted-foreground">{entry.period}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeEducationEntry(index)}
+                        aria-label={`Remove ${entry.institution}`}
+                        className="text-muted-foreground hover:text-destructive"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <FieldDescription>Optional</FieldDescription>
+            </FieldContent>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="workExperience">Work experience</FieldLabel>
+            <FieldContent>
+              <TagListInput
+                id="workExperience"
+                value={workExperience}
+                onChange={(value) => form.setValue("profile.workExperience", value)}
+                placeholder="e.g. Coaching assistant"
+              />
+              <FieldDescription>Optional</FieldDescription>
+            </FieldContent>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="achievements">Achievements</FieldLabel>
+            <FieldContent>
+              <TagListInput
+                id="achievements"
+                value={achievements}
+                onChange={(value) => form.setValue("profile.achievements", value)}
+                placeholder="e.g. League top scorer (2025)"
+              />
+              <FieldDescription>Optional</FieldDescription>
+            </FieldContent>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="otherSports">Other sports</FieldLabel>
+            <FieldContent>
+              <TagListInput
+                id="otherSports"
+                value={otherSports}
+                onChange={(value) => form.setValue("profile.otherSports", value)}
+                placeholder="e.g. Athletics"
+              />
+              <FieldDescription>Optional</FieldDescription>
+            </FieldContent>
+          </Field>
+
+          <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            Social Links
+          </span>
+
+          <FieldGroup className="grid md:grid-cols-2 grid-cols-1 gap-4">
+            <Field data-invalid={!!form.formState.errors.profile?.socialLinks?.instagram}>
+              <FieldLabel htmlFor="instagram">Instagram</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="instagram"
+                  placeholder="https://instagram.com/..."
+                  {...form.register("profile.socialLinks.instagram")}
+                />
+                <FieldError errors={[form.formState.errors.profile?.socialLinks?.instagram]} />
+              </FieldContent>
+            </Field>
+
+            <Field data-invalid={!!form.formState.errors.profile?.socialLinks?.twitter}>
+              <FieldLabel htmlFor="twitter">X / Twitter</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="twitter"
+                  placeholder="https://x.com/..."
+                  {...form.register("profile.socialLinks.twitter")}
+                />
+                <FieldError errors={[form.formState.errors.profile?.socialLinks?.twitter]} />
+              </FieldContent>
+            </Field>
+
+            <Field data-invalid={!!form.formState.errors.profile?.socialLinks?.facebook}>
+              <FieldLabel htmlFor="facebook">Facebook</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="facebook"
+                  placeholder="https://facebook.com/..."
+                  {...form.register("profile.socialLinks.facebook")}
+                />
+                <FieldError errors={[form.formState.errors.profile?.socialLinks?.facebook]} />
+              </FieldContent>
+            </Field>
+
+            <Field data-invalid={!!form.formState.errors.profile?.socialLinks?.tiktok}>
+              <FieldLabel htmlFor="tiktok">TikTok</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="tiktok"
+                  placeholder="https://tiktok.com/@..."
+                  {...form.register("profile.socialLinks.tiktok")}
+                />
+                <FieldError errors={[form.formState.errors.profile?.socialLinks?.tiktok]} />
+              </FieldContent>
+            </Field>
+          </FieldGroup>
         </FieldSet>
       )}
 

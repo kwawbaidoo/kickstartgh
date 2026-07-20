@@ -7,12 +7,16 @@ import { ArrowLeft } from "lucide-react";
 import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import { PlayerForm } from "@/components/players/PlayerForm";
 import { usePlayersStore } from "@/store/players-store";
+import { useSeasonStore } from "@/store/season-store";
+import { getSeasonRoster } from "@/lib/players";
 import type { PlayerFormInput } from "@/schemas/player";
 
 export default function NewPlayerPage() {
   const router = useRouter();
-  const players = usePlayersStore((state) => state.players);
+  const allPlayers = usePlayersStore((state) => state.players);
   const addPlayer = usePlayersStore((state) => state.addPlayer);
+  const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
+  const players = getSeasonRoster(allPlayers, activeSeasonId);
 
   function handleSubmit(data: PlayerFormInput) {
     const player = addPlayer(data);

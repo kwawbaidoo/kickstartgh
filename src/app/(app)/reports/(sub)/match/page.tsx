@@ -20,17 +20,23 @@ import { usePlayersStore } from "@/store/players-store";
 import { useMatchesStore } from "@/store/matches-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { useReportsStore } from "@/store/reports-store";
+import { useSeasonStore } from "@/store/season-store";
 import {
   buildMatchReportTable,
   defaultMatchReportFilters,
   getMatchCompetitions,
   type MatchReportFilters,
 } from "@/lib/reports";
+import { getSeasonMatches } from "@/lib/seasons";
 
 const statusItems = { All: "All statuses", upcoming: "Upcoming", completed: "Completed", cancelled: "Cancelled" };
 
 export default function MatchReportPage() {
-  const matches = useMatchesStore((state) => state.matches);
+  const activeSeason = useSeasonStore((state) =>
+    state.seasons.find((season) => season.id === state.activeSeasonId)
+  );
+  const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
+  const matches = getSeasonMatches(useMatchesStore((state) => state.matches), activeSeasonId);
   const players = usePlayersStore((state) => state.players);
   const teamName = useOnboardingStore((state) => state.activeTeam.name);
   const addHistoryEntry = useReportsStore((state) => state.addHistoryEntry);
@@ -45,8 +51,13 @@ export default function MatchReportPage() {
   const table = buildMatchReportTable(matches, playerNames, filters, columns);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+    <>
       <SectionHeader title="Match Report" description="Fixtures, results, and match events." />
+      {activeSeason && (
+        <p className="text-xs text-muted-foreground">
+          Reporting on: <span className="font-medium text-foreground">{activeSeason.name}</span>
+        </p>
+      )}
 
       <ReportWizard
         filename="match-report"
@@ -102,6 +113,6 @@ export default function MatchReportPage() {
         currentColumns={columns}
         onApply={(template) => setColumns(template.columns)}
       />
-    </div>
+    </>
   );
 }

@@ -14,6 +14,7 @@ export type ActiveTeam = {
   homeGround: string;
   yearEstablished: number;
   logo?: string;
+  coverImage?: string;
   colorPrimary?: string;
   colorSecondary?: string;
   slogan?: string;
@@ -22,6 +23,7 @@ export type ActiveTeam = {
   tiktok?: string;
   website?: string;
   staff: StaffMember[];
+  photos: string[];
 };
 
 type OnboardingDraft = {
@@ -48,6 +50,8 @@ type OnboardingState = {
   addActiveStaffMember: (member: StaffMember) => void;
   removeActiveStaffMember: (id: string) => void;
   updateActiveStaffMemberRole: (id: string, role: RoleId) => void;
+  addTeamPhoto: (photo: string) => void;
+  removeTeamPhoto: (photo: string) => void;
 };
 
 const initialDraft: OnboardingDraft = {
@@ -69,6 +73,7 @@ export const useOnboardingStore = create<OnboardingState>()(
     homeGround: currentTeam.homeGround,
     yearEstablished: currentTeam.yearEstablished,
     staff: [],
+    photos: [],
   },
   draft: initialDraft,
   hasHydrated: false,
@@ -102,6 +107,7 @@ export const useOnboardingStore = create<OnboardingState>()(
         homeGround: team.homeGround ?? "",
         yearEstablished: team.yearEstablished ?? new Date().getFullYear(),
         logo: team.logo,
+        coverImage: team.coverImage,
         colorPrimary: team.colorPrimary,
         colorSecondary: team.colorSecondary,
         slogan: team.slogan,
@@ -110,6 +116,7 @@ export const useOnboardingStore = create<OnboardingState>()(
         tiktok: team.tiktok,
         website: team.website,
         staff,
+        photos: [],
       },
     });
   },
@@ -145,6 +152,19 @@ export const useOnboardingStore = create<OnboardingState>()(
         staff: state.activeTeam.staff.map((member) =>
           member.id === id ? { ...member, role } : member
         ),
+      },
+    })),
+
+  addTeamPhoto: (photo) =>
+    set((state) => ({
+      activeTeam: { ...state.activeTeam, photos: [...state.activeTeam.photos, photo] },
+    })),
+
+  removeTeamPhoto: (photo) =>
+    set((state) => ({
+      activeTeam: {
+        ...state.activeTeam,
+        photos: state.activeTeam.photos.filter((existing) => existing !== photo),
       },
     })),
     }),

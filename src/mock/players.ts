@@ -1,3 +1,5 @@
+import { DEFAULT_SEASON_ID } from "@/mock/seasons";
+
 export type Position = "Goalkeeper" | "Defender" | "Midfielder" | "Forward";
 
 export type PreferredFoot = "Left" | "Right" | "Both";
@@ -9,10 +11,50 @@ export type StatusChange = {
   date: string;
 };
 
+/**
+ * A player's registration for one season — jersey number and status can
+ * differ season to season (e.g. #11 in 2025, #9 in 2026), while the player
+ * themselves stays one continuous identity across every season they've played.
+ */
+export type PlayerSeasonRecord = {
+  seasonId: string;
+  jerseyNumber: number;
+  status: PlayerStatus;
+  registeredAt: string;
+};
+
 export type EmergencyContact = {
   name?: string;
   phone?: string;
   email?: string;
+};
+
+export type EducationEntry = {
+  institution: string;
+  period: string;
+};
+
+export type SocialLinks = {
+  instagram?: string;
+  twitter?: string;
+  facebook?: string;
+  tiktok?: string;
+};
+
+/**
+ * A player's public marketability profile — the details a scout, other club,
+ * or tournament organizer would want when the profile is shared outside the
+ * team (see the public profile page at /players/[id]/profile). All optional,
+ * since most teams will only fill this in for players they're promoting.
+ */
+export type MarketabilityProfile = {
+  nationality?: string;
+  height?: string;
+  education?: EducationEntry[];
+  workExperience?: string[];
+  achievements?: string[];
+  otherSports?: string[];
+  socialLinks?: SocialLinks;
 };
 
 export type Player = {
@@ -34,6 +76,14 @@ export type Player = {
   status: PlayerStatus;
   statusHistory: StatusChange[];
   createdAt: string;
+  profile?: MarketabilityProfile;
+  /**
+   * Every player must be registered for at least one season (never empty).
+   * The top-level `jerseyNumber`/`status` above always mirror this player's
+   * record in the currently active season — see registerPlayerForSeason /
+   * getSeasonRecord in lib/players.ts for how the two stay in sync.
+   */
+  seasonRecords: PlayerSeasonRecord[];
   /**
    * Match-derived numbers (matchesPlayed/goals/assists/cards) are computed
    * live from matchesStore via getPlayerMatchStats — see lib/matches.ts.
@@ -46,7 +96,7 @@ export type Player = {
   };
 };
 
-export const players: Player[] = [
+const seedPlayers: Omit<Player, "seasonRecords">[] = [
   {
     id: "player_001",
     teamId: "team_001",
@@ -62,6 +112,22 @@ export const players: Player[] = [
     statusHistory: [{ status: "Active", date: "2024-02-10T09:00:00Z" }],
     createdAt: "2024-02-10T09:00:00Z",
     stats: { rating: 8.1 },
+    profile: {
+      nationality: "Ghanaian",
+      height: "5ft 10in",
+      education: [
+        { institution: "Ellembelle Senior High School", period: "2019-2022" },
+        { institution: "Takoradi Technical University", period: "2023-Present" },
+      ],
+      workExperience: ["Coaching assistant, Ellembelle Youth Academy"],
+      achievements: [
+        "Ellembelle District League top scorer (2025)",
+        "Regional Cup quarter-final winner (2026)",
+        "Man of the Match — vs Unity FC (May 2026)",
+      ],
+      otherSports: ["Athletics", "Volleyball"],
+      socialLinks: { instagram: "https://instagram.com/km9official" },
+    },
   },
   {
     id: "player_002",
@@ -295,6 +361,18 @@ export const players: Player[] = [
     stats: { rating: 6.9 },
   },
 ];
+
+export const players: Player[] = seedPlayers.map((player) => ({
+  ...player,
+  seasonRecords: [
+    {
+      seasonId: DEFAULT_SEASON_ID,
+      jerseyNumber: player.jerseyNumber,
+      status: player.status,
+      registeredAt: player.createdAt,
+    },
+  ],
+}));
 
 export function getPlayersByTeam(teamId: string): Player[] {
   return players.filter((player) => player.teamId === teamId);

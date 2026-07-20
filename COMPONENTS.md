@@ -20,10 +20,10 @@ Users are not software engineers. Every component must prioritize simplicity.
 
 ## Primary
 
-Dark Grey
+Navy Blue
 
 ```css
-#323232
+#1e3a8a
 ```
 
 Usage:
@@ -37,10 +37,10 @@ Usage:
 
 ## Accent
 
-Vivid Yellow
+Bright Blue
 
 ```css
-#ffdb00
+#2563eb
 ```
 
 Usage:
@@ -49,6 +49,26 @@ Usage:
 * Notifications.
 * Statistics.
 * Highlights.
+
+---
+
+## Ink
+
+Slate Ink — body text and headings.
+
+```css
+#1f2937
+```
+
+---
+
+## Tint
+
+Sky Tint — muted/secondary surfaces (cards, pills, section backgrounds).
+
+```css
+#e0f2fe
+```
 
 ---
 
@@ -330,6 +350,27 @@ Display:
 
 ---
 
+# Season Roster Components
+
+### SeasonPlayerStatsTable
+
+The Season Roster page's "Performance & Stats" tab (a second tab alongside the normal
+Players list). Desktop table + mobile card fallback, matching the `PlayerTable`/
+`MatchesTable` responsive pattern.
+
+Display, per registered player, for the current season only:
+
+* Matches played.
+* Goals.
+* Assists.
+* Yellow / red cards (highlighted when non-zero).
+* Attendance %.
+
+All values are derived from existing match-event and attendance data (`lib/seasons.ts`
+`getSeasonPlayerStats`) — nothing here is entered manually or stored twice.
+
+---
+
 # Match Components
 
 ### MatchCard
@@ -373,6 +414,13 @@ Features:
 * Mark absent.
 * Mark late.
 * Excuse.
+* Bulk select + apply a status to multiple players at once.
+
+Layout: a dense table (`AttendanceTable`/`AttendanceTableRow`) on tablet/desktop, a
+compact single-line row (`AttendancePlayerCard`) on mobile — both driven by the same
+`AttendanceBoard` state, chosen to keep a full squad's register on one screen with
+minimal scrolling. The search/bulk-action bar and the "Finish & Save" action stay
+reachable via sticky/fixed positioning while the roster scrolls underneath.
 
 ---
 

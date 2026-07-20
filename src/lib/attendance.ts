@@ -1,6 +1,7 @@
 import type { AttendanceSession } from "@/mock/attendance";
 import type { Match } from "@/mock/matches";
 import type { Player } from "@/mock/players";
+import { getStartingPlayerIds } from "@/lib/matches";
 
 export type AttendancePeriod = "weekly" | "monthly" | "seasonal";
 
@@ -63,7 +64,7 @@ export function getPlayerAttendanceStats(
   for (const match of matches) {
     if (match.status !== "completed" || !match.lineup) continue;
     const inSquad =
-      match.lineup.startingXI.includes(playerId) || match.lineup.substitutes.includes(playerId);
+      getStartingPlayerIds(match.lineup).includes(playerId) || match.lineup.substitutes.includes(playerId);
     totalSessions += 1;
     if (inSquad) presentCount += 1;
     else absentCount += 1;

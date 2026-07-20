@@ -19,17 +19,21 @@ import {
 import { attendanceStatusConfig, attendanceStatusOptions } from "@/config/training";
 import { usePlayersStore } from "@/store/players-store";
 import { useAttendanceStore } from "@/store/attendance-store";
+import { useSeasonStore } from "@/store/season-store";
 import {
   defaultTrainingHistoryFilters,
   filterTrainingHistory,
   getMonthlyAverages,
   type TrainingHistoryFilters,
 } from "@/lib/training";
+import { getSeasonRoster } from "@/lib/players";
+import { getSeasonSessions } from "@/lib/seasons";
 import type { AttendanceStatus } from "@/mock/attendance";
 
 export default function TrainingHistoryPage() {
-  const sessions = useAttendanceStore((state) => state.sessions);
-  const players = usePlayersStore((state) => state.players);
+  const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
+  const sessions = getSeasonSessions(useAttendanceStore((state) => state.sessions), activeSeasonId);
+  const players = getSeasonRoster(usePlayersStore((state) => state.players), activeSeasonId);
   const [filters, setFilters] = useState<TrainingHistoryFilters>(defaultTrainingHistoryFilters);
 
   const filteredSessions = filterTrainingHistory(sessions, filters);

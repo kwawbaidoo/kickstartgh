@@ -20,8 +20,11 @@ import { Stagger } from "@/components/common/Stagger";
 import { TrainingCard } from "@/components/training/TrainingCard";
 import { usePlayersStore } from "@/store/players-store";
 import { useAttendanceStore } from "@/store/attendance-store";
+import { useSeasonStore } from "@/store/season-store";
 import type { AttendanceRankingEntry } from "@/lib/attendance";
 import { getTeamTrainingStats, getTodaySession, getUpcomingSessions } from "@/lib/training";
+import { getSeasonRoster } from "@/lib/players";
+import { getSeasonSessions } from "@/lib/seasons";
 import { buttonVariants } from "@/components/ui/button";
 import { getInitials } from "@/lib/utils";
 
@@ -45,8 +48,9 @@ function AttendeeRow({ entry }: { entry: AttendanceRankingEntry }) {
 }
 
 export default function TrainingDashboardPage() {
-  const players = usePlayersStore((state) => state.players);
-  const sessions = useAttendanceStore((state) => state.sessions);
+  const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
+  const players = getSeasonRoster(usePlayersStore((state) => state.players), activeSeasonId);
+  const sessions = getSeasonSessions(useAttendanceStore((state) => state.sessions), activeSeasonId);
 
   const activePlayers = players.filter((player) => player.status === "Active");
   const todaySession = getTodaySession(sessions);

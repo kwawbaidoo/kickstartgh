@@ -10,6 +10,7 @@ import { useMatchesStore } from "@/store/matches-store";
 import { useAttendanceStore } from "@/store/attendance-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { useReportsStore } from "@/store/reports-store";
+import { useSeasonStore } from "@/store/season-store";
 import {
   buildAttendanceReportTable,
   buildMatchReportTable,
@@ -19,6 +20,8 @@ import {
   defaultPlayerReportFilters,
   type ReportTable,
 } from "@/lib/reports";
+import { getSeasonRoster } from "@/lib/players";
+import { getSeasonMatches, getSeasonSessions } from "@/lib/seasons";
 import {
   matchReportColumns,
   playerReportColumns,
@@ -27,9 +30,13 @@ import {
 } from "@/config/reports";
 
 export default function DataExportPage() {
-  const players = usePlayersStore((state) => state.players);
-  const matches = useMatchesStore((state) => state.matches);
-  const sessions = useAttendanceStore((state) => state.sessions);
+  const activeSeason = useSeasonStore((state) =>
+    state.seasons.find((season) => season.id === state.activeSeasonId)
+  );
+  const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
+  const players = getSeasonRoster(usePlayersStore((state) => state.players), activeSeasonId);
+  const matches = getSeasonMatches(useMatchesStore((state) => state.matches), activeSeasonId);
+  const sessions = getSeasonSessions(useAttendanceStore((state) => state.sessions), activeSeasonId);
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
   const historyEntries = useReportsStore((state) => state.history);
   const addHistoryEntry = useReportsStore((state) => state.addHistoryEntry);
@@ -83,6 +90,11 @@ export default function DataExportPage() {
   return (
     <div className="flex flex-col gap-6">
       <SectionHeader title="Data & Export" description="Export your team's data as PDF, Excel, or CSV." />
+      {activeSeason && (
+        <p className="-mt-3 text-xs text-muted-foreground">
+          Exporting: <span className="font-medium text-foreground">{activeSeason.name}</span>
+        </p>
+      )}
 
       <ExportCard
         dataType="players"

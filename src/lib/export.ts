@@ -4,10 +4,11 @@ import { format } from "date-fns";
 
 import type { ReportTable } from "@/lib/reports";
 import type { Match } from "@/mock/matches";
+import { getMatchResult } from "@/mock/matches";
 import type { Player } from "@/mock/players";
 import type { ActiveTeam } from "@/store/onboarding-store";
 import type { ResolvedBenchOfficial } from "@/lib/matches";
-import { getFormationSlots } from "@/lib/matches";
+import { getFormationSlots, getStartingPlayerIds } from "@/lib/matches";
 import { getInitials } from "@/lib/utils";
 
 function downloadBlob(blob: Blob, filename: string) {
@@ -186,8 +187,8 @@ export function exportLineupPdf(
 
   const slots = getFormationSlots(lineup.formation);
   const circleRadius = 6;
-  slots.forEach((slot, index) => {
-    const playerId = lineup.startingXI[index];
+  slots.forEach((slot) => {
+    const playerId = lineup.startingXI[slot.slot];
     const player = playerId ? playerMap.get(playerId) : undefined;
     if (!player) return;
     const cx = pitchX + (slot.x / 100) * pitchWidth;
@@ -261,5 +262,138 @@ export function exportLineupPdf(
   doc.text(`Generated ${format(new Date(), "d MMM yyyy, HH:mm")} · KickStartGH`, margin, y);
 
   const filename = `lineup-vs-${match.opponent.toLowerCase().replace(/\s+/g, "-")}`;
+  doc.save(`${filename}.pdf`);
+}
+
+/**
+ * A single game "pulled aside" from a player's timeline — their role and
+ * every event they were involved in for that match only, as a standalone
+ * PDF a coach can hand to a parent or club official without the full lineup.
+ */
+export function exportPlayerMatchReportPdf(player: Player, match: Match, team: ActiveTeam) {
+  const doc = new jsPDF({ orientation: "portrait" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 14;
+  let y = margin;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(0);
+  doc.text("Player Match Report", margin, y);
+  y += 10;
+
+  const badgeSize = 14;
+  drawBadge(doc, margin, y, badgeSize, getInitials(player.fullName));
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(0);
+  doc.text(player.fullName, margin + badgeSize + 5, y + badgeSize / 2 - 1);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(120);
+  doc.text(`${player.position} · #${player.jerseyNumber}`, margin + badgeSize + 5, y + badgeSize / 2 + 6);
+  y += badgeSize + 10;
+
+  doc.setDrawColor(220);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 8;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(0);
+  doc.text(`${team.name} vs ${match.opponent}`, margin, y);
+  y += 6;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(120);
+  doc.text(
+    `${match.competition} · ${format(new Date(match.date), "d MMM yyyy")} · ${match.venue}`,
+    margin,
+    y
+  );
+  y += 6;
+
+  const result = getMatchResult(match);
+  if (result && match.teamScore !== undefined && match.opponentScore !== undefined) {
+    const resultLabel = { win: "Win", draw: "Draw", loss: "Loss" }[result];
+    doc.text(`Result: ${resultLabel} ${match.teamScore}–${match.opponentScore}`, margin, y);
+    y += 6;
+  }
+
+  y += 4;
+  doc.setDrawColor(220);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 8;
+
+  const started = match.lineup ? getStartingPlayerIds(match.lineup).includes(player.id) : false;
+  const onBench = match.lineup?.substitutes.includes(player.id) ?? false;
+  const subOnEvent = match.events.find(
+    (event) => event.type === "substitution" && event.playerInId === player.id
+  );
+  const subOffEvent = match.events.find(
+    (event) => event.type === "substitution" && event.playerOutId === player.id
+  );
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(0);
+  doc.text("Appearance", margin, y);
+  y += 6;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(60);
+  let roleLine = "Did not feature.";
+  if (subOnEvent) roleLine = `Substitute — came on at minute ${subOnEvent.minute}.`;
+  else if (started) roleLine = "Started the match.";
+  else if (onBench) roleLine = "Named among the substitutes.";
+  if (started && subOffEvent) roleLine += ` Substituted off at minute ${subOffEvent.minute}.`;
+  if (match.lineup?.captainId === player.id) roleLine += " Team captain.";
+  doc.text(roleLine, margin, y);
+  y += 10;
+
+  const goals = match.events.filter((event) => event.type === "goal" && event.playerId === player.id);
+  const assists = match.events.filter(
+    (event) => event.type === "goal" && event.assistPlayerId === player.id
+  );
+  const cards = match.events.filter(
+    (event) => (event.type === "yellow_card" || event.type === "red_card") && event.playerId === player.id
+  );
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(0);
+  doc.text("Match Events", margin, y);
+  y += 6;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(60);
+
+  const eventLines = [
+    ...goals.map((event) => `⚽ Goal — minute ${event.minute}`),
+    ...assists.map((event) => `🅰️ Assist — minute ${event.minute}`),
+    ...cards.map(
+      (event) => `${event.type === "yellow_card" ? "🟨 Yellow card" : "🟥 Red card"} — minute ${event.minute}`
+    ),
+  ].sort((a, b) => {
+    const minuteOf = (line: string) => Number(line.match(/\d+/)?.[0] ?? 0);
+    return minuteOf(a) - minuteOf(b);
+  });
+
+  if (eventLines.length === 0) {
+    doc.text("No goals, assists, or cards recorded.", margin, y);
+    y += 6;
+  } else {
+    for (const line of eventLines) {
+      doc.text(line, margin, y);
+      y += 5.5;
+    }
+  }
+
+  y += 6;
+  doc.setFontSize(8);
+  doc.setTextColor(150);
+  doc.text(`Generated ${format(new Date(), "d MMM yyyy, HH:mm")} · KickStartGH`, margin, y);
+
+  const filename = `${player.fullName.toLowerCase().replace(/\s+/g, "-")}-vs-${match.opponent.toLowerCase().replace(/\s+/g, "-")}`;
   doc.save(`${filename}.pdf`);
 }

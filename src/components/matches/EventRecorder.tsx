@@ -16,6 +16,7 @@ import {
 import { eventTypeConfig } from "@/config/matches";
 import type { Lineup, MatchEvent, MatchEventInput, MatchEventType } from "@/mock/matches";
 import type { Player } from "@/mock/players";
+import { getStartingPlayerIds } from "@/lib/matches";
 
 const eventTypes: MatchEventType[] = ["goal", "yellow_card", "red_card", "substitution", "injury"];
 
@@ -35,12 +36,13 @@ function EventRecorder({ lineup, squad, events, onRecord }: EventRecorderProps) 
   const [playerInId, setPlayerInId] = useState<string | null>(null);
 
   const playerMap = new Map(squad.map((player) => [player.id, player]));
-  const squadIds = [...lineup.startingXI, ...lineup.substitutes];
+  const startingIds = getStartingPlayerIds(lineup);
+  const squadIds = [...startingIds, ...lineup.substitutes];
   const squadPlayers = squadIds
     .map((id) => playerMap.get(id))
     .filter((player): player is Player => !!player);
 
-  const onPitchIds = new Set(lineup.startingXI);
+  const onPitchIds = new Set(startingIds);
   for (const event of events) {
     if (event.type === "substitution") {
       onPitchIds.delete(event.playerOutId);

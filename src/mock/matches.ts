@@ -1,10 +1,13 @@
+import type { Slot } from "@/config/matches";
+import { DEFAULT_SEASON_ID } from "@/mock/seasons";
+
 export type MatchStatus = "upcoming" | "completed" | "cancelled";
 
 export type MatchType = "Friendly" | "League" | "Tournament" | "Knockout";
 
 export type MatchResult = "win" | "draw" | "loss";
 
-export type Formation = "4-4-2" | "4-3-3" | "3-5-2" | "5-3-2";
+export type Formation = "4-4-2" | "4-3-3" | "3-5-2" | "5-3-2" | "3-4-3" | "4-2-3-1" | "4-5-1" | "3-4-1-2" | "3-4-2-1" | "5-4-1" | "5-2-3";
 
 /**
  * A bench official is either an existing staff member (looked up live by id, so
@@ -17,8 +20,13 @@ export type BenchOfficial =
 
 export type Lineup = {
   formation: Formation;
-  /** Player ids, ordered FWD → MID → DEF → GK to match config/matches.ts's formationRows slot order. */
-  startingXI: string[];
+  /**
+   * Keyed by pitch slot (see config/matches.ts's `formationLayouts`), not
+   * array order — a player fills a specific slot (e.g. "CB1"), and which
+   * slots exist depends on the formation. Use `getStartingPlayerIds`
+   * (lib/matches.ts) when only the flat list of player ids is needed.
+   */
+  startingXI: Partial<Record<Slot, string>>;
   substitutes: string[];
   captainId?: string;
   benchOfficials: BenchOfficial[];
@@ -40,6 +48,7 @@ export type MatchEventInput = DistributiveOmit<MatchEvent, "id">;
 export type Match = {
   id: string;
   teamId: string;
+  seasonId: string;
   opponent: string;
   competition: string;
   matchType: MatchType;
@@ -60,19 +69,19 @@ export type Match = {
 
 const coreLineup: Lineup = {
   formation: "4-4-2",
-  startingXI: [
-    "player_001",
-    "player_007",
-    "player_002",
-    "player_005",
-    "player_013",
-    "player_014",
-    "player_009",
-    "player_010",
-    "player_011",
-    "player_012",
-    "player_004",
-  ],
+  startingXI: {
+    GK: "player_004",
+    LB: "player_009",
+    CB1: "player_010",
+    CB2: "player_011",
+    RB: "player_012",
+    LM: "player_002",
+    CM1: "player_005",
+    CM2: "player_013",
+    RM: "player_014",
+    ST1: "player_001",
+    ST2: "player_007",
+  },
   substitutes: ["player_008", "player_015", "player_016"],
   captainId: "player_001",
   benchOfficials: [
@@ -80,7 +89,7 @@ const coreLineup: Lineup = {
   ],
 };
 
-export const matches: Match[] = [
+const seedMatches: Omit<Match, "seasonId">[] = [
   {
     id: "match_001",
     teamId: "team_001",
@@ -206,6 +215,11 @@ export const matches: Match[] = [
     createdAt: "2026-07-13T08:00:00Z",
   },
 ];
+
+export const matches: Match[] = seedMatches.map((match) => ({
+  ...match,
+  seasonId: DEFAULT_SEASON_ID,
+}));
 
 export function getMatchesByTeam(teamId: string): Match[] {
   return matches.filter((match) => match.teamId === teamId);

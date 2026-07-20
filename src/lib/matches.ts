@@ -1,21 +1,56 @@
 import { format } from "date-fns";
 
-import type { BenchOfficial, Formation, Match, MatchEvent, MatchStatus } from "@/mock/matches";
+import type { BenchOfficial, Formation, Lineup, Match, MatchEvent, MatchStatus } from "@/mock/matches";
 import { getMatchResult } from "@/mock/matches";
-import { formationRows, rowYPosition } from "@/config/matches";
+import { formationLayouts, slotPosition, type PitchCoordinate, type Position, type Slot } from "@/config/matches";
 import { staffRoleOptions } from "@/config/roles";
 import type { StaffMember } from "@/schemas/onboarding";
 
-export type FormationSlot = { row: "FWD" | "MID" | "DEF" | "GK"; x: number; y: number };
+export type FormationSlot = { slot: Slot; position: Position; x: number; y: number };
 
+/**
+ * Returns a formation's slots ordered goalkeeper → defence → midfield →
+ * attack (descending `y`, since coordinates are authored with the team
+ * attacking upward), left-to-right within each line. That fixed order is
+ * what makes lineup rendering, the PDF export, and the share-message text
+ * all agree on the same reading order.
+ */
 export function getFormationSlots(formation: Formation): FormationSlot[] {
-  const slots: FormationSlot[] = [];
-  for (const { row, count } of formationRows[formation]) {
-    for (let i = 0; i < count; i++) {
-      slots.push({ row, x: ((i + 1) / (count + 1)) * 100, y: rowYPosition[row] });
-    }
-  }
-  return slots;
+  const layout = formationLayouts[formation];
+  return (Object.keys(layout) as Slot[])
+    .map((slot) => {
+      const coordinate = layout[slot] as PitchCoordinate;
+      return { slot, position: slotPosition[slot], x: coordinate.x, y: coordinate.y };
+    })
+    .sort((a, b) => b.y - a.y || a.x - b.x);
+}
+
+/**
+ * A lineup's starting XI is keyed by slot (see mock/matches.ts), so this is
+ * the one place that flattens it to a plain id list for membership checks
+ * (attendance, player stats, event recording) that don't care which slot a
+ * player filled.
+ */
+export function getStartingPlayerIds(lineup: Lineup | null | undefined): string[] {
+  if (!lineup) return [];
+  return Object.values(lineup.startingXI).filter((id): id is string => !!id);
+}
+
+/**
+ * The pitch is portrait by default and swaps to landscape at the `lg` breakpoint
+ * (see PitchBackground, which rotates the same artwork rather than redrawing it).
+ * Player markers need to rotate with it: portrait reads top-to-bottom (GK at the
+ * bottom), landscape reads left-to-right (GK on the left), so `y` and `x` swap.
+ * These are plain CSS custom properties (not Tailwind-generated), consumed via
+ * arbitrary-value classes like `left-[var(--slot-left)] lg:left-[var(--slot-left-lg)]`.
+ */
+export function getPitchSlotStyle(coordinate: PitchCoordinate): Record<string, string> {
+  return {
+    "--slot-left": `${coordinate.x}%`,
+    "--slot-top": `${coordinate.y}%`,
+    "--slot-left-lg": `${100 - coordinate.y}%`,
+    "--slot-top-lg": `${coordinate.x}%`,
+  };
 }
 
 export type ResolvedBenchOfficial = { id: string; fullName: string; role: string };
@@ -62,7 +97,7 @@ export function getPlayerMatchStats(playerId: string, matches: Match[]): PlayerM
 
   for (const match of completed) {
     const startedOrSubbedOn =
-      match.lineup?.startingXI.includes(playerId) ||
+      getStartingPlayerIds(match.lineup).includes(playerId) ||
       match.events.some((event) => event.type === "substitution" && event.playerInId === playerId);
     if (startedOrSubbedOn) matchesPlayed += 1;
 
@@ -325,20 +360,24 @@ export function buildLineupShareMessage(
   if (!match.lineup) {
     return `${teamName} lineup for ${match.opponent} hasn't been set yet.`;
   }
+  const lineup = match.lineup;
 
-  const names = match.lineup.startingXI.map((id) => {
-    const name = playerName(id, playerNames);
-    return id === match.lineup?.captainId ? `${name} (C)` : name;
-  });
+  const names = getFormationSlots(lineup.formation)
+    .map((slot) => lineup.startingXI[slot.slot])
+    .filter((id): id is string => !!id)
+    .map((id) => {
+      const name = playerName(id, playerNames);
+      return id === lineup.captainId ? `${name} (C)` : name;
+    });
 
-  const substituteNames = match.lineup.substitutes.map((id) => playerName(id, playerNames));
+  const substituteNames = lineup.substitutes.map((id) => playerName(id, playerNames));
   const officialLines = benchOfficials.map((official) => `${official.fullName} (${official.role})`);
 
   return [
     `⚽ ${teamName} Starting XI`,
     "",
     `vs ${match.opponent}`,
-    `Formation: ${match.lineup.formation}`,
+    `Formation: ${lineup.formation}`,
     "",
     ...names,
     ...(substituteNames.length > 0 ? ["", "Substitutes:", ...substituteNames] : []),
