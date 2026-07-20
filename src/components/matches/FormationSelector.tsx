@@ -21,7 +21,7 @@ type FormationSelectorProps = {
 function FormationSelector({ value, onChange }: FormationSelectorProps) {
   return (
     <Select items={formationItems} value={value} onValueChange={(next) => onChange(next as Formation)}>
-      <SelectTrigger className="w-full sm:w-40">
+      <SelectTrigger className="w-44 sm:w-40">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

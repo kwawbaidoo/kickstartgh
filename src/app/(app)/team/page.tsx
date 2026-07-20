@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StaffManager } from "@/components/settings/StaffManager";
 import { PermissionTable } from "@/components/settings/PermissionTable";
 import { TeamGallery } from "@/components/team/TeamGallery";
+import { TeamPhotoManager } from "@/components/team/TeamPhotoManager";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { usePlayersStore } from "@/store/players-store";
 import { fadeInUp } from "@/lib/motion";
@@ -36,6 +37,8 @@ export default function TeamPage() {
   const addActiveStaffMember = useOnboardingStore((state) => state.addActiveStaffMember);
   const removeActiveStaffMember = useOnboardingStore((state) => state.removeActiveStaffMember);
   const updateActiveStaffMemberRole = useOnboardingStore((state) => state.updateActiveStaffMemberRole);
+  const addTeamPhoto = useOnboardingStore((state) => state.addTeamPhoto);
+  const removeTeamPhoto = useOnboardingStore((state) => state.removeTeamPhoto);
   const players = usePlayersStore((state) => state.players);
 
   const location = [activeTeam.homeGround, activeTeam.district, activeTeam.region]
@@ -55,6 +58,31 @@ export default function TeamPage() {
           </Link>
         }
       />
+
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeInUp}
+        className="relative aspect-2/1 w-full overflow-hidden rounded-2xl sm:aspect-3/1"
+        style={
+          !activeTeam.coverImage
+            ? {
+                background: `linear-gradient(135deg, ${activeTeam.colorPrimary ?? "#323232"}, ${activeTeam.colorSecondary ?? "#ffdb00"})`,
+              }
+            : undefined
+        }
+      >
+        {activeTeam.coverImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={activeTeam.coverImage} alt="" className="size-full object-cover" />
+        ) : (
+          <div className="flex size-full items-center justify-center px-4">
+            <span className="font-heading text-lg font-semibold text-white/90 sm:text-2xl">
+              {activeTeam.name}
+            </span>
+          </div>
+        )}
+      </motion.div>
 
       <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
         <Card>
@@ -135,7 +163,8 @@ export default function TeamPage() {
         <TabsList>
           <TabsTrigger value="staff">Staff & Roles</TabsTrigger>
           <TabsTrigger value="permissions">Permissions</TabsTrigger>
-          <TabsTrigger value="gallery">Gallery</TabsTrigger>
+          <TabsTrigger value="roster">Roster</TabsTrigger>
+          <TabsTrigger value="photos">Photos</TabsTrigger>
         </TabsList>
 
         <TabsContent value="staff" className="flex flex-col gap-3 pt-4">
@@ -154,9 +183,20 @@ export default function TeamPage() {
           <PermissionTable />
         </TabsContent>
 
-        <TabsContent value="gallery" className="flex flex-col gap-3 pt-4">
+        <TabsContent value="roster" className="flex flex-col gap-3 pt-4">
           <p className="text-sm text-muted-foreground">Hover a photo to see who&apos;s who.</p>
           <TeamGallery staff={activeTeam.staff} players={players} />
+        </TabsContent>
+
+        <TabsContent value="photos" className="flex flex-col gap-3 pt-4">
+          <p className="text-sm text-muted-foreground">
+            Match days, training, and team moments — shown to anyone who views your team.
+          </p>
+          <TeamPhotoManager
+            photos={activeTeam.photos}
+            onAdd={addTeamPhoto}
+            onRemove={removeTeamPhoto}
+          />
         </TabsContent>
       </Tabs>
     </div>

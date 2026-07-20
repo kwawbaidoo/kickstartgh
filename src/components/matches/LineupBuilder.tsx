@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, X } from "lucide-react";
 
 import { FormationSelector } from "@/components/matches/FormationSelector";
+import { PitchBackground } from "@/components/matches/PitchBackground";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -17,7 +18,9 @@ import {
 import type { Player } from "@/mock/players";
 import type { BenchOfficial, Formation, Lineup } from "@/mock/matches";
 import type { StaffMember } from "@/schemas/onboarding";
-import { getFormationSlots, resolveBenchOfficials } from "@/lib/matches";
+import type { Slot } from "@/config/matches";
+import { positionLabels } from "@/config/matches";
+import { getFormationSlots, getPitchSlotStyle, resolveBenchOfficials } from "@/lib/matches";
 import { staffRoleOptions } from "@/config/roles";
 import { cn, getInitials } from "@/lib/utils";
 
@@ -30,15 +33,12 @@ type LineupBuilderProps = {
 
 function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderProps) {
   const [formation, setFormation] = useState<Formation>(initialLineup?.formation ?? "4-4-2");
-  const initialSlotCount = getFormationSlots(formation).length;
-  const [startingXI, setStartingXI] = useState<(string | null)[]>(() =>
-    initialLineup && initialLineup.formation === formation
-      ? initialLineup.startingXI
-      : Array(initialSlotCount).fill(null)
+  const [startingXI, setStartingXI] = useState<Partial<Record<Slot, string>>>(() =>
+    initialLineup && initialLineup.formation === formation ? initialLineup.startingXI : {}
   );
   const [substitutes, setSubstitutes] = useState<string[]>(initialLineup?.substitutes ?? []);
   const [captainId, setCaptainId] = useState<string | undefined>(initialLineup?.captainId);
-  const [pickerSlotIndex, setPickerSlotIndex] = useState<number | null>(null);
+  const [pickerSlot, setPickerSlot] = useState<Slot | null>(null);
   const [benchOfficials, setBenchOfficials] = useState<BenchOfficial[]>(
     initialLineup?.benchOfficials ?? []
   );
@@ -47,9 +47,9 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
 
   const slots = getFormationSlots(formation);
   const playerMap = new Map(squad.map((player) => [player.id, player]));
-  const assignedIds = new Set(startingXI.filter((id): id is string => !!id));
+  const assignedIds = new Set(Object.values(startingXI));
   const availablePlayers = squad.filter((player) => !assignedIds.has(player.id));
-  const filledCount = startingXI.filter(Boolean).length;
+  const filledCount = Object.keys(startingXI).length;
   const canSave = filledCount === slots.length;
 
   const resolvedOfficials = resolveBenchOfficials(benchOfficials, staff);
@@ -60,25 +60,29 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
 
   function handleFormationChange(next: Formation) {
     setFormation(next);
-    setStartingXI(Array(getFormationSlots(next).length).fill(null));
+    setStartingXI({});
     setCaptainId(undefined);
   }
 
-  function handleSlotTap(index: number) {
-    const currentId = startingXI[index];
+  function handleSlotTap(slot: Slot) {
+    const currentId = startingXI[slot];
     if (currentId) {
-      setStartingXI((prev) => prev.map((id, i) => (i === index ? null : id)));
+      setStartingXI((prev) => {
+        const next = { ...prev };
+        delete next[slot];
+        return next;
+      });
       if (captainId === currentId) setCaptainId(undefined);
     } else {
-      setPickerSlotIndex(index);
+      setPickerSlot(slot);
     }
   }
 
   function assignPlayer(playerId: string) {
-    if (pickerSlotIndex === null) return;
-    setStartingXI((prev) => prev.map((id, i) => (i === pickerSlotIndex ? playerId : id)));
+    if (pickerSlot === null) return;
+    setStartingXI((prev) => ({ ...prev, [pickerSlot]: playerId }));
     setSubstitutes((prev) => prev.filter((id) => id !== playerId));
-    setPickerSlotIndex(null);
+    setPickerSlot(null);
   }
 
   function toggleSubstitute(playerId: string) {
@@ -113,7 +117,7 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
   function handleSave() {
     onSave({
       formation,
-      startingXI: startingXI.filter((id): id is string => !!id),
+      startingXI,
       substitutes,
       captainId,
       benchOfficials,
@@ -121,9 +125,7 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
   }
 
   const captainItems = Object.fromEntries(
-    startingXI
-      .filter((id): id is string => !!id)
-      .map((id) => [id, playerMap.get(id)?.fullName ?? ""])
+    Object.values(startingXI).map((id) => [id, playerMap.get(id)?.fullName ?? ""])
   );
 
   return (
@@ -135,19 +137,20 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
         </span>
       </div>
 
-      <div className="relative aspect-3/4 w-full overflow-hidden rounded-2xl bg-gradient-to-b from-emerald-600 to-emerald-700">
-        <div className="absolute inset-x-0 top-1/2 h-px bg-white/30" />
-        <div className="absolute top-1/2 left-1/2 size-16 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/30" />
-        {slots.map((slot, index) => {
-          const playerId = startingXI[index];
+      <div className="relative aspect-[17/25] w-full overflow-hidden rounded-2xl lg:aspect-[25/17]">
+        <PitchBackground />
+        {slots.map((slot) => {
+          const playerId = startingXI[slot.slot];
           const player = playerId ? playerMap.get(playerId) : undefined;
+          const positionLabel = positionLabels[slot.position];
           return (
             <button
-              key={index}
+              key={slot.slot}
               type="button"
-              onClick={() => handleSlotTap(index)}
-              style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
-              className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
+              onClick={() => handleSlotTap(slot.slot)}
+              style={getPitchSlotStyle(slot)}
+              aria-label={player ? `${player.fullName}, ${positionLabel}` : `Assign ${positionLabel}`}
+              className="absolute left-[var(--slot-left)] top-[var(--slot-top)] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 lg:left-[var(--slot-left-lg)] lg:top-[var(--slot-top-lg)]"
             >
               <div
                 className={cn(
@@ -179,13 +182,11 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
             <SelectValue placeholder="Select captain" />
           </SelectTrigger>
           <SelectContent>
-            {startingXI
-              .filter((id): id is string => !!id)
-              .map((id) => (
-                <SelectItem key={id} value={id}>
-                  {playerMap.get(id)?.fullName}
-                </SelectItem>
-              ))}
+            {Object.values(startingXI).map((id) => (
+              <SelectItem key={id} value={id}>
+                {playerMap.get(id)?.fullName}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -279,13 +280,13 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
               placeholder="Full name"
               value={adhocName}
               onChange={(event) => setAdhocName(event.target.value)}
-              className="flex-1"
+              className="flex-1 h-12 p-3"
             />
             <Input
               placeholder="Role, e.g. Physio"
               value={adhocRole}
               onChange={(event) => setAdhocRole(event.target.value)}
-              className="flex-1"
+              className="flex-1 h-12 p-3"
             />
             <Button
               type="button"
@@ -305,7 +306,7 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
         {canSave ? "Save Lineup" : `Fill all ${slots.length} positions to save`}
       </Button>
 
-      <Sheet open={pickerSlotIndex !== null} onOpenChange={(open) => !open && setPickerSlotIndex(null)}>
+      <Sheet open={pickerSlot !== null} onOpenChange={(open) => !open && setPickerSlot(null)}>
         <SheetContent side="bottom" className="max-h-[80vh]">
           <SheetHeader>
             <SheetTitle>Select a player</SheetTitle>
