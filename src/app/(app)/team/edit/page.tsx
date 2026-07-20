@@ -27,6 +27,7 @@ export default function EditTeamPage() {
     homeGround: activeTeam.homeGround,
     yearEstablished: activeTeam.yearEstablished,
     logo: activeTeam.logo,
+    coverImage: activeTeam.coverImage,
     colorPrimary: activeTeam.colorPrimary ?? "#323232",
     colorSecondary: activeTeam.colorSecondary ?? "#ffdb00",
     slogan: activeTeam.slogan,

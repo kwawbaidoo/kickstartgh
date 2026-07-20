@@ -19,6 +19,28 @@ const emergencyContactFormSchema = z.object({
   email: z.email("Please enter a valid email.").optional().or(z.literal("")),
 });
 
+const educationEntryFormSchema = z.object({
+  institution: z.string().trim().min(1, "Please enter an institution name."),
+  period: z.string().trim().min(1, "Please enter a period, e.g. 2019-2022."),
+});
+
+const socialLinksFormSchema = z.object({
+  instagram: z.url("Please enter a valid URL.").optional().or(z.literal("")),
+  twitter: z.url("Please enter a valid URL.").optional().or(z.literal("")),
+  facebook: z.url("Please enter a valid URL.").optional().or(z.literal("")),
+  tiktok: z.url("Please enter a valid URL.").optional().or(z.literal("")),
+});
+
+const marketabilityProfileFormSchema = z.object({
+  nationality: z.string().trim().optional(),
+  height: z.string().trim().optional(),
+  education: z.array(educationEntryFormSchema).optional(),
+  workExperience: z.array(z.string()).optional(),
+  achievements: z.array(z.string()).optional(),
+  otherSports: z.array(z.string()).optional(),
+  socialLinks: socialLinksFormSchema.optional(),
+});
+
 const basePlayerFormSchema = z.object({
   fullName: z.string().min(2, "Please enter the player's full name."),
   nickname: z.string().trim().optional(),
@@ -41,6 +63,7 @@ const basePlayerFormSchema = z.object({
   village: z.string().trim().optional(),
   previousClub: z.string().trim().optional(),
   status: statusEnum,
+  profile: marketabilityProfileFormSchema.optional(),
 });
 
 export function createPlayerFormSchema(existingPlayers: Player[] = [], excludeId?: string) {

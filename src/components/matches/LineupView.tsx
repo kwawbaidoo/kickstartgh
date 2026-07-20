@@ -1,7 +1,8 @@
 import type { Lineup } from "@/mock/matches";
 import type { Player } from "@/mock/players";
 import type { StaffMember } from "@/schemas/onboarding";
-import { getFormationSlots, resolveBenchOfficials } from "@/lib/matches";
+import { PitchBackground } from "@/components/matches/PitchBackground";
+import { getFormationSlots, getPitchSlotStyle, resolveBenchOfficials } from "@/lib/matches";
 import { getInitials } from "@/lib/utils";
 
 type LineupViewProps = {
@@ -25,18 +26,17 @@ function LineupView({ lineup, players, staff }: LineupViewProps) {
         <span className="text-sm text-muted-foreground">{lineup.formation}</span>
       </div>
 
-      <div className="relative aspect-3/4 w-full overflow-hidden rounded-2xl bg-gradient-to-b from-emerald-600 to-emerald-700">
-        <div className="absolute inset-x-0 top-1/2 h-px bg-white/30" />
-        <div className="absolute top-1/2 left-1/2 size-16 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/30" />
-        {slots.map((slot, index) => {
-          const playerId = lineup.startingXI[index];
+      <div className="relative aspect-[17/25] w-full overflow-hidden rounded-2xl lg:aspect-[25/17]">
+        <PitchBackground />
+        {slots.map((slot) => {
+          const playerId = lineup.startingXI[slot.slot];
           const player = playerId ? playerMap.get(playerId) : undefined;
           if (!player) return null;
           return (
             <div
-              key={index}
-              style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
-              className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
+              key={slot.slot}
+              style={getPitchSlotStyle(slot)}
+              className="absolute left-[var(--slot-left)] top-[var(--slot-top)] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 lg:left-[var(--slot-left-lg)] lg:top-[var(--slot-top-lg)]"
             >
               <div className="flex size-11 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground ring-2 ring-white/70">
                 {getInitials(player.fullName)}
