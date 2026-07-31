@@ -42,6 +42,7 @@ function TeamGallery({ staff, players }: TeamGalleryProps) {
                 photo={player.photo}
                 name={player.fullName}
                 identification={player.position}
+                href={`/players/${player.id}`}
               />
             ))}
           </div>

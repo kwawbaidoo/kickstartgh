@@ -36,6 +36,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePlayersStore } from "@/store/players-store";
 import { useMatchesStore } from "@/store/matches-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
+import { useSeasonStore } from "@/store/season-store";
 import {
   buildFixtureShareMessage,
   buildLineupShareMessage,
@@ -54,6 +55,7 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
   const reactivateMatch = useMatchesStore((state) => state.reactivateMatch);
   const players = usePlayersStore((state) => state.players);
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
+  const seasons = useSeasonStore((state) => state.seasons);
   const match = matches.find((candidate) => candidate.id === id);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -75,6 +77,7 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
   }
 
   const playerNames = Object.fromEntries(players.map((player) => [player.id, player.fullName]));
+  const season = seasons.find((candidate) => candidate.id === match.seasonId);
 
   const goals = match.events.filter((event) => event.type === "goal").length;
   const cards = match.events.filter((event) => event.type === "yellow_card" || event.type === "red_card").length;
@@ -168,6 +171,14 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
             <Trophy className="size-3.5" />
             {match.competition} · {match.matchType}
           </div>
+          {season && (
+            <Link
+              href={`/seasons/${season.id}`}
+              className="w-fit text-xs font-medium text-primary hover:underline"
+            >
+              Part of {season.name}
+            </Link>
+          )}
           <ScoreBoard
             teamName={activeTeam.name}
             teamLogo={activeTeam.logo}

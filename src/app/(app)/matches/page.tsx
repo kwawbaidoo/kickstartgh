@@ -7,6 +7,7 @@ import { CalendarPlus, ShieldOff } from "lucide-react";
 import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import { Stagger } from "@/components/common/Stagger";
 import { SearchBar } from "@/components/common/SearchBar";
+import { Pagination } from "@/components/common/Pagination";
 import { MatchCard } from "@/components/matches/MatchCard";
 import { MatchesTable } from "@/components/matches/MatchesTable";
 import { ViewToggle, type CardListView } from "@/components/common/ViewToggle";
@@ -22,7 +23,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useMatchesStore } from "@/store/matches-store";
+import { useSeasonStore } from "@/store/season-store";
 import { defaultMatchFilters, filterMatches, getCompetitions, getSeasonPerformance } from "@/lib/matches";
+import { getSeasonMatches } from "@/lib/seasons";
 import type { MatchStatus } from "@/mock/matches";
 import { toSelectItems } from "@/lib/utils";
 
@@ -49,17 +52,27 @@ const emptyCopy: Record<MatchStatus, { title: string; description: string }> = {
 
 const homeAwayItems = { All: "All venues", Home: "Home", Away: "Away" };
 
+const PAGE_SIZE = 16;
+
 export default function MatchesPage() {
-  const matches = useMatchesStore((state) => state.matches);
+  const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
+  const activeSeason = useSeasonStore((state) =>
+    state.seasons.find((season) => season.id === state.activeSeasonId)
+  );
+  const matches = getSeasonMatches(useMatchesStore((state) => state.matches), activeSeasonId);
   const [status, setStatus] = useState<MatchStatus>("upcoming");
   const [view, setView] = useState<CardListView>("card");
   const [filters, setFilters] = useState(defaultMatchFilters);
+  const [page, setPage] = useState(1);
 
   const competitions = getCompetitions(matches);
   const competitionItems = { All: "All competitions", ...toSelectItems(competitions) };
   const seasonPerformance = getSeasonPerformance(matches);
 
   const filtered = filterMatches(matches, status, filters);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(Math.max(page, 1), pageCount);
+  const paginatedMatches = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <div className="flex flex-col gap-6">
@@ -74,10 +87,16 @@ export default function MatchesPage() {
         }
       />
 
-      <SeasonPerformanceCard performance={seasonPerformance} />
+      <SeasonPerformanceCard performance={seasonPerformance} seasonName={activeSeason?.name} />
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Tabs value={status} onValueChange={(value) => setStatus(value as MatchStatus)}>
+        <Tabs
+          value={status}
+          onValueChange={(value) => {
+            setStatus(value as MatchStatus);
+            setPage(1);
+          }}
+        >
           <TabsList>
             {statusTabs.map((tab) => (
               <TabsTrigger key={tab.value} value={tab.value}>
@@ -87,19 +106,31 @@ export default function MatchesPage() {
           </TabsList>
         </Tabs>
 
-        <ViewToggle value={view} onChange={setView} />
+        <ViewToggle
+          value={view}
+          onChange={(next) => {
+            setView(next);
+            setPage(1);
+          }}
+        />
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <SearchBar
           value={filters.search}
-          onChange={(search) => setFilters({ ...filters, search })}
+          onChange={(search) => {
+            setFilters({ ...filters, search });
+            setPage(1);
+          }}
           placeholder="Search by opponent or competition"
         />
         <Select
           items={competitionItems}
           value={filters.competition}
-          onValueChange={(value) => setFilters({ ...filters, competition: value ?? "All" })}
+          onValueChange={(value) => {
+            setFilters({ ...filters, competition: value ?? "All" });
+            setPage(1);
+          }}
         >
           <SelectTrigger className="w-full sm:w-auto">
             <SelectValue />
@@ -116,9 +147,10 @@ export default function MatchesPage() {
         <Select
           items={homeAwayItems}
           value={filters.homeAway}
-          onValueChange={(value) =>
-            setFilters({ ...filters, homeAway: value as typeof filters.homeAway })
-          }
+          onValueChange={(value) => {
+            setFilters({ ...filters, homeAway: value as typeof filters.homeAway });
+            setPage(1);
+          }}
         >
           <SelectTrigger className="w-full sm:w-auto">
             <SelectValue />
@@ -139,14 +171,19 @@ export default function MatchesPage() {
           actionLabel={status === "upcoming" ? "Create Match" : undefined}
           actionHref={status === "upcoming" ? "/matches/new" : undefined}
         />
-      ) : view === "card" ? (
-        <Stagger className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((match) => (
-            <MatchCard key={match.id} match={match} />
-          ))}
-        </Stagger>
       ) : (
-        <MatchesTable matches={filtered} />
+        <>
+          {view === "card" ? (
+            <Stagger className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {paginatedMatches.map((match) => (
+                <MatchCard key={match.id} match={match} />
+              ))}
+            </Stagger>
+          ) : (
+            <MatchesTable matches={paginatedMatches} />
+          )}
+          <Pagination page={currentPage} pageCount={pageCount} onPageChange={setPage} />
+        </>
       )}
     </div>
   );

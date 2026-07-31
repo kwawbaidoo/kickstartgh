@@ -29,6 +29,30 @@ export function getSessionsForDate(sessions: AttendanceSession[], date: Date): A
   return sessions.filter((session) => session.date === key);
 }
 
+export type TrainingFilters = {
+  search: string;
+};
+
+export const defaultTrainingFilters: TrainingFilters = {
+  search: "",
+};
+
+export function filterTrainingSessions(
+  sessions: AttendanceSession[],
+  filters: TrainingFilters
+): AttendanceSession[] {
+  const query = filters.search.trim().toLowerCase();
+  if (!query) return sessions;
+
+  return sessions.filter((session) => {
+    return (
+      session.title.toLowerCase().includes(query) ||
+      session.venue.toLowerCase().includes(query) ||
+      (session.focus?.toLowerCase().includes(query) ?? false)
+    );
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Player-level analytics
 // ---------------------------------------------------------------------------

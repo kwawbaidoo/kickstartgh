@@ -22,7 +22,13 @@ type Stat = {
   colorClass: string;
 };
 
-function SeasonPerformanceCard({ performance }: { performance: SeasonPerformance }) {
+type SeasonPerformanceCardProps = {
+  performance: SeasonPerformance;
+  /** The real Season entity's name, when available — takes priority over the year-span heuristic below. */
+  seasonName?: string;
+};
+
+function SeasonPerformanceCard({ performance, seasonName }: SeasonPerformanceCardProps) {
   const stats: Stat[] = [
     {
       label: "Wins",
@@ -67,7 +73,7 @@ function SeasonPerformanceCard({ performance }: { performance: SeasonPerformance
         <CardHeader className="flex flex-row items-center justify-between gap-2">
           <h3 className="font-heading text-base font-semibold text-foreground">Season Performance</h3>
           <span className="text-xs text-muted-foreground">
-            {performance.season} Season · {performance.played} matches played
+            {seasonName ?? `${performance.season} Season`} · {performance.played} matches played
           </span>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">

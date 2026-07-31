@@ -1,7 +1,9 @@
 "use client";
 
 import { use } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -46,6 +48,13 @@ export default function EditTrainingPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+      <Link
+        href={`/training/${id}`}
+        className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        Back to Session
+      </Link>
       <SectionHeader title="Edit Session" description={`Update details for ${session.title}.`} />
       <TrainingForm defaultValues={defaultValues} onSubmit={handleSubmit} submitLabel="Save Changes" />
     </div>

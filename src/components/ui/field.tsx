@@ -52,7 +52,7 @@ function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 const fieldVariants = cva(
-  "group/field flex w-full gap-2 data-[invalid=true]:text-destructive",
+  "group/field flex w-full gap-2",
   {
     variants: {
       orientation: {
@@ -100,8 +100,11 @@ function FieldContent({ className, ...props }: React.ComponentProps<"div">) {
 
 function FieldLabel({
   className,
+  required,
+  optional,
+  children,
   ...props
-}: React.ComponentProps<typeof Label>) {
+}: React.ComponentProps<typeof Label> & { required?: boolean; optional?: boolean }) {
   return (
     <Label
       data-slot="field-label"
@@ -111,7 +114,15 @@ function FieldLabel({
         className
       )}
       {...props}
-    />
+    >
+      {children}
+      {required && (
+        <span className="text-destructive">
+          *<span className="sr-only">(required)</span>
+        </span>
+      )}
+      {optional && <span className="text-xs font-normal text-muted-foreground italic">(optional)</span>}
+    </Label>
   )
 }
 

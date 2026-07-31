@@ -39,6 +39,12 @@ export const trainingFocusIcon: Record<TrainingFocus, LucideIcon> = {
 
 export const sessionStatusOptions: SessionStatus[] = ["upcoming", "completed", "cancelled"];
 
+export const sessionStatusBadgeClasses: Record<SessionStatus, string> = {
+  upcoming: "bg-accent text-accent-foreground",
+  completed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
+  cancelled: "bg-muted text-muted-foreground",
+};
+
 export const attendanceStatusOptions: AttendanceStatus[] = [
   "present",
   "late",
@@ -67,7 +73,7 @@ export const attendanceStatusConfig: Record<AttendanceStatus, AttendanceStatusCo
   excused: {
     label: "Excused",
     icon: FileText,
-    colorClass: "bg-muted text-muted-foreground",
+    colorClass: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
   },
   injured: {
     label: "Injured",

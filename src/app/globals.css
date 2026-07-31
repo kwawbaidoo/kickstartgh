@@ -50,31 +50,33 @@
 
 :root {
   /* KickStartGH brand */
-  --brand-primary: #323232;
+  --brand-primary: #1e3a8a;
   --brand-primary-foreground: #ffffff;
-  --brand-accent: #ffdb00;
-  --brand-accent-foreground: #323232;
+  --brand-accent: #2563eb;
+  --brand-accent-foreground: #ffffff;
+  --brand-ink: #1f2937;
+  --brand-tint: #e0f2fe;
 
-  --background: oklch(1 0 0);
-  --foreground: #323232;
+  --background: oklch(0.984 0.004 250);
+  --foreground: var(--brand-ink);
   --card: oklch(1 0 0);
-  --card-foreground: #323232;
+  --card-foreground: var(--brand-ink);
   --popover: oklch(1 0 0);
-  --popover-foreground: #323232;
+  --popover-foreground: var(--brand-ink);
   --primary: var(--brand-primary);
   --primary-foreground: var(--brand-primary-foreground);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: #323232;
-  --muted: oklch(0.97 0 0);
+  --secondary: var(--brand-tint);
+  --secondary-foreground: var(--brand-ink);
+  --muted: var(--brand-tint);
   --muted-foreground: oklch(0.5 0 0);
   --accent: var(--brand-accent);
   --accent-foreground: var(--brand-accent-foreground);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
+  --border: oklch(0.922 0.015 250);
+  --input: oklch(0.922 0.015 250);
   --ring: var(--brand-accent);
   --chart-1: var(--brand-accent);
-  --chart-2: #323232;
+  --chart-2: var(--brand-primary);
   --chart-3: oklch(0.556 0 0);
   --chart-4: oklch(0.439 0 0);
   --chart-5: oklch(0.269 0 0);
@@ -96,8 +98,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: #323232;
+  --primary: var(--brand-tint);
+  --primary-foreground: var(--brand-primary);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -113,7 +115,7 @@
   --chart-3: oklch(0.556 0 0);
   --chart-4: oklch(0.439 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: #232323;
+  --sidebar: #1a2333;
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: var(--brand-accent);
   --sidebar-primary-foreground: var(--brand-accent-foreground);

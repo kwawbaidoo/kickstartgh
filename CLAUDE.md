@@ -27,8 +27,10 @@ UI requirements:
 * Large buttons.
 * Clear empty states.
 * Fast loading screens.
-* Dark Grey (#323232).
-* Vivid Yellow (#ffdb00).
+* Navy Blue (#1E3A8A).
+* Bright Blue (#2563EB).
+* Slate Ink (#1F2937).
+* Sky Tint (#E0F2FE).
 
 Design inspiration:
 

@@ -1,3 +1,5 @@
+import { DEFAULT_SEASON_ID } from "@/mock/seasons";
+
 export type Position = "Goalkeeper" | "Defender" | "Midfielder" | "Forward";
 
 export type PreferredFoot = "Left" | "Right" | "Both";
@@ -7,6 +9,18 @@ export type PlayerStatus = "Active" | "Injured" | "Inactive" | "Suspended";
 export type StatusChange = {
   status: PlayerStatus;
   date: string;
+};
+
+/**
+ * A player's registration for one season — jersey number and status can
+ * differ season to season (e.g. #11 in 2025, #9 in 2026), while the player
+ * themselves stays one continuous identity across every season they've played.
+ */
+export type PlayerSeasonRecord = {
+  seasonId: string;
+  jerseyNumber: number;
+  status: PlayerStatus;
+  registeredAt: string;
 };
 
 export type EmergencyContact = {
@@ -64,6 +78,13 @@ export type Player = {
   createdAt: string;
   profile?: MarketabilityProfile;
   /**
+   * Every player must be registered for at least one season (never empty).
+   * The top-level `jerseyNumber`/`status` above always mirror this player's
+   * record in the currently active season — see registerPlayerForSeason /
+   * getSeasonRecord in lib/players.ts for how the two stay in sync.
+   */
+  seasonRecords: PlayerSeasonRecord[];
+  /**
    * Match-derived numbers (matchesPlayed/goals/assists/cards) are computed
    * live from matchesStore via getPlayerMatchStats — see lib/matches.ts.
    * Attendance is computed live too, from attendanceStore + matchesStore —
@@ -75,7 +96,7 @@ export type Player = {
   };
 };
 
-export const players: Player[] = [
+const seedPlayers: Omit<Player, "seasonRecords">[] = [
   {
     id: "player_001",
     teamId: "team_001",
@@ -340,6 +361,18 @@ export const players: Player[] = [
     stats: { rating: 6.9 },
   },
 ];
+
+export const players: Player[] = seedPlayers.map((player) => ({
+  ...player,
+  seasonRecords: [
+    {
+      seasonId: DEFAULT_SEASON_ID,
+      jerseyNumber: player.jerseyNumber,
+      status: player.status,
+      registeredAt: player.createdAt,
+    },
+  ],
+}));
 
 export function getPlayersByTeam(teamId: string): Player[] {
   return players.filter((player) => player.teamId === teamId);

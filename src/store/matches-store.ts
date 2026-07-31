@@ -9,7 +9,9 @@ import {
   type MatchEventInput,
 } from "@/mock/matches";
 import { currentTeam } from "@/mock/teams";
+import { DEFAULT_SEASON_ID } from "@/mock/seasons";
 import type { MatchFormInput } from "@/schemas/match";
+import { useSeasonStore } from "@/store/season-store";
 
 type MatchesState = {
   matches: Match[];
@@ -24,6 +26,7 @@ type MatchesState = {
   completeMatch: (matchId: string, teamScore: number, opponentScore: number) => void;
   cancelMatch: (matchId: string) => void;
   reactivateMatch: (matchId: string) => void;
+  migrateSeasonIds: () => void;
 };
 
 function fromFormInput(input: MatchFormInput) {
@@ -42,6 +45,7 @@ export const useMatchesStore = create<MatchesState>()(
         const newMatch: Match = {
           id: crypto.randomUUID(),
           teamId: currentTeam.id,
+          seasonId: useSeasonStore.getState().activeSeasonId,
           status: "upcoming",
           lineup: null,
           events: [],
@@ -112,6 +116,15 @@ export const useMatchesStore = create<MatchesState>()(
           ),
         });
       },
+
+      /** Backfills matches persisted before the Season feature existed. */
+      migrateSeasonIds: () => {
+        set({
+          matches: get().matches.map((match) =>
+            match.seasonId ? match : { ...match, seasonId: DEFAULT_SEASON_ID }
+          ),
+        });
+      },
     }),
     {
       name: "kickstartgh-matches",
@@ -120,6 +133,7 @@ export const useMatchesStore = create<MatchesState>()(
       partialize: (state) => ({ matches: state.matches }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
+        state?.migrateSeasonIds();
       },
     }
   )

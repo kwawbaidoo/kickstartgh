@@ -8,9 +8,13 @@ import { useAttendanceStore } from "@/store/attendance-store";
 import { useReportsStore } from "@/store/reports-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { useSettingsStore } from "@/store/settings-store";
+import { useSeasonStore } from "@/store/season-store";
+import { useAuthStore } from "@/store/auth-store";
 
 function StoreHydration() {
   useEffect(() => {
+    useAuthStore.persist.rehydrate();
+    useSeasonStore.persist.rehydrate();
     usePlayersStore.persist.rehydrate();
     useMatchesStore.persist.rehydrate();
     useAttendanceStore.persist.rehydrate();

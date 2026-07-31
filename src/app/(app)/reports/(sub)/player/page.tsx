@@ -24,17 +24,24 @@ import { useMatchesStore } from "@/store/matches-store";
 import { useAttendanceStore } from "@/store/attendance-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { useReportsStore } from "@/store/reports-store";
+import { useSeasonStore } from "@/store/season-store";
 import {
   buildPlayerReportShareMessage,
   buildPlayerReportTable,
   defaultPlayerReportFilters,
   type PlayerReportFilters,
 } from "@/lib/reports";
+import { getSeasonRoster } from "@/lib/players";
+import { getSeasonMatches, getSeasonSessions } from "@/lib/seasons";
 
 export default function PlayerReportPage() {
-  const players = usePlayersStore((state) => state.players);
-  const matches = useMatchesStore((state) => state.matches);
-  const sessions = useAttendanceStore((state) => state.sessions);
+  const activeSeason = useSeasonStore((state) =>
+    state.seasons.find((season) => season.id === state.activeSeasonId)
+  );
+  const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
+  const players = getSeasonRoster(usePlayersStore((state) => state.players), activeSeasonId);
+  const matches = getSeasonMatches(useMatchesStore((state) => state.matches), activeSeasonId);
+  const sessions = getSeasonSessions(useAttendanceStore((state) => state.sessions), activeSeasonId);
   const teamName = useOnboardingStore((state) => state.activeTeam.name);
   const addHistoryEntry = useReportsStore((state) => state.addHistoryEntry);
 
@@ -54,8 +61,13 @@ export default function PlayerReportPage() {
     filteredPlayers.length === 1 ? buildPlayerReportShareMessage(filteredPlayers[0], matches) : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+    <>
       <SectionHeader title="Player Report" description="Build a custom report of your squad." />
+      {activeSeason && (
+        <p className="text-xs text-muted-foreground">
+          Reporting on: <span className="font-medium text-foreground">{activeSeason.name}</span>
+        </p>
+      )}
 
       <ReportWizard
         filename="player-report"
@@ -147,6 +159,6 @@ export default function PlayerReportPage() {
         currentColumns={columns}
         onApply={(template) => setColumns(template.columns)}
       />
-    </div>
+    </>
   );
 }

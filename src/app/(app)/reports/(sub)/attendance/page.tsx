@@ -22,7 +22,10 @@ import { useMatchesStore } from "@/store/matches-store";
 import { useAttendanceStore } from "@/store/attendance-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { useReportsStore } from "@/store/reports-store";
+import { useSeasonStore } from "@/store/season-store";
 import { buildAttendanceReportTable } from "@/lib/reports";
+import { getSeasonRoster } from "@/lib/players";
+import { getSeasonMatches, getSeasonSessions } from "@/lib/seasons";
 
 const periodLabels: Record<AttendancePeriod, string> = {
   weekly: "This Week",
@@ -31,9 +34,13 @@ const periodLabels: Record<AttendancePeriod, string> = {
 };
 
 export default function AttendanceReportPage() {
-  const players = usePlayersStore((state) => state.players);
-  const matches = useMatchesStore((state) => state.matches);
-  const sessions = useAttendanceStore((state) => state.sessions);
+  const activeSeason = useSeasonStore((state) =>
+    state.seasons.find((season) => season.id === state.activeSeasonId)
+  );
+  const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
+  const players = getSeasonRoster(usePlayersStore((state) => state.players), activeSeasonId);
+  const matches = getSeasonMatches(useMatchesStore((state) => state.matches), activeSeasonId);
+  const sessions = getSeasonSessions(useAttendanceStore((state) => state.sessions), activeSeasonId);
   const teamName = useOnboardingStore((state) => state.activeTeam.name);
   const addHistoryEntry = useReportsStore((state) => state.addHistoryEntry);
 
@@ -45,8 +52,13 @@ export default function AttendanceReportPage() {
   const table = buildAttendanceReportTable(players, sessions, matches, period, columns);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+    <>
       <SectionHeader title="Attendance Report" description="Training and match attendance ranking." />
+      {activeSeason && (
+        <p className="text-xs text-muted-foreground">
+          Reporting on: <span className="font-medium text-foreground">{activeSeason.name}</span>
+        </p>
+      )}
 
       <ReportWizard
         filename="attendance-report"
@@ -83,6 +95,6 @@ export default function AttendanceReportPage() {
         currentColumns={columns}
         onApply={(template) => setColumns(template.columns)}
       />
-    </div>
+    </>
   );
 }

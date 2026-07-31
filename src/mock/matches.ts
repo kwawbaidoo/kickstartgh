@@ -1,4 +1,5 @@
 import type { Slot } from "@/config/matches";
+import { DEFAULT_SEASON_ID } from "@/mock/seasons";
 
 export type MatchStatus = "upcoming" | "completed" | "cancelled";
 
@@ -47,6 +48,7 @@ export type MatchEventInput = DistributiveOmit<MatchEvent, "id">;
 export type Match = {
   id: string;
   teamId: string;
+  seasonId: string;
   opponent: string;
   competition: string;
   matchType: MatchType;
@@ -87,7 +89,7 @@ const coreLineup: Lineup = {
   ],
 };
 
-export const matches: Match[] = [
+const seedMatches: Omit<Match, "seasonId">[] = [
   {
     id: "match_001",
     teamId: "team_001",
@@ -213,6 +215,11 @@ export const matches: Match[] = [
     createdAt: "2026-07-13T08:00:00Z",
   },
 ];
+
+export const matches: Match[] = seedMatches.map((match) => ({
+  ...match,
+  seasonId: DEFAULT_SEASON_ID,
+}));
 
 export function getMatchesByTeam(teamId: string): Match[] {
   return matches.filter((match) => match.teamId === teamId);

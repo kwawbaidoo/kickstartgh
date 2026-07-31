@@ -1,9 +1,9 @@
 # KickStartGH — Software Requirements Specification (Backend / API)
 
 **Purpose:** This document specifies the data model, business rules, and required API
-surface for everything currently implemented in the KickStartGH frontend (Sprints 1–6.5),
-so the backend team can design and build real endpoints to replace the mock
-Zustand/localStorage layer.
+surface for everything currently implemented in the KickStartGH frontend (Sprints 1–8:
+core MVP through Season Management), so the backend team can design and build real
+endpoints to replace the mock Zustand/localStorage layer.
 
 **Relationship to other docs:** `PRODUCT.md` describes the product vision. `API_CONTRACT.md`
 is an early, partial sketch (5 example endpoints) — this document supersedes it in detail
@@ -32,10 +32,20 @@ and persisted to `localStorage` per browser. There is:
   link opened client-side; no message is ever sent server-side.
 - **No real invite/join flow.** The onboarding invite step fabricates a client-side code and
   a non-functional `kickstartgh.com/join/:code` URL; there is no backend to redeem it.
+- **One intentionally public route.** `/players/[id]/profile` renders a player's
+  marketability profile with no authentication, by design, for external sharing. It reads
+  the same mock stores as the rest of the app (rehydrating independently, since it sits
+  outside the authenticated app's layout) — see §9 G10 for the backend implication.
 
-Everything else below (Teams, Players, Matches, Training/Attendance, Reports, Settings) is a
-complete, working feature with real forms, validation, and derived statistics — it just needs
-a backend behind it.
+Everything else below (Seasons, Teams, Players, Matches, Training/Attendance, Reports,
+Settings) is a complete, working feature with real forms, validation, and derived
+statistics — it just needs a backend behind it.
+
+**Season is the top-level container.** Every player registration, match, training
+session, and report belongs to exactly one season (`seasonId`). Exactly one season is
+ever `"active"` at a time; the ordinary Players/Matches/Training/Reports pages always
+show only the active season's data. Browsing a non-active season's (read-only) data
+happens explicitly under `/seasons/:id/*`.
 
 ---
 
@@ -138,11 +148,14 @@ Suggested minimal endpoints:
 ## 5. Domain Model Overview
 
 ```
+Team 1───* Season
 Team 1───* StaffMember
-Team 1───* Player
+Team 1───* Player 1───* PlayerSeasonRecord ──1 Season
 Team 1───* Match ──* MatchEvent
+Match *───1 Season
 Match 0..1───1 Lineup
 Team 1───* AttendanceSession (Record<playerId, AttendanceStatus>)
+AttendanceSession *───1 Season
 Team/User 1───* ReportTemplate
 Team/User 1───* ReportHistoryEntry
 User 1───1 Profile
@@ -154,6 +167,14 @@ User 1───1 SecuritySettings ──* Session (device session, not training 
 All top-level entities (Player, Match, AttendanceSession) carry `teamId` for tenancy.
 There is currently no `userId` on any entity because there is no authenticated user — every
 per-user entity in §8.8 (Settings) will need one added.
+
+**Player identity is continuous across seasons.** A `Player` is not duplicated per
+season — one player row carries a `seasonRecords[]` array, one entry per season they've
+been registered for, holding that season's jersey number and status. The player's
+top-level `jerseyNumber`/`status`/`statusHistory` fields are a denormalized mirror of
+their record in whichever season is currently active, kept in sync on every write. Any
+reader that only ever shows active-season data (which is every existing page except
+`/seasons/:id/*`) can keep reading those top-level fields unchanged.
 
 ---
 
@@ -171,7 +192,7 @@ per-user entity in §8.8 (Settings) will need one added.
 | `homeGround` | string | ✓ | min 2 chars |
 | `yearEstablished` | integer | ✓ | `1900 ≤ year ≤ currentYear` |
 | `logo` | string (image) | | **currently a base64 data URI** — see §8.9 |
-| `colorPrimary`, `colorSecondary` | hex color string | | defaults `#323232` / `#ffdb00` |
+| `colorPrimary`, `colorSecondary` | hex color string | | defaults `#1e3a8a` / `#2563eb` |
 | `slogan` | string | | max 120 chars |
 | `facebook`, `instagram`, `tiktok`, `website` | string (URL/handle) | | added in Sprint 6.5; free text today, no URL validation client-side |
 | `createdAt` | ISO timestamp | — | |
@@ -211,9 +232,11 @@ coaches). Add/remove/change-role are independent operations, not a full-list rep
 | `emergencyContact` | string | | |
 | `village` | string | | |
 | `previousClub` | string | | |
-| `status` | enum: `Active`\|`Injured`\|`Inactive` | ✓ | |
+| `status` | enum: `Active`\|`Injured`\|`Inactive`\|`Suspended` | ✓ | `Suspended` added in Sprint 8 alongside season records |
 | `statusHistory` | array of `{status, date}` | — | **append-only log**; a new entry is appended only when `status` actually changes (see business rule below) |
 | `createdAt` | ISO timestamp | — | |
+| `profile` | `MarketabilityProfile` | | optional, see §6.3.2 |
+| `seasonRecords` | `PlayerSeasonRecord[]` | ✓ | never empty — see §6.3.1 |
 | `stats.rating` | number | — | the **only** stored stat; everything else below is computed, never persisted |
 
 **Critical business rule — derived vs. stored stats:** `matchesPlayed`, `goals`, `assists`,
@@ -228,12 +251,59 @@ stored `status`. If unchanged, leave `statusHistory` untouched. If changed, appe
 `{status: newStatus, date: now()}`. On player creation, seed `statusHistory` with one entry
 for the initial status.
 
+#### 6.3.1 PlayerSeasonRecord
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `seasonId` | string | ✓ | FK |
+| `jerseyNumber` | integer | ✓ | `1–99` |
+| `status` | enum, same as `Player.status` | ✓ | this season's status, independent of other seasons |
+| `registeredAt` | ISO timestamp | ✓ | |
+
+Business rules:
+- A player must have **at least one** `PlayerSeasonRecord` at all times — registration
+  into a season is what makes a player "real" in a given season, per the product
+  requirement that no player exists outside a season.
+- Registering a returning player into a new season with a different `jerseyNumber` does
+  not touch their record in any other season.
+- **Known gap (frontend today):** jersey-number uniqueness is validated only at player
+  *creation* time (against players already registered in the active season). The
+  season-roster "Register Player" action (`registerPlayerForSeason`) does **not**
+  currently re-check uniqueness within the target season — the backend should enforce
+  jersey-number uniqueness per `(seasonId)` server-side regardless of client behavior.
+- "Carry forward roster" (`bulkRegisterForSeason`) copies every `Active`-status player
+  from a source season into the target season, preserving each player's source-season
+  jersey number.
+- Removing a player from a season deletes only that season's record; it never touches
+  the player's identity or other seasons' records.
+
+#### 6.3.2 MarketabilityProfile (optional, on `Player.profile`)
+
+A player's public-facing profile — the fields relevant to a scout, another club, or a
+tournament organizer, rendered on the public share page (§8.10 has no dedicated
+endpoints; it rides the normal Player read endpoints since it's just optional fields on
+the same entity).
+
+| Field | Type | Notes |
+|---|---|---|
+| `nationality` | string | |
+| `height` | string | free text (e.g. `"5ft 10in"`), not normalized to cm |
+| `education` | `{institution: string, period: string}[]` | |
+| `workExperience` | `string[]` | free-text entries |
+| `achievements` | `string[]` | free-text entries |
+| `otherSports` | `string[]` | free-text entries |
+| `socialLinks` | `{instagram?, twitter?, facebook?, tiktok?: string}` | all optional |
+
+All fields optional — most teams will only fill this in for players they're actively
+promoting.
+
 ### 6.4 Match
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | `id` | string | — | |
 | `teamId` | string | ✓ | |
+| `seasonId` | string | ✓ | FK, added Sprint 8 — stamped from the active season at creation time |
 | `opponent` | string | ✓ | min 2 chars |
 | `competition` | string | ✓ | min 2 chars, free text (used for report/filter grouping) |
 | `matchType` | enum: `Friendly`\|`League`\|`Tournament`\|`Knockout` | ✓ | |
@@ -252,12 +322,21 @@ for the initial status.
 
 #### 6.4.1 Lineup
 
+Formations were retrofitted in Sprint 7.6 from generic rows to a real football
+position/pitch-coordinate model.
+
 | Field | Type | Notes |
 |---|---|---|
-| `formation` | enum: `4-4-2`\|`4-3-3`\|`3-5-2`\|`5-3-2` | |
-| `startingXI` | `string[]` (player ids) | ordered FWD→MID→DEF→GK for UI layout; count must match the formation's slot count |
-| `substitutes` | `string[]` (player ids) | |
-| `captainId` | string (player id) | optional, must be in `startingXI` |
+| `formation` | enum, 11 values — see Appendix A.5 | |
+| `startingXI` | `Partial<Record<Slot, string>>` (slot → player id) | **slot-keyed, not an ordered array** — a formation only fills the slots it uses (e.g. a back four has no `LWB`/`RWB` key at all) |
+| `substitutes` | `string[]` (player ids) | unchanged — a flat list, no slot concept |
+| `captainId` | string (player id) | optional, must be one of the values in `startingXI` |
+
+A `Slot` (e.g. `CB1`, `CB2`, `ST1`) is a specific pitch place for one formation; a
+`Position` (e.g. `CB`, `ST`) is the football role it maps to — multiple slots can share
+one position (two centre-backs are both `CB`, but distinct slots so both can be filled).
+Validate that every key in `startingXI` is a slot the chosen `formation` actually
+defines, and that the count of filled slots doesn't exceed 11.
 
 #### 6.4.2 MatchEvent (discriminated union by `type`)
 
@@ -284,6 +363,7 @@ Business rules:
 |---|---|---|---|
 | `id` | string | — | |
 | `teamId` | string | ✓ | |
+| `seasonId` | string | ✓ | FK, added Sprint 8 — stamped from the active season at creation time |
 | `title` | string | ✓ | min 2 chars |
 | `date` | date string | ✓ | |
 | `startTime`, `endTime` | time string | ✓ | `endTime` must be strictly after `startTime` |
@@ -412,6 +492,36 @@ log out one session, log out all sessions except the current one. **None of this
 by real auth yet** — building real password/2FA/session management is new backend work that
 the frontend UI anticipates but doesn't implement server logic for.
 
+### 6.8 Season
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `id` | string | — | |
+| `teamId` | string | ✓ | |
+| `name` | string | ✓ | min 2 chars |
+| `startDate` | date string | ✓ | |
+| `endDate` | date string | ✓ | must be after `startDate` |
+| `status` | enum: `upcoming`\|`active`\|`completed`\|`archived` | ✓ | defaults `upcoming` on create |
+| `description` | string | | |
+| `objectives` | string | | |
+| `competitionCategory` | string | | free text; UI suggests League/Cup/Friendly/Youth League/Community League |
+| `budget` | number | | `≥ 0` |
+| `colorPrimary`, `colorSecondary` | hex color string | | |
+| `createdAt` | ISO timestamp | — | |
+
+Business rules:
+- **Exactly one season is ever `"active"`** for a team. `activateSeason(id)` sets the
+  target to `"active"` and, in the same operation, flips whatever season was previously
+  active to `"completed"`.
+- `archiveSeason(id)` is **blocked if `id` is the currently active season** — a season
+  must be deactivated (by activating a different one) before it can be archived.
+- `duplicateSeason(id, name)` copies a season's metadata/colors into a new `"upcoming"`
+  season with a fresh `id`/`createdAt`; it does not by itself copy any roster (that's the
+  separate "carry forward roster" action against Players, §6.3.1).
+- Deleting a season is **not implemented client-side today** — only create/update/
+  activate/archive/rename/duplicate exist. Whether hard-delete should ever be allowed
+  (given matches/sessions/players reference it) is a backend/product decision.
+
 ---
 
 ## 7. Derived / Computed Values — exact formulas
@@ -475,6 +585,30 @@ buckets: `Under 18` (<18), `18-24`, `25-30`, `31+`.
 `weekly` = last 7 days, `monthly` = last 1 calendar month, `seasonal` = last 6 calendar
 months, all relative to "now".
 
+**Season stats** (`getSeasonStats`, Sprint 8): the existing team-stats formulas above,
+computed over only that season's matches, plus:
+- `registeredPlayers` — count of players with a `PlayerSeasonRecord` for this season.
+- `trainingSessions` — count of this season's sessions.
+- `attendancePercentage` — same weighted-present formula as the blended player stat
+  above (late = 0.5), but aggregated across every registered player's records in every
+  `completed` session of this season, not per-player.
+
+**Team form tracker** (`getRecentForm`): the last *N* (default 5) `completed` matches,
+oldest-first, mapped to their result (`win`/`draw`/`loss`) — rendered as a `W W D L W`
+strip.
+
+**Squad availability** (`getSquadAvailability`): buckets a season's registered players by
+their season-record `status` into `active`/`injured`/`suspended`/`released` (`Inactive`
+and any unrecognized status fold into `released`); there is no separate `loaned` status
+in the data today despite the type reserving a slot for it — treat it as unused for now.
+
+**Season report date ranges** (`getReportDateRange`, Sprint 8 — a **separate** vocabulary
+from the "Report period cutoffs" above, see Gap G11): `week`/`month`/`quarter` are
+relative to "now" like the Attendance report's cutoffs, but clamped to never start
+before the season's own `startDate`; `halfSeason` splits the season's start/end range at
+its midpoint and picks whichever half contains "now"; `fullSeason` is the season's full
+`startDate`–`endDate`; `custom` takes an explicit `{start, end}`.
+
 ---
 
 ## 8. Functional Requirements & Endpoints by Module
@@ -504,23 +638,26 @@ the frontend always submits the entire form, never a partial diff), `DELETE /:id
 
 | Method | Path | Notes |
 |---|---|---|
-| GET | `/teams/:teamId/players` | supports filters: `search`, `position`, `ageGroup`, `status`; sort: `name`\|`jerseyNumber`\|`recent` (see §7 for `ageGroup` derivation) |
-| GET | `/players/:id` | should include computed `stats` per §7 |
-| POST | `/players` | validate jersey-number uniqueness within `teamId` |
-| PATCH | `/players/:id` | full form replace; apply the status-history rule from §6.3 |
+| GET | `/teams/:teamId/players` | supports filters: `search`, `position`, `ageGroup`, `status`, `seasonId` (defaults to the active season — see §6.3.1); sort: `name`\|`jerseyNumber`\|`recent` (see §7 for `ageGroup` derivation) |
+| GET | `/players/:id` | should include computed `stats` per §7 and, if requested, `profile` (§6.3.2) |
+| POST | `/players` | validate jersey-number uniqueness within the current season (not all-time team history — see §6.3.1); also creates the player's first `PlayerSeasonRecord` for the active season |
+| PATCH | `/players/:id` | full form replace; apply the status-history rule from §6.3 (updates the active season's record + the top-level mirror) |
 | PATCH | `/players/:id/status` | quick status-only change (still applies the history rule) |
 | DELETE | `/players/:id` | |
+| POST | `/seasons/:seasonId/players` | register an existing player into `:seasonId` with a season-specific `jerseyNumber` (§6.3.1) |
+| POST | `/seasons/:seasonId/players/carry-forward` | body `{sourcePlayerIds: string[], sourceSeasonId}`, bulk-registers into `:seasonId` preserving each player's source-season jersey number |
+| DELETE | `/seasons/:seasonId/players/:playerId` | remove a player's registration from one season only |
 
 ### 8.4 Matches
 
 | Method | Path | Notes |
 |---|---|---|
-| GET | `/teams/:teamId/matches` | filters: `search`, `competition`, `homeAway`; typically split by `status` (upcoming/completed/cancelled) client-side |
+| GET | `/teams/:teamId/matches` | filters: `search`, `competition`, `homeAway`, `seasonId` (defaults to the active season); typically split by `status` (upcoming/completed/cancelled) client-side |
 | GET | `/matches/:id` | |
-| POST | `/matches` | defaults `status: "upcoming"`, `lineup: null`, `events: []` |
-| PATCH | `/matches/:id` | full form replace (does not touch lineup/events/status/scores) |
+| POST | `/matches` | body includes `seasonId` (stamped from the active season); defaults `status: "upcoming"`, `lineup: null`, `events: []` |
+| PATCH | `/matches/:id` | full form replace (does not touch lineup/events/status/scores/seasonId) |
 | DELETE | `/matches/:id` | |
-| PUT | `/matches/:id/lineup` | full replace of `Lineup` |
+| PUT | `/matches/:id/lineup` | full replace of `Lineup`; validate `startingXI` keys against the chosen `formation`'s slots (§6.4.1) |
 | POST | `/matches/:id/events` | append one event, returns it with server `id` |
 | DELETE | `/matches/:id/events/:eventId` | |
 | POST | `/matches/:id/complete` | body `{teamScore, opponentScore}`, sets `status: "completed"` |
@@ -530,10 +667,10 @@ the frontend always submits the entire form, never a partial diff), `DELETE /:id
 
 | Method | Path | Notes |
 |---|---|---|
-| GET | `/teams/:teamId/sessions` | |
+| GET | `/teams/:teamId/sessions` | filters include `seasonId` (defaults to the active season) |
 | GET | `/sessions/:id` | |
-| POST | `/sessions` | defaults `status: "upcoming"`, `records: {}` |
-| PATCH | `/sessions/:id` | full form replace (title/date/time/venue/focus/etc., not attendance) |
+| POST | `/sessions` | body includes `seasonId` (stamped from the active season); defaults `status: "upcoming"`, `records: {}` |
+| PATCH | `/sessions/:id` | full form replace (title/date/time/venue/focus/etc., not attendance or seasonId) |
 | DELETE | `/sessions/:id` | |
 | PATCH | `/sessions/:id/attendance/:playerId` | body `{status}}`, single-player set |
 | PATCH | `/sessions/:id/attendance` | body `{playerIds: string[], status}`, bulk set |
@@ -590,7 +727,30 @@ backend (huge payloads, no CDN, no caching). Replace with:
 | POST | `/uploads` | multipart file upload → `{url}` |
 
 ...and change `photo`/`logo`/`poster`/profile `photo` fields to plain URL strings once the
-upload endpoint exists. This affects: Player, Team, Match (`poster`), Profile.
+upload endpoint exists. This affects: Player, Team, Match (`poster`), Profile, and (added
+Sprint 7.7) Team `coverImage` and Team `photos[]` (a photo gallery, also base64-in-array
+today). All images are compressed client-side (`compressImage`, max 1280px, quality 0.75)
+before being stored — the backend should decide whether to keep server-side compression/
+thumbnailing on top of that once real uploads exist.
+
+### 8.10 Seasons
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/teams/:teamId/seasons` | |
+| GET | `/seasons/:id` | |
+| POST | `/teams/:teamId/seasons` | defaults `status: "upcoming"` (§6.8) |
+| PATCH | `/seasons/:id` | full form replace of the editable fields in §6.8 |
+| POST | `/seasons/:id/activate` | sets `:id` to `"active"` and the previously-active season to `"completed"`, atomically |
+| POST | `/seasons/:id/archive` | sets `status: "archived"`; must reject if `:id` is the currently active season |
+| PATCH | `/seasons/:id/rename` | body `{name}` |
+| POST | `/seasons/:id/duplicate` | body `{name}`, returns a new `"upcoming"` season copying metadata/colors only (no roster) |
+| GET | `/seasons/:id/stats` | `SeasonStats` per §7 |
+| GET | `/seasons/:id/analytics` | form tracker, top scorers/assists, most-committed players, squad availability per §7 |
+| GET | `/seasons/:id/players` | this season's roster (players + their `PlayerSeasonRecord` for `:id`) — see §8.3 for registration/removal endpoints |
+| GET | `/seasons/:id/players/stats` | the Season Roster's **Performance & Stats** tab: per-player `matchesPlayed`/`goals`/`assists`/`yellowCards`/`redCards` (§7 "Player match stats") and `attendancePercentage` (§7 "Player attendance stats"), computed over only this season's matches/sessions. The frontend composes this client-side today from the roster + match + session endpoints rather than calling a dedicated endpoint — offered here as an optional batching endpoint so the backend isn't forced into an N+1 (one stats lookup per roster player) if the roster is large. No new stored data; purely a re-scoped read of formulas already specified in §7. |
+
+See §8.3–8.5 for how Players/Matches/Sessions endpoints are season-scoped.
 
 ---
 
@@ -620,6 +780,20 @@ These are explicitly **not** resolved by the frontend and need backend/product d
 - **G9 — Multi-team / multi-user is schema-ready but unexercised.** Every entity has
   `teamId`; nothing in the frontend ever operates on more than one team, so the multi-tenant
   boundary (can user A see team B's data?) has never been tested against real UI flows.
+- **G10 — Public profile page has no access control by design.** `/players/[id]/profile`
+  (Sprint 7.5) is meant to be an open share link, but that means anyone with a player's
+  `id` can view their `MarketabilityProfile` — no rate-limiting, expiry, or per-link
+  revocation exists client-side. Decide whether the backend should add any of these
+  (e.g. a signed/expiring share token instead of the raw player id in the URL).
+- **G11 — Two, unreconciled "report period" vocabularies.** The Attendance report
+  (§8.6, Sprint 7) uses `weekly`\|`monthly`\|`seasonal`; season reports (§8.10, Sprint 8)
+  use `week`\|`month`\|`quarter`\|`halfSeason`\|`fullSeason`\|`custom`. These are separate
+  enums in separate code paths today (§7) — pick one canonical period vocabulary before
+  building report endpoints, the same way G1 flags the role-enum split.
+- **G12 — Season-roster jersey uniqueness isn't enforced client-side.** See §6.3.1 — the
+  "Register Player" action into a season roster does not check for a duplicate jersey
+  number within that season the way player *creation* does. The backend must enforce this
+  independently rather than trusting client validation.
 
 ---
 
@@ -662,12 +836,21 @@ Fitness, Tactical, Shooting, Defending, Goalkeeping, Recovery, Friendly Match, G
 ### A.5 Match Types / Formations / Event Types
 
 - `matchType`: Friendly, League, Tournament, Knockout
-- `formation`: 4-4-2, 4-3-3, 3-5-2, 5-3-2
+- `formation` (11 values, Sprint 7.6): 4-4-2, 4-3-3, 3-5-2, 5-3-2, 3-4-3, 4-2-3-1, 4-5-1,
+  3-4-1-2, 3-4-2-1, 5-4-1, 5-2-3
+- `Position`: GK, LB, RB, CB, LWB, RWB, CDM, CM, CAM, LM, RM, LW, RW, ST
+- `Slot` (formation-specific instances of a `Position`, e.g. two centre-backs are `CB1`/
+  `CB2`): GK, LB, RB, CB1, CB2, CB3, LWB, RWB, CDM, CDM1, CDM2, CM1, CM2, CM3, CAM, CAM1,
+  CAM2, LM, RM, LW, RW, ST, ST1, ST2 — see §6.4.1
 - `MatchEventType`: goal, yellow_card, red_card, substitution, injury
 
 ### A.6 Export formats
 
 PDF, Excel, CSV, Print (Print is client-side `window.print()` only — not a file).
+
+### A.7 Season Status (`Season.status` field)
+
+upcoming, active, completed, archived — see §6.8 for the transition rules.
 
 ---
 
@@ -675,10 +858,14 @@ PDF, Excel, CSV, Print (Print is client-side `window.print()` only — not a fil
 
 | Module | Key frontend files |
 |---|---|
+| Seasons | `src/schemas/season.ts`, `src/store/season-store.ts`, `src/mock/seasons.ts`, `src/lib/seasons.ts` (incl. `getSeasonPlayerStats`), `src/config/seasons.ts`, `src/components/seasons/SeasonPlayerStatsTable.tsx` |
 | Teams / Staff / Onboarding | `src/schemas/onboarding.ts`, `src/store/onboarding-store.ts`, `src/mock/teams.ts` |
 | Players | `src/schemas/player.ts`, `src/store/players-store.ts`, `src/mock/players.ts`, `src/lib/players.ts` |
+| Formations / Lineups | `src/config/matches.ts` (`Position`/`Slot`/`FormationLayout`), `src/lib/matches.ts` |
 | Matches | `src/schemas/match.ts`, `src/store/matches-store.ts`, `src/mock/matches.ts`, `src/lib/matches.ts` |
 | Training / Attendance | `src/schemas/training.ts`, `src/store/attendance-store.ts`, `src/mock/attendance.ts`, `src/lib/attendance.ts`, `src/lib/training.ts` |
 | Reports | `src/config/reports.ts`, `src/lib/reports.ts`, `src/store/reports-store.ts`, `src/lib/export.ts` |
 | Settings | `src/config/settings.ts`, `src/schemas/settings.ts`, `src/store/settings-store.ts` |
 | Roles / Permissions | `src/config/roles.ts`, `src/config/settings.ts` (`permissionMatrix`) |
+| Player Marketability / Public Profile | `src/mock/players.ts` (`MarketabilityProfile`), `src/app/players/[id]/profile/page.tsx`, `src/hooks/useOrigin.ts` |
+| Team Media | `src/lib/image.ts` (`compressImage`), `src/components/common/CoverImageUpload.tsx`, `src/components/team/TeamPhotoManager.tsx`, `src/store/onboarding-store.ts` (`coverImage`/`photos`) |
