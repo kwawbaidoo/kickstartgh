@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import type { ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
+
+import { LoadingSkeleton } from "@/components/common/LoadingSkeleton";
 
 export default function ReportsSubLayout({ children }: { children: ReactNode }) {
   return (
@@ -9,7 +12,7 @@ export default function ReportsSubLayout({ children }: { children: ReactNode }) 
         <ArrowLeft className="size-4" />
         Back to Reports
       </Link>
-      {children}
+      <Suspense fallback={<LoadingSkeleton className="h-64 w-full" />}>{children}</Suspense>
     </div>
   );
 }
