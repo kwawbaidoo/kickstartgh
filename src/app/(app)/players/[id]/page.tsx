@@ -43,6 +43,7 @@ import { usePlayersStore } from "@/store/players-store";
 import { useMatchesStore } from "@/store/matches-store";
 import { useAttendanceStore } from "@/store/attendance-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
+import { useSeasonStore } from "@/store/season-store";
 import { getPlayerMatchStats } from "@/lib/matches";
 import { getPlayerAttendanceStats } from "@/lib/attendance";
 import {
@@ -89,6 +90,7 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
   const matches = useMatchesStore((state) => state.matches);
   const sessions = useAttendanceStore((state) => state.sessions);
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
+  const seasons = useSeasonStore((state) => state.seasons);
   const player = players.find((candidate) => candidate.id === id);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [granularity, setGranularity] = useState<TimelineGranularity>("all");
@@ -211,7 +213,7 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
           </TabsList>
 
           <TabsContent value="info" className="pt-4">
-            <PlayerInfoCard player={player} />
+            <PlayerInfoCard player={player} seasons={seasons} />
           </TabsContent>
 
           <TabsContent value="stats" className="pt-4">
@@ -290,7 +292,16 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
                           </div>
                           <div className="flex flex-1 items-center justify-between gap-2 pt-1.5">
                             <div className="flex flex-col">
-                              <span className="text-sm font-medium text-foreground">{item.label}</span>
+                              {item.type === "match" && item.matchId ? (
+                                <Link
+                                  href={`/matches/${item.matchId}`}
+                                  className="text-sm font-medium text-foreground hover:text-primary hover:underline"
+                                >
+                                  {item.label}
+                                </Link>
+                              ) : (
+                                <span className="text-sm font-medium text-foreground">{item.label}</span>
+                              )}
                               <span className="text-xs text-muted-foreground">
                                 {format(new Date(item.date), "d MMM yyyy")}
                               </span>

@@ -1,4 +1,5 @@
 import { players } from "@/mock/players";
+import { DEFAULT_SEASON_ID } from "@/mock/seasons";
 
 export type AttendanceStatus = "present" | "late" | "excused" | "injured" | "absent";
 
@@ -17,6 +18,7 @@ export type SessionStatus = "upcoming" | "completed" | "cancelled";
 export type AttendanceSession = {
   id: string;
   teamId: string;
+  seasonId: string;
   title: string;
   date: string;
   startTime: string;
@@ -81,6 +83,7 @@ const activePlayers = players.filter((player) => player.status === "Active");
 export const attendanceSessions: AttendanceSession[] = sessionDates.map((date, index) => ({
   id: `session_${String(index + 1).padStart(3, "0")}`,
   teamId: "team_001",
+  seasonId: DEFAULT_SEASON_ID,
   title: "Tuesday Training",
   date,
   startTime: "16:00",
@@ -100,6 +103,7 @@ attendanceSessions.push(
   {
     id: "session_014",
     teamId: "team_001",
+    seasonId: DEFAULT_SEASON_ID,
     title: "Sharpening Session",
     date: "2026-07-13",
     startTime: "16:00",
@@ -115,6 +119,7 @@ attendanceSessions.push(
   {
     id: "session_015",
     teamId: "team_001",
+    seasonId: DEFAULT_SEASON_ID,
     title: "Pre-Cup Sharpening Session",
     date: "2026-07-19",
     startTime: "16:00",

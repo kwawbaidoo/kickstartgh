@@ -1,18 +1,17 @@
+import Link from "next/link";
+
 import { getInitials } from "@/lib/utils";
 
 type GalleryTileProps = {
   photo?: string;
   name: string;
   identification: string;
+  href?: string;
 };
 
-function GalleryTile({ photo, name, identification }: GalleryTileProps) {
-  return (
-    <button
-      type="button"
-      className="group relative aspect-square overflow-hidden rounded-xl bg-muted ring-1 ring-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      aria-label={`${identification} - ${name}`}
-    >
+function GalleryTile({ photo, name, identification, href }: GalleryTileProps) {
+  const content = (
+    <>
       {photo ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={photo} alt="" className="size-full object-cover" />
@@ -26,6 +25,23 @@ function GalleryTile({ photo, name, identification }: GalleryTileProps) {
           {identification} - {name}
         </span>
       </div>
+    </>
+  );
+
+  const className =
+    "group relative aspect-square overflow-hidden rounded-xl bg-muted ring-1 ring-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+  if (href) {
+    return (
+      <Link href={href} className={className} aria-label={`${identification} - ${name}`}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button type="button" className={className} aria-label={`${identification} - ${name}`}>
+      {content}
     </button>
   );
 }

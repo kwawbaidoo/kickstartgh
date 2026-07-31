@@ -9,13 +9,17 @@ import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { PlayerForm } from "@/components/players/PlayerForm";
 import { usePlayersStore } from "@/store/players-store";
+import { useSeasonStore } from "@/store/season-store";
+import { getSeasonRoster } from "@/lib/players";
 import type { PlayerFormInput } from "@/schemas/player";
 
 export default function EditPlayerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const players = usePlayersStore((state) => state.players);
+  const allPlayers = usePlayersStore((state) => state.players);
   const updatePlayer = usePlayersStore((state) => state.updatePlayer);
+  const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
+  const players = getSeasonRoster(allPlayers, activeSeasonId);
   const player = players.find((candidate) => candidate.id === id);
 
   if (!player) {

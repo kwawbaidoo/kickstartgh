@@ -131,16 +131,84 @@ The Team page is organized into tabs so profile, staff, and media each get their
 space instead of one long scroll:
 
 ```
-Staff & Roles | Permissions | Gallery
+Staff & Roles | Permissions | Roster | Photos
 ```
 
-Gallery:
+The page also opens with a hero cover image banner above the tabs.
+
+Roster:
 
 Hover (or tap, on touch devices) a staff or player photo to reveal who they are.
 
 ```
 [ photo ]  →  hover  →  Head Coach - Kofi Emmanuel
 ```
+
+Photos:
+
+A real photo gallery for the team (match day, training, celebrations), separate from
+the Roster avatar grid above.
+
+---
+
+## Season Management Flow
+
+Goal:
+
+Season is the container everything else lives inside — a manager sets it up once per
+year/competition, then the rest of the app (Players, Matches, Training, Reports) always
+reflects whichever season is active.
+
+Flow:
+
+```
+Seasons
+
+↓
+
+Create Season
+(name, start/end date, competition category)
+
+↓
+
+Season Dashboard
+
+↓
+
+Register Players
+(pick existing players + assign this season's jersey number,
+ or carry forward last season's active roster)
+
+↓
+
+Season Roster
+Players | Performance & Stats
+
+The Players tab manages the squad list. The Performance & Stats tab shows the same
+players' matches played, goals, assists, cards, and attendance % for this season —
+pulled from recorded match events and attendance, not typed in separately.
+
+↓
+
+Create Matches / Schedule Training
+(same flow as before, now scoped to this season)
+
+↓
+
+Season Analytics
+(win trend, form tracker, top scorers, squad availability)
+
+↓
+
+End of Season
+→ Activate next season (completes this one)
+→ Archive once replaced
+```
+
+Activating a season is a deliberate action, confirmed before it happens, since it
+changes what every manager and coach sees across the whole app. Browsing a past,
+read-only season is done explicitly from its own season page — the main Players/
+Matches/Training pages never show anything but the active season.
 
 ---
 
@@ -337,6 +405,38 @@ Sunday 4PM
 
 ---
 
+## Sharing a Player's Profile
+
+Goal:
+
+Let a manager or coach share a player's marketable profile with a scout, another club,
+or a tournament organizer, without requiring the recipient to log in.
+
+Flow:
+
+```
+Player Profile Page
+
+↓
+
+Share Profile
+
+↓
+
+Public link generated
+(kickstartgh.com/players/:id/profile)
+
+↓
+
+Share to WhatsApp
+```
+
+The public page shows the player's photo, bio, and full marketability profile
+(nationality, height, education, achievements, social links) — nothing else from the
+team's private data is exposed.
+
+---
+
 # 4. Reporting Flow
 
 ## Generate Player Report
@@ -394,6 +494,35 @@ Export:
 * PDF
 * Excel
 * WhatsApp Share
+
+---
+
+## Per-Game Player Report
+
+Goal:
+
+Pull a single match out of a player's activity timeline as a standalone report, without
+running the full report builder.
+
+Flow:
+
+```
+Player Profile
+
+↓
+
+Activity Timeline
+(filter by month / quarter / year / all-time)
+
+↓
+
+Select a match
+
+↓
+
+Download Report
+(PDF for that one game)
+```
 
 ---
 

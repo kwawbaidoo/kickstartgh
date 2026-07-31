@@ -15,11 +15,18 @@ import { usePlayersStore } from "@/store/players-store";
 import { useMatchesStore } from "@/store/matches-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { useReportsStore } from "@/store/reports-store";
+import { useSeasonStore } from "@/store/season-store";
 import { buildTeamReportShareMessage, buildTeamReportTable } from "@/lib/reports";
+import { getSeasonRoster } from "@/lib/players";
+import { getSeasonMatches } from "@/lib/seasons";
 
 export default function TeamReportPage() {
-  const players = usePlayersStore((state) => state.players);
-  const matches = useMatchesStore((state) => state.matches);
+  const activeSeason = useSeasonStore((state) =>
+    state.seasons.find((season) => season.id === state.activeSeasonId)
+  );
+  const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
+  const players = getSeasonRoster(usePlayersStore((state) => state.players), activeSeasonId);
+  const matches = getSeasonMatches(useMatchesStore((state) => state.matches), activeSeasonId);
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
   const addHistoryEntry = useReportsStore((state) => state.addHistoryEntry);
 
@@ -31,8 +38,13 @@ export default function TeamReportPage() {
   const shareMessage = buildTeamReportShareMessage(activeTeam, matches);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+    <>
       <SectionHeader title="Team Report" description="A full profile and record for your team." />
+      {activeSeason && (
+        <p className="text-xs text-muted-foreground">
+          Reporting on: <span className="font-medium text-foreground">{activeSeason.name}</span>
+        </p>
+      )}
 
       <ReportWizard
         filename="team-report"
@@ -67,6 +79,6 @@ export default function TeamReportPage() {
         currentColumns={columns}
         onApply={(template) => setColumns(template.columns)}
       />
-    </div>
+    </>
   );
 }

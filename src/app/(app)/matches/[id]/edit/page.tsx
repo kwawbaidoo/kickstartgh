@@ -1,7 +1,9 @@
 "use client";
 
 import { use } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -48,6 +50,13 @@ export default function EditMatchPage({ params }: { params: Promise<{ id: string
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+      <Link
+        href={`/matches/${id}`}
+        className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        Back to Match
+      </Link>
       <SectionHeader title="Edit Match" description={`Update details for vs ${match.opponent}.`} />
       <MatchForm
         competitions={getCompetitions(matches)}

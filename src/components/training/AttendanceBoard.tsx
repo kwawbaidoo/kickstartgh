@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { AttendancePlayerCard } from "@/components/training/AttendancePlayerCard";
+import { AttendanceTable } from "@/components/training/AttendanceTable";
 import { SearchBar } from "@/components/common/SearchBar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -58,6 +59,13 @@ function AttendanceBoard({ players, records, onSetAttendance, onSetBulkAttendanc
     });
   }
 
+  function toggleSelectAll() {
+    setSelected((prev) => {
+      const allSelected = visiblePlayers.length > 0 && visiblePlayers.every((player) => prev.has(player.id));
+      return allSelected ? new Set() : new Set(visiblePlayers.map((player) => player.id));
+    });
+  }
+
   function handleApplyToSelected() {
     if (selected.size === 0) return;
     onSetBulkAttendance(Array.from(selected), bulkStatus);
@@ -66,78 +74,92 @@ function AttendanceBoard({ players, records, onSetAttendance, onSetBulkAttendanc
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>
-          {markedCount} of {players.length} marked
-        </span>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => onSetBulkAttendance(visiblePlayers.map((player) => player.id), "present")}
-        >
-          Mark all present
-        </Button>
-      </div>
-
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <SearchBar value={search} onChange={setSearch} placeholder="Search by name or jersey number" />
-        <label className="flex shrink-0 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm text-foreground">
-          <Checkbox
-            checked={unmarkedOnly}
-            onCheckedChange={(checked) => setUnmarkedOnly(checked === true)}
-          />
-          Unmarked only
-          {unmarkedCount > 0 && (
-            <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
-              {unmarkedCount}
-            </span>
-          )}
-        </label>
-      </div>
-
-      {selected.size > 0 && (
-        <div className="flex items-center gap-2 rounded-lg bg-muted/60 p-2">
-          <span className="shrink-0 text-xs text-muted-foreground">{selected.size} selected</span>
-          <Select
-            items={bulkStatusItems}
-            value={bulkStatus}
-            onValueChange={(value) => setBulkStatus((value ?? "present") as AttendanceStatus)}
+      <div className="sticky top-16 z-10 flex flex-col gap-3 bg-background py-2">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>
+            {markedCount} of {players.length} marked
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onSetBulkAttendance(visiblePlayers.map((player) => player.id), "present")}
           >
-            <SelectTrigger className="h-8 flex-1">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {attendanceStatusOptions.map((option) => (
-                <SelectItem key={option} value={option}>
-                  {attendanceStatusConfig[option].label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button type="button" size="sm" onClick={handleApplyToSelected}>
-            Apply
+            Mark all present
           </Button>
         </div>
-      )}
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <SearchBar value={search} onChange={setSearch} placeholder="Search by name or jersey number" />
+          <label className="flex shrink-0 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm text-foreground">
+            <Checkbox
+              checked={unmarkedOnly}
+              onCheckedChange={(checked) => setUnmarkedOnly(checked === true)}
+            />
+            Unmarked only
+            {unmarkedCount > 0 && (
+              <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                {unmarkedCount}
+              </span>
+            )}
+          </label>
+        </div>
+
+        {selected.size > 0 && (
+          <div className="flex items-center gap-2 rounded-lg bg-muted/60 p-2">
+            <span className="shrink-0 text-xs text-muted-foreground">{selected.size} selected</span>
+            <Select
+              items={bulkStatusItems}
+              value={bulkStatus}
+              onValueChange={(value) => setBulkStatus((value ?? "present") as AttendanceStatus)}
+            >
+              <SelectTrigger className="h-8 flex-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {attendanceStatusOptions.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {attendanceStatusConfig[option].label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button type="button" size="sm" onClick={handleApplyToSelected}>
+              Apply
+            </Button>
+          </div>
+        )}
+      </div>
 
       {visiblePlayers.length === 0 ? (
         <p className="py-6 text-center text-sm text-muted-foreground">
           {unmarkedOnly ? "Everyone is marked. 🎉" : "No players match your search."}
         </p>
       ) : (
-        <div className="flex flex-col gap-2">
-          {visiblePlayers.map((player) => (
-            <AttendancePlayerCard
-              key={player.id}
-              player={player}
-              status={records[player.id]}
-              onStatusChange={(status) => onSetAttendance(player.id, status)}
-              selected={selected.has(player.id)}
-              onToggleSelect={() => toggleSelect(player.id)}
+        <>
+          <div className="hidden sm:block">
+            <AttendanceTable
+              players={visiblePlayers}
+              records={records}
+              selected={selected}
+              onToggleSelect={toggleSelect}
+              onToggleSelectAll={toggleSelectAll}
+              onStatusChange={(playerId, status) => onSetAttendance(playerId, status)}
             />
-          ))}
-        </div>
+          </div>
+          <div className="flex flex-col gap-2 sm:hidden">
+            {visiblePlayers.map((player) => (
+              <AttendancePlayerCard
+                key={player.id}
+                player={player}
+                status={records[player.id]}
+                onStatusChange={(status) => onSetAttendance(player.id, status)}
+                selected={selected.has(player.id)}
+                onToggleSelect={() => toggleSelect(player.id)}
+              />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

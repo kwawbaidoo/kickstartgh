@@ -91,18 +91,34 @@ Responsibilities:
 
 Primary:
 
-Dark Grey
+Navy Blue
 
 ```text
-#323232
+#1E3A8A
 ```
 
 Accent:
 
-Vivid Yellow
+Bright Blue
 
 ```text
-#ffdb00
+#2563EB
+```
+
+Ink:
+
+Slate Ink (body text)
+
+```text
+#1F2937
+```
+
+Tint:
+
+Sky Tint (muted surfaces)
+
+```text
+#E0F2FE
 ```
 
 Supporting:
@@ -164,6 +180,41 @@ Fields:
 
 ---
 
+## Season Management
+
+Season is the top-level container for a team's activity: no player registration,
+match, training session, or report exists outside a season.
+
+Users can:
+
+* Create a season (name, start/end date, competition category, objectives, budget,
+  optional season colors).
+* Activate exactly one season at a time — activating a season completes the
+  previously-active one.
+* Archive a completed season (a season can't be archived while it's still active).
+* Register existing players into a season with a season-specific jersey number, or
+  carry forward an entire prior season's active roster in one action.
+* View the season roster in two tabs: **Players** (the squad list, as above) and
+  **Performance & Stats** (each registered player's matches played, goals, assists,
+  yellow/red cards, and attendance % for this season — computed live from recorded
+  match events and attendance, never entered a second time), sortable by any stat.
+* View a season dashboard: registered players, matches played, W/D/L, goals for/against,
+  training sessions, attendance %.
+* View season analytics: win-rate trend, team form tracker, top scorers/assists, most
+  committed players, squad availability (active/injured/suspended/released).
+* Compare two seasons side by side.
+* Generate season-scoped reports over week/month/quarter/half-season/full-season/custom
+  date ranges.
+
+A player keeps one continuous identity across every season they've played for — their
+jersey number and status can change season to season, but their profile, stats history,
+and public share link do not reset.
+
+Only the active season's data appears in the everyday Players/Matches/Training/Reports
+pages. Browsing a past (read-only) season happens explicitly under its own season pages.
+
+---
+
 ## Player Management
 
 Store:
@@ -186,6 +237,36 @@ Statistics:
 * Red cards.
 * Player rating.
 
+### Marketability Profile
+
+Every player can optionally carry a public-facing profile, aimed at scouts, other clubs,
+and tournament organizers:
+
+* Nationality.
+* Height.
+* Education history (institution + period).
+* Work experience.
+* Achievements.
+* Other sports played.
+* Social links (Instagram, Twitter, Facebook, TikTok).
+
+The player detail page is split into a fixed photo pane and a scrollable details pane
+(bio, marketability profile, activity timeline) so the two never fight for scroll space
+on mobile.
+
+### Public Player Profile Page
+
+A dedicated, unauthenticated page (`/players/[id]/profile`) renders a player's full
+marketability profile for sharing outside the team — a link anyone can open without
+logging in. Shareable directly to WhatsApp, matching the platform's WhatsApp-first
+principle.
+
+### Activity Timeline
+
+A player's match/attendance history is filterable by month, quarter, year, or all-time,
+since a player may be with a team for several seasons. Any single game in the timeline
+can be pulled out to generate a standalone per-match player report (PDF).
+
 ---
 
 ## Match Management
@@ -206,6 +287,23 @@ Automatically calculate:
 * Losses.
 * Goals scored.
 * Goals conceded.
+
+### Formations & Lineups
+
+Lineups are built on a real football position/pitch-layout engine rather than generic
+rows: eleven named formations (4-4-2, 4-3-3, 3-5-2, 5-3-2, 3-4-3, 4-2-3-1, 4-5-1, 3-4-1-2,
+3-4-2-1, 5-4-1, 5-2-3), each mapping its own slots (e.g. two centre-backs, a lone
+striker) to tactical pitch coordinates. The pitch view rotates between portrait (mobile)
+and landscape (desktop) from the same coordinate set.
+
+---
+
+## Team Media
+
+The Team page has a hero cover image banner plus a real photo gallery, separate from the
+existing staff/player avatar grid (renamed "Roster" for clarity). Images are compressed
+client-side before storage to keep the app fast on low-end devices and safe under
+localStorage's size limits.
 
 ---
 
@@ -317,9 +415,20 @@ Bottom navigation:
 * Reports.
 * Settings.
 
+Seasons is reachable from the mobile "More" sheet (the bottom nav stays at 5 slots).
+
 ## Desktop
 
-Sidebar navigation.
+Sidebar navigation:
+
+* Dashboard.
+* Seasons.
+* Team.
+* Players.
+* Matches.
+* Attendance.
+* Reports.
+* Settings.
 
 ---
 

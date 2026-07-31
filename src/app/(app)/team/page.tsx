@@ -22,6 +22,8 @@ import { TeamGallery } from "@/components/team/TeamGallery";
 import { TeamPhotoManager } from "@/components/team/TeamPhotoManager";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { usePlayersStore } from "@/store/players-store";
+import { useSeasonStore } from "@/store/season-store";
+import { getSeasonRoster } from "@/lib/players";
 import { fadeInUp } from "@/lib/motion";
 import { getInitials } from "@/lib/utils";
 
@@ -39,7 +41,9 @@ export default function TeamPage() {
   const updateActiveStaffMemberRole = useOnboardingStore((state) => state.updateActiveStaffMemberRole);
   const addTeamPhoto = useOnboardingStore((state) => state.addTeamPhoto);
   const removeTeamPhoto = useOnboardingStore((state) => state.removeTeamPhoto);
-  const players = usePlayersStore((state) => state.players);
+  const allPlayers = usePlayersStore((state) => state.players);
+  const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
+  const players = getSeasonRoster(allPlayers, activeSeasonId);
 
   const location = [activeTeam.homeGround, activeTeam.district, activeTeam.region]
     .filter(Boolean)
@@ -67,7 +71,7 @@ export default function TeamPage() {
         style={
           !activeTeam.coverImage
             ? {
-                background: `linear-gradient(135deg, ${activeTeam.colorPrimary ?? "#323232"}, ${activeTeam.colorSecondary ?? "#ffdb00"})`,
+                background: `linear-gradient(135deg, ${activeTeam.colorPrimary ?? "#1e3a8a"}, ${activeTeam.colorSecondary ?? "#2563eb"})`,
               }
             : undefined
         }

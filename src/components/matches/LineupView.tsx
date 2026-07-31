@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import type { Lineup } from "@/mock/matches";
 import type { Player } from "@/mock/players";
 import type { StaffMember } from "@/schemas/onboarding";
@@ -33,8 +35,9 @@ function LineupView({ lineup, players, staff }: LineupViewProps) {
           const player = playerId ? playerMap.get(playerId) : undefined;
           if (!player) return null;
           return (
-            <div
+            <Link
               key={slot.slot}
+              href={`/players/${player.id}`}
               style={getPitchSlotStyle(slot)}
               className="absolute left-[var(--slot-left)] top-[var(--slot-top)] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 lg:left-[var(--slot-left-lg)] lg:top-[var(--slot-top-lg)]"
             >
@@ -45,7 +48,7 @@ function LineupView({ lineup, players, staff }: LineupViewProps) {
                 {player.fullName.split(" ")[0]}
                 {lineup.captainId === player.id ? " (C)" : ""}
               </span>
-            </div>
+            </Link>
           );
         })}
       </div>
@@ -57,13 +60,17 @@ function LineupView({ lineup, players, staff }: LineupViewProps) {
         ) : (
           <div className="flex flex-col gap-1.5">
             {substitutePlayers.map((player) => (
-              <div key={player.id} className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2">
+              <Link
+                key={player.id}
+                href={`/players/${player.id}`}
+                className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2 transition-colors hover:bg-muted"
+              >
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
                   {getInitials(player.fullName)}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-sm text-foreground">{player.fullName}</span>
                 <span className="text-xs text-muted-foreground">#{player.jerseyNumber}</span>
-              </div>
+              </Link>
             ))}
           </div>
         )}

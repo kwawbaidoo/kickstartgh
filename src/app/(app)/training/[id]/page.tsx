@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import {
+  ArrowLeft,
   CalendarClock,
   FileBarChart,
   ListChecks,
@@ -19,15 +20,17 @@ import { Modal } from "@/components/common/Modal";
 import { ReminderCard } from "@/components/training/ReminderCard";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { trainingFocusIcon } from "@/config/training";
+import { sessionStatusBadgeClasses, trainingFocusIcon } from "@/config/training";
 import { usePlayersStore } from "@/store/players-store";
 import { useAttendanceStore } from "@/store/attendance-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
+import { useSeasonStore } from "@/store/season-store";
 import {
   buildTrainingReminderMessage,
   buildTrainingShareMessage,
   getSessionAttendanceSummary,
 } from "@/lib/training";
+import { cn } from "@/lib/utils";
 
 export default function TrainingDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -37,6 +40,7 @@ export default function TrainingDetailsPage({ params }: { params: Promise<{ id: 
   const cancelSession = useAttendanceStore((state) => state.cancelSession);
   const players = usePlayersStore((state) => state.players);
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
+  const seasons = useSeasonStore((state) => state.seasons);
   const session = sessions.find((candidate) => candidate.id === id);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -55,6 +59,7 @@ export default function TrainingDetailsPage({ params }: { params: Promise<{ id: 
 
   const FocusIcon = session.focus ? trainingFocusIcon[session.focus] : null;
   const headCoach = activeTeam.staff.find((member) => member.role === "headCoach")?.fullName;
+  const season = seasons.find((candidate) => candidate.id === session.seasonId);
   const summary = getSessionAttendanceSummary(session, players);
   const shareMessage = buildTrainingShareMessage(session, activeTeam.name);
   const reminderMessage = buildTrainingReminderMessage(session, activeTeam.name);
@@ -66,6 +71,13 @@ export default function TrainingDetailsPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+      <Link
+        href="/training"
+        className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        Back to Training
+      </Link>
       <SectionHeader title="Training Session" />
 
       <Card>
@@ -75,12 +87,26 @@ export default function TrainingDetailsPage({ params }: { params: Promise<{ id: 
               {FocusIcon && <FocusIcon className="size-3.5" />}
               {session.focus ?? "Training"}
             </span>
-            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground capitalize">
+            <span
+              className={cn(
+                "rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize",
+                sessionStatusBadgeClasses[session.status]
+              )}
+            >
               {session.status}
             </span>
           </div>
 
           <h1 className="font-heading text-xl font-semibold text-foreground">{session.title}</h1>
+
+          {season && (
+            <Link
+              href={`/seasons/${season.id}`}
+              className="w-fit text-xs font-medium text-primary hover:underline"
+            >
+              Part of {season.name}
+            </Link>
+          )}
 
           <div className="flex flex-col gap-2 rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">

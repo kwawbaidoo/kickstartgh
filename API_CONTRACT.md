@@ -2,6 +2,10 @@
 
 # KickStartGH Frontend ↔ Backend Contract
 
+This document is an early, illustrative sketch of the contract shape. For the full,
+source-derived entity/field/endpoint reference (including Seasons, formations, and the
+marketability profile), see `SRS.md`, which supersedes this document in detail and scope.
+
 ## Base URL
 
 Development:
@@ -64,6 +68,92 @@ Response:
 
 ---
 
+# Seasons
+
+Season is the top-level container: players are registered per season, and matches and
+training sessions each belong to exactly one season.
+
+## List Seasons
+
+GET
+
+```text
+/api/v1/teams/:teamId/seasons
+```
+
+Response:
+
+```json
+[
+  {
+    "id": "season_2026",
+    "name": "2026 Season",
+    "startDate": "2026-01-01",
+    "endDate": "2026-12-31",
+    "status": "active",
+    "competitionCategory": "Ellembelle District League"
+  }
+]
+```
+
+---
+
+## Create Season
+
+POST
+
+```text
+/api/v1/teams/:teamId/seasons
+```
+
+Request:
+
+```json
+{
+  "name": "2027 Season",
+  "startDate": "2027-01-01",
+  "endDate": "2027-12-31",
+  "competitionCategory": "League"
+}
+```
+
+---
+
+## Activate Season
+
+POST
+
+```text
+/api/v1/seasons/:id/activate
+```
+
+Marks `:id` as `"active"` and the previously-active season as `"completed"`. Only one
+season is ever active at a time.
+
+---
+
+## Register Player For Season
+
+POST
+
+```text
+/api/v1/seasons/:id/players
+```
+
+Request:
+
+```json
+{
+  "playerId": "player_001",
+  "jerseyNumber": 9
+}
+```
+
+A player's jersey number and status are season-specific; the same player can carry a
+different jersey number in a different season.
+
+---
+
 # Players
 
 ## Get Players
@@ -71,7 +161,7 @@ Response:
 GET
 
 ```text
-/api/v1/teams/:teamId/players
+/api/v1/teams/:teamId/players?seasonId=season_2026
 ```
 
 Response:
@@ -127,6 +217,7 @@ Request:
 ```json
 {
   "teamId": "team_001",
+  "seasonId": "season_2026",
   "opponent": "Unity FC",
   "date": "2026-08-01",
   "venue": "Community Park"

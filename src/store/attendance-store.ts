@@ -7,7 +7,9 @@ import {
   type AttendanceStatus,
 } from "@/mock/attendance";
 import { currentTeam } from "@/mock/teams";
+import { DEFAULT_SEASON_ID } from "@/mock/seasons";
 import type { TrainingFormInput } from "@/schemas/training";
+import { useSeasonStore } from "@/store/season-store";
 
 type AttendanceState = {
   sessions: AttendanceSession[];
@@ -20,6 +22,7 @@ type AttendanceState = {
   setBulkAttendance: (sessionId: string, playerIds: string[], status: AttendanceStatus) => void;
   completeSession: (id: string) => void;
   cancelSession: (id: string) => void;
+  migrateSeasonIds: () => void;
 };
 
 export const useAttendanceStore = create<AttendanceState>()(
@@ -33,6 +36,7 @@ export const useAttendanceStore = create<AttendanceState>()(
         const newSession: AttendanceSession = {
           id: crypto.randomUUID(),
           teamId: currentTeam.id,
+          seasonId: useSeasonStore.getState().activeSeasonId,
           status: "upcoming",
           records: {},
           createdAt: new Date().toISOString(),
@@ -90,6 +94,15 @@ export const useAttendanceStore = create<AttendanceState>()(
           ),
         });
       },
+
+      /** Backfills sessions persisted before the Season feature existed. */
+      migrateSeasonIds: () => {
+        set({
+          sessions: get().sessions.map((session) =>
+            session.seasonId ? session : { ...session, seasonId: DEFAULT_SEASON_ID }
+          ),
+        });
+      },
     }),
     {
       name: "kickstartgh-attendance",
@@ -98,6 +111,7 @@ export const useAttendanceStore = create<AttendanceState>()(
       partialize: (state) => ({ sessions: state.sessions }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
+        state?.migrateSeasonIds();
       },
     }
   )

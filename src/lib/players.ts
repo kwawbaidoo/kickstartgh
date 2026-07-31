@@ -1,9 +1,21 @@
 import { format } from "date-fns";
 
 import { positionOptions, type AgeGroup } from "@/config/players";
-import type { Player, PlayerStatus, Position } from "@/mock/players";
+import type { Player, PlayerSeasonRecord, PlayerStatus, Position } from "@/mock/players";
 import type { Match } from "@/mock/matches";
 import { getStartingPlayerIds } from "@/lib/matches";
+
+export function getSeasonRecord(player: Player, seasonId: string): PlayerSeasonRecord | undefined {
+  return player.seasonRecords.find((record) => record.seasonId === seasonId);
+}
+
+export function isRegisteredInSeason(player: Player, seasonId: string): boolean {
+  return player.seasonRecords.some((record) => record.seasonId === seasonId);
+}
+
+export function getSeasonRoster(players: Player[], seasonId: string): Player[] {
+  return players.filter((player) => isRegisteredInSeason(player, seasonId));
+}
 
 export function getAge(dateOfBirth: string): number {
   const dob = new Date(dateOfBirth);

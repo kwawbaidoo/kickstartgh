@@ -39,9 +39,11 @@ import {
 } from "@/components/ui/select";
 import { positionOptions } from "@/config/players";
 import { usePlayersStore } from "@/store/players-store";
+import { useSeasonStore } from "@/store/season-store";
 import {
   defaultPlayerFilters,
   filterPlayers,
+  getSeasonRoster,
   sortPlayers,
   type PlayerSort,
 } from "@/lib/players";
@@ -53,16 +55,22 @@ const sortItems: Record<PlayerSort, string> = {
   recent: "Recently added",
 };
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 16;
 
 export default function PlayersPage() {
-  const players = usePlayersStore((state) => state.players);
+  const allPlayers = usePlayersStore((state) => state.players);
   const hasHydrated = usePlayersStore((state) => state.hasHydrated);
+  const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
   const [filters, setFilters] = useState(defaultPlayerFilters);
   const [sort, setSort] = useState<PlayerSort>("name");
   const [view, setView] = useState<CardListView>("card");
   const [page, setPage] = useState(1);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
+
+  const players = useMemo(
+    () => getSeasonRoster(allPlayers, activeSeasonId),
+    [allPlayers, activeSeasonId]
+  );
 
   const filteredPlayers = useMemo(
     () => sortPlayers(filterPlayers(players, filters), sort),

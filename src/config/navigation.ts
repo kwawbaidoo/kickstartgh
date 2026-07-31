@@ -7,6 +7,7 @@ import {
   FileBarChart,
   Settings,
   Home,
+  Trophy,
   type LucideIcon,
 } from "lucide-react";
 
@@ -18,6 +19,7 @@ export type NavItem = {
 
 export const sidebarNavItems: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Seasons", href: "/seasons", icon: Trophy },
   { label: "Team", href: "/team", icon: Shield },
   { label: "Players", href: "/players", icon: Users },
   { label: "Matches", href: "/matches", icon: CalendarDays },

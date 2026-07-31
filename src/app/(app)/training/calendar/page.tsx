@@ -3,9 +3,12 @@
 import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import { TrainingCalendar } from "@/components/training/TrainingCalendar";
 import { useAttendanceStore } from "@/store/attendance-store";
+import { useSeasonStore } from "@/store/season-store";
+import { getSeasonSessions } from "@/lib/seasons";
 
 export default function TrainingCalendarPage() {
-  const sessions = useAttendanceStore((state) => state.sessions);
+  const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
+  const sessions = getSeasonSessions(useAttendanceStore((state) => state.sessions), activeSeasonId);
 
   return (
     <div className="flex flex-col gap-6">

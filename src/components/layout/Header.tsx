@@ -12,6 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { SeasonSelector } from "@/components/seasons/SeasonSelector";
 import { mobileNavItems, sidebarNavItems } from "@/config/navigation";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { getInitials } from "@/lib/utils";
@@ -28,7 +29,7 @@ function Header() {
   );
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur-sm lg:px-8">
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur-sm print:hidden lg:px-8">
       <div className="flex items-center gap-2 lg:hidden">
         <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
           K
@@ -43,6 +44,8 @@ function Header() {
       </h1>
 
       <div className="flex items-center gap-1.5">
+        <SeasonSelector />
+
         <Button variant="ghost" size="icon" aria-label="Notifications">
           <Bell className="size-5" />
         </Button>
