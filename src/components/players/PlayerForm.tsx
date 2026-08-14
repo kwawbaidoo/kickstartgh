@@ -165,7 +165,7 @@ function PlayerForm({
 
           <FieldGroup className="grid md:grid-cols-2 grid-cols-1 gap-4">
             <Field data-invalid={!!form.formState.errors.fullName}>
-              <FieldLabel htmlFor="fullName">Full name</FieldLabel>
+              <FieldLabel htmlFor="fullName" required>Full name</FieldLabel>
               <FieldContent>
                 <Input
                   id="fullName"
@@ -177,21 +177,20 @@ function PlayerForm({
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="nickname">Nickname </FieldLabel>
+              <FieldLabel htmlFor="nickname" optional>Nickname</FieldLabel>
               <FieldContent>
                 <Input
                   id="nickname"
                   placeholder="e.g. KM9"
                   {...form.register("nickname")}
                 />
-                <FieldDescription>Optional</FieldDescription>
               </FieldContent>
             </Field>
           </FieldGroup>
 
           <FieldGroup className="grid md:grid-cols-2 grid-cols-1 gap-4">
             <Field data-invalid={!!form.formState.errors.dateOfBirth}>
-              <FieldLabel htmlFor="dateOfBirth">Date of birth</FieldLabel>
+              <FieldLabel htmlFor="dateOfBirth" required>Date of birth</FieldLabel>
               <FieldContent>
                 <Input
                   id="dateOfBirth"
@@ -203,14 +202,13 @@ function PlayerForm({
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="phone">Phone number</FieldLabel>
+              <FieldLabel htmlFor="phone" optional>Phone number</FieldLabel>
               <FieldContent>
                 <Input
                   id="phone"
                   placeholder="e.g. 024 123 4567"
                   {...form.register("phone")}
                 />
-                <FieldDescription>Optional</FieldDescription>
               </FieldContent>
             </Field>
           </FieldGroup>
@@ -218,7 +216,7 @@ function PlayerForm({
             orientation="responsive"
             data-invalid={!!form.formState.errors.email}
           >
-            <FieldLabel htmlFor="email">Player email</FieldLabel>
+            <FieldLabel htmlFor="email" optional>Player email</FieldLabel>
             <FieldContent>
               <Input
                 id="email"
@@ -227,7 +225,6 @@ function PlayerForm({
                 {...form.register("email")}
               />
               <FieldError errors={[form.formState.errors.email]} />
-              <FieldDescription>Optional</FieldDescription>
             </FieldContent>
           </Field>
 
@@ -237,7 +234,7 @@ function PlayerForm({
 
           <FieldGroup className="grid md:grid-cols-2 grid-cols-1 gap-4">
             <Field>
-              <FieldLabel htmlFor="emergencyContactName">
+              <FieldLabel htmlFor="emergencyContactName" optional>
                 Contact name
               </FieldLabel>
               <FieldContent>
@@ -246,12 +243,11 @@ function PlayerForm({
                   placeholder="e.g. Comfort Mensah"
                   {...form.register("emergencyContact.name")}
                 />
-                <FieldDescription>Optional</FieldDescription>
               </FieldContent>
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="emergencyContactPhone">
+              <FieldLabel htmlFor="emergencyContactPhone" optional>
                 Contact phone
               </FieldLabel>
               <FieldContent>
@@ -260,7 +256,6 @@ function PlayerForm({
                   placeholder="e.g. 024 000 0000"
                   {...form.register("emergencyContact.phone")}
                 />
-                <FieldDescription>Optional</FieldDescription>
               </FieldContent>
             </Field>
           </FieldGroup>
@@ -268,7 +263,7 @@ function PlayerForm({
             orientation="responsive"
             data-invalid={!!form.formState.errors.emergencyContact?.email}
           >
-            <FieldLabel htmlFor="emergencyContactEmail">
+            <FieldLabel htmlFor="emergencyContactEmail" optional>
               Contact email
             </FieldLabel>
             <FieldContent>
@@ -281,7 +276,6 @@ function PlayerForm({
               <FieldError
                 errors={[form.formState.errors.emergencyContact?.email]}
               />
-              <FieldDescription>Optional</FieldDescription>
             </FieldContent>
           </Field>
         </FieldSet>
@@ -293,7 +287,7 @@ function PlayerForm({
 
           <FieldGroup>
             <Field data-invalid={!!form.formState.errors.jerseyNumber}>
-              <FieldLabel htmlFor="jerseyNumber">Jersey number</FieldLabel>
+              <FieldLabel htmlFor="jerseyNumber" required>Jersey number</FieldLabel>
               <FieldContent>
                 <Input
                   id="jerseyNumber"
@@ -307,7 +301,7 @@ function PlayerForm({
             </Field>
 
             <Field data-invalid={!!form.formState.errors.position}>
-              <FieldLabel htmlFor="position">Primary position</FieldLabel>
+              <FieldLabel htmlFor="position" required>Primary position</FieldLabel>
               <FieldContent>
                 <Controller
                   control={form.control}
@@ -336,7 +330,7 @@ function PlayerForm({
             </Field>
 
             <Field data-invalid={!!form.formState.errors.secondaryPosition}>
-              <FieldLabel htmlFor="secondaryPosition">
+              <FieldLabel htmlFor="secondaryPosition" optional>
                 Secondary position
               </FieldLabel>
               <FieldContent>
@@ -365,12 +359,11 @@ function PlayerForm({
                 <FieldError
                   errors={[form.formState.errors.secondaryPosition]}
                 />
-                <FieldDescription>Optional</FieldDescription>
               </FieldContent>
             </Field>
 
             <Field data-invalid={!!form.formState.errors.preferredFoot}>
-              <FieldLabel>Preferred foot</FieldLabel>
+              <FieldLabel required>Preferred foot</FieldLabel>
               <FieldContent>
                 <Controller
                   control={form.control}
@@ -403,26 +396,24 @@ function PlayerForm({
 
           <FieldGroup className="grid md:grid-cols-2 grid-cols-1 gap-4">
             <Field>
-              <FieldLabel htmlFor="village">Village / Town</FieldLabel>
+              <FieldLabel htmlFor="village" optional>Village / Town</FieldLabel>
               <FieldContent>
                 <Input
                   id="village"
                   placeholder="e.g. Ellembelle"
                   {...form.register("village")}
                 />
-                <FieldDescription>Optional</FieldDescription>
               </FieldContent>
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="previousClub">Previous club</FieldLabel>
+              <FieldLabel htmlFor="previousClub" optional>Previous club</FieldLabel>
               <FieldContent>
                 <Input
                   id="previousClub"
                   placeholder="e.g. Axim Stars Youth"
                   {...form.register("previousClub")}
                 />
-                <FieldDescription>Optional</FieldDescription>
               </FieldContent>
             </Field>
           </FieldGroup>
@@ -430,7 +421,7 @@ function PlayerForm({
             orientation="responsive"
             data-invalid={!!form.formState.errors.status}
           >
-            <FieldLabel htmlFor="status">Player status</FieldLabel>
+            <FieldLabel htmlFor="status" required>Player status</FieldLabel>
             <FieldContent>
               <Controller
                 control={form.control}
@@ -470,32 +461,30 @@ function PlayerForm({
 
           <FieldGroup className="grid md:grid-cols-2 grid-cols-1 gap-4">
             <Field>
-              <FieldLabel htmlFor="nationality">Nationality</FieldLabel>
+              <FieldLabel htmlFor="nationality" optional>Nationality</FieldLabel>
               <FieldContent>
                 <Input
                   id="nationality"
                   placeholder="e.g. Ghanaian"
                   {...form.register("profile.nationality")}
                 />
-                <FieldDescription>Optional</FieldDescription>
               </FieldContent>
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="height">Height</FieldLabel>
+              <FieldLabel htmlFor="height" optional>Height</FieldLabel>
               <FieldContent>
                 <Input
                   id="height"
                   placeholder="e.g. 5ft 10in"
                   {...form.register("profile.height")}
                 />
-                <FieldDescription>Optional</FieldDescription>
               </FieldContent>
             </Field>
           </FieldGroup>
 
           <Field>
-            <FieldLabel htmlFor="educationInstitution">Education</FieldLabel>
+            <FieldLabel htmlFor="educationInstitution" optional>Education</FieldLabel>
             <FieldContent>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Input
@@ -543,12 +532,11 @@ function PlayerForm({
                   ))}
                 </div>
               )}
-              <FieldDescription>Optional</FieldDescription>
             </FieldContent>
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="workExperience">Work experience</FieldLabel>
+            <FieldLabel htmlFor="workExperience" optional>Work experience</FieldLabel>
             <FieldContent>
               <TagListInput
                 id="workExperience"
@@ -556,12 +544,11 @@ function PlayerForm({
                 onChange={(value) => form.setValue("profile.workExperience", value)}
                 placeholder="e.g. Coaching assistant"
               />
-              <FieldDescription>Optional</FieldDescription>
             </FieldContent>
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="achievements">Achievements</FieldLabel>
+            <FieldLabel htmlFor="achievements" optional>Achievements</FieldLabel>
             <FieldContent>
               <TagListInput
                 id="achievements"
@@ -569,12 +556,11 @@ function PlayerForm({
                 onChange={(value) => form.setValue("profile.achievements", value)}
                 placeholder="e.g. League top scorer (2025)"
               />
-              <FieldDescription>Optional</FieldDescription>
             </FieldContent>
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="otherSports">Other sports</FieldLabel>
+            <FieldLabel htmlFor="otherSports" optional>Other sports</FieldLabel>
             <FieldContent>
               <TagListInput
                 id="otherSports"
@@ -582,7 +568,6 @@ function PlayerForm({
                 onChange={(value) => form.setValue("profile.otherSports", value)}
                 placeholder="e.g. Athletics"
               />
-              <FieldDescription>Optional</FieldDescription>
             </FieldContent>
           </Field>
 
@@ -592,7 +577,7 @@ function PlayerForm({
 
           <FieldGroup className="grid md:grid-cols-2 grid-cols-1 gap-4">
             <Field data-invalid={!!form.formState.errors.profile?.socialLinks?.instagram}>
-              <FieldLabel htmlFor="instagram">Instagram</FieldLabel>
+              <FieldLabel htmlFor="instagram" optional>Instagram</FieldLabel>
               <FieldContent>
                 <Input
                   id="instagram"
@@ -604,7 +589,7 @@ function PlayerForm({
             </Field>
 
             <Field data-invalid={!!form.formState.errors.profile?.socialLinks?.twitter}>
-              <FieldLabel htmlFor="twitter">X / Twitter</FieldLabel>
+              <FieldLabel htmlFor="twitter" optional>X / Twitter</FieldLabel>
               <FieldContent>
                 <Input
                   id="twitter"
@@ -616,7 +601,7 @@ function PlayerForm({
             </Field>
 
             <Field data-invalid={!!form.formState.errors.profile?.socialLinks?.facebook}>
-              <FieldLabel htmlFor="facebook">Facebook</FieldLabel>
+              <FieldLabel htmlFor="facebook" optional>Facebook</FieldLabel>
               <FieldContent>
                 <Input
                   id="facebook"
@@ -628,7 +613,7 @@ function PlayerForm({
             </Field>
 
             <Field data-invalid={!!form.formState.errors.profile?.socialLinks?.tiktok}>
-              <FieldLabel htmlFor="tiktok">TikTok</FieldLabel>
+              <FieldLabel htmlFor="tiktok" optional>TikTok</FieldLabel>
               <FieldContent>
                 <Input
                   id="tiktok"

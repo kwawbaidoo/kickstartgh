@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Field,
   FieldContent,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -64,9 +63,9 @@ function TeamForm({ defaultValues, onSubmit }: TeamFormProps) {
         alt="Team logo preview"
       />
 
-      <FieldGroup>
+      <FieldGroup className="sm:grid sm:grid-cols-2 sm:gap-x-6">
         <Field data-invalid={!!form.formState.errors.name}>
-          <FieldLabel htmlFor="name">Team name</FieldLabel>
+          <FieldLabel htmlFor="name" required>Team name</FieldLabel>
           <FieldContent>
             <Input id="name" placeholder="e.g. Osagyefo FC" {...form.register("name")} />
             <FieldError errors={[form.formState.errors.name]} />
@@ -74,15 +73,14 @@ function TeamForm({ defaultValues, onSubmit }: TeamFormProps) {
         </Field>
 
         <Field data-invalid={!!form.formState.errors.nickname}>
-          <FieldLabel htmlFor="nickname">Nickname</FieldLabel>
+          <FieldLabel htmlFor="nickname" optional>Nickname</FieldLabel>
           <FieldContent>
             <Input id="nickname" placeholder="e.g. The Lions" {...form.register("nickname")} />
-            <FieldDescription>Optional</FieldDescription>
           </FieldContent>
         </Field>
 
         <Field data-invalid={!!form.formState.errors.region}>
-          <FieldLabel htmlFor="region">Region</FieldLabel>
+          <FieldLabel htmlFor="region" required>Region</FieldLabel>
           <FieldContent>
             <Controller
               control={form.control}
@@ -112,7 +110,7 @@ function TeamForm({ defaultValues, onSubmit }: TeamFormProps) {
         </Field>
 
         <Field data-invalid={!!form.formState.errors.district}>
-          <FieldLabel htmlFor="district">District</FieldLabel>
+          <FieldLabel htmlFor="district" required>District</FieldLabel>
           <FieldContent>
             <Input id="district" placeholder="e.g. Ellembelle" {...form.register("district")} />
             <FieldError errors={[form.formState.errors.district]} />
@@ -120,7 +118,7 @@ function TeamForm({ defaultValues, onSubmit }: TeamFormProps) {
         </Field>
 
         <Field data-invalid={!!form.formState.errors.homeGround}>
-          <FieldLabel htmlFor="homeGround">Home ground</FieldLabel>
+          <FieldLabel htmlFor="homeGround" required>Home ground</FieldLabel>
           <FieldContent>
             <Input
               id="homeGround"
@@ -132,7 +130,7 @@ function TeamForm({ defaultValues, onSubmit }: TeamFormProps) {
         </Field>
 
         <Field data-invalid={!!form.formState.errors.yearEstablished}>
-          <FieldLabel htmlFor="yearEstablished">Year established</FieldLabel>
+          <FieldLabel htmlFor="yearEstablished" required>Year established</FieldLabel>
           <FieldContent>
             <Input
               id="yearEstablished"
@@ -145,8 +143,8 @@ function TeamForm({ defaultValues, onSubmit }: TeamFormProps) {
           </FieldContent>
         </Field>
 
-        <Field orientation="responsive">
-          <FieldLabel htmlFor="colorPrimary">Team colors</FieldLabel>
+        <Field orientation="responsive" className="sm:col-span-2">
+          <FieldLabel htmlFor="colorPrimary" optional>Team colors</FieldLabel>
           <FieldContent>
             <div className="flex items-center gap-3">
               <input
@@ -161,13 +159,12 @@ function TeamForm({ defaultValues, onSubmit }: TeamFormProps) {
                 className="size-9 rounded-lg border border-input"
                 {...form.register("colorSecondary")}
               />
-              <FieldDescription>Optional</FieldDescription>
             </div>
           </FieldContent>
         </Field>
 
-        <Field data-invalid={!!form.formState.errors.slogan}>
-          <FieldLabel htmlFor="slogan">Team slogan</FieldLabel>
+        <Field data-invalid={!!form.formState.errors.slogan} className="sm:col-span-2">
+          <FieldLabel htmlFor="slogan" optional>Team slogan</FieldLabel>
           <FieldContent>
             <Textarea id="slogan" placeholder="e.g. One team, one dream." {...form.register("slogan")} />
             <FieldError errors={[form.formState.errors.slogan]} />

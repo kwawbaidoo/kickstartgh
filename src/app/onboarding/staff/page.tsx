@@ -56,7 +56,7 @@ export default function StaffSetupPage() {
       <form onSubmit={form.handleSubmit(handleAdd)} className="flex flex-col gap-4">
         <FieldGroup>
           <Field data-invalid={!!form.formState.errors.role}>
-            <FieldLabel htmlFor="role">Role</FieldLabel>
+            <FieldLabel htmlFor="role" required>Role</FieldLabel>
             <FieldContent>
               <Controller
                 control={form.control}
@@ -84,8 +84,8 @@ export default function StaffSetupPage() {
             </FieldContent>
           </Field>
 
-          <Field orientation="responsive">
-            <FieldLabel htmlFor="fullName">Full name</FieldLabel>
+          <Field  data-invalid={!!form.formState.errors.fullName}>
+            <FieldLabel htmlFor="fullName" required>Full name</FieldLabel>
             <FieldContent>
               <Controller
                 control={form.control}
@@ -104,8 +104,8 @@ export default function StaffSetupPage() {
             </FieldContent>
           </Field>
 
-          <Field orientation="responsive">
-            <FieldLabel htmlFor="phone">Phone number</FieldLabel>
+          <Field  data-invalid={!!form.formState.errors.phone}>
+            <FieldLabel htmlFor="phone" required>Phone number</FieldLabel>
             <FieldContent>
               <Controller
                 control={form.control}

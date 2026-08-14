@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
 
 import { ProgressStepper } from "@/components/onboarding/ProgressStepper";
+import { OnboardingBackground } from "@/components/onboarding/OnboardingBackground";
+import { Card, CardContent } from "@/components/ui/card";
 import { fadeInUp } from "@/lib/motion";
 
 const stepLabels = ["Role", "Team", "Staff", "Invite"];
@@ -21,7 +23,9 @@ type OnboardingLayoutProps = {
 function OnboardingLayout({ step, backHref, title, description, children }: OnboardingLayoutProps) {
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <header className="flex h-14 items-center gap-3 border-b border-border px-4 lg:px-8">
+      <OnboardingBackground />
+
+      <header className="relative z-10 flex h-14 items-center gap-3 border-b border-border bg-background/90 px-4 backdrop-blur-sm lg:px-8">
         {backHref ? (
           <Link
             href={backHref}
@@ -41,21 +45,20 @@ function OnboardingLayout({ step, backHref, title, description, children }: Onbo
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-6 px-4 py-6 lg:py-10">
+      <main className="relative z-10 mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-6 lg:py-10">
         {typeof step === "number" && <ProgressStepper steps={stepLabels} currentStep={step} />}
 
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={fadeInUp}
-          className="flex flex-col gap-6"
-        >
-          <div className="flex flex-col gap-1">
-            <h1 className="font-heading text-xl font-semibold text-foreground">{title}</h1>
-            {description && <p className="text-sm text-muted-foreground">{description}</p>}
-          </div>
+        <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
+          <Card className="gap-0 p-2 sm:p-4">
+            <CardContent className="flex flex-col gap-6 px-4 py-4 sm:px-6 sm:py-6">
+              <div className="flex flex-col gap-1">
+                <h1 className="font-heading text-xl font-semibold text-foreground">{title}</h1>
+                {description && <p className="text-sm text-muted-foreground">{description}</p>}
+              </div>
 
-          {children}
+              {children}
+            </CardContent>
+          </Card>
         </motion.div>
       </main>
     </div>
