@@ -51,7 +51,7 @@ import { getInitials } from "@/lib/utils";
 
 const sortItems: Record<PlayerSort, string> = {
   name: "Name (A–Z)",
-  jerseyNumber: "Jersey number",
+  jersey_number: "Jersey number",
   recent: "Recently added",
 };
 
@@ -99,7 +99,7 @@ export default function PlayersPage() {
   const recentPlayers = useMemo(
     () =>
       [...players]
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 3),
     [players]
   );
@@ -193,10 +193,10 @@ export default function PlayersPage() {
                     className="flex shrink-0 items-center gap-2 rounded-full bg-card py-1.5 pr-3 pl-1.5 ring-1 ring-foreground/10"
                   >
                     <span className="flex size-7 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
-                      {getInitials(player.fullName)}
+                      {getInitials(player.full_name)}
                     </span>
                     <span className="text-sm font-medium whitespace-nowrap text-foreground">
-                      {player.fullName}
+                      {player.full_name}
                     </span>
                   </Link>
                 ))}
@@ -218,7 +218,7 @@ export default function PlayersPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="name">Name (A–Z)</SelectItem>
-                <SelectItem value="jerseyNumber">Jersey number</SelectItem>
+                <SelectItem value="jersey_number">Jersey number</SelectItem>
                 <SelectItem value="recent">Recently added</SelectItem>
               </SelectContent>
             </Select>

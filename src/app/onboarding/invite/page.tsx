@@ -17,17 +17,17 @@ function generateInviteCode() {
 export default function InvitePage() {
   const router = useRouter();
   const teamName = useOnboardingStore((state) => state.draft.team.name) || "your team";
-  const inviteCode = useOnboardingStore((state) => state.draft.inviteCode);
+  const invite_code = useOnboardingStore((state) => state.draft.invite_code);
   const setInviteCode = useOnboardingStore((state) => state.setInviteCode);
   const [isGenerating, setIsGenerating] = useState(true);
 
   useEffect(() => {
-    if (!inviteCode) {
+    if (!invite_code) {
       setInviteCode(generateInviteCode());
     }
     const timeout = setTimeout(() => setIsGenerating(false), 500);
     return () => clearTimeout(timeout);
-  }, [inviteCode, setInviteCode]);
+  }, [invite_code, setInviteCode]);
 
   return (
     <OnboardingLayout
@@ -36,14 +36,14 @@ export default function InvitePage() {
       title="Invite your players"
       description="Share this link so players can join your squad on WhatsApp."
     >
-      {isGenerating || !inviteCode ? (
+      {isGenerating || !invite_code ? (
         <div className="flex flex-col items-center gap-4 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
           <LoadingSkeleton className="size-32 rounded-xl" />
           <LoadingSkeleton className="h-9 w-full" />
           <LoadingSkeleton className="h-11 w-full" />
         </div>
       ) : (
-        <InviteCard teamName={teamName} inviteCode={inviteCode} />
+        <InviteCard teamName={teamName} invite_code={invite_code} />
       )}
 
       <Button size="lg" className="w-full" onClick={() => router.push("/onboarding/success")}>

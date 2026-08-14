@@ -42,9 +42,9 @@ function TeamForm({ defaultValues, onSubmit }: TeamFormProps) {
       nickname: "",
       region: "",
       district: "",
-      homeGround: "",
-      colorPrimary: "#1e3a8a",
-      colorSecondary: "#2563eb",
+      home_ground: "",
+      color_primary: "#1e3a8a",
+      color_secondary: "#2563eb",
       slogan: "",
       ...defaultValues,
     },
@@ -117,47 +117,47 @@ function TeamForm({ defaultValues, onSubmit }: TeamFormProps) {
           </FieldContent>
         </Field>
 
-        <Field data-invalid={!!form.formState.errors.homeGround}>
-          <FieldLabel htmlFor="homeGround" required>Home ground</FieldLabel>
+        <Field data-invalid={!!form.formState.errors.home_ground}>
+          <FieldLabel htmlFor="home_ground" required>Home ground</FieldLabel>
           <FieldContent>
             <Input
-              id="homeGround"
+              id="home_ground"
               placeholder="e.g. Community Park"
-              {...form.register("homeGround")}
+              {...form.register("home_ground")}
             />
-            <FieldError errors={[form.formState.errors.homeGround]} />
+            <FieldError errors={[form.formState.errors.home_ground]} />
           </FieldContent>
         </Field>
 
-        <Field data-invalid={!!form.formState.errors.yearEstablished}>
-          <FieldLabel htmlFor="yearEstablished" required>Year established</FieldLabel>
+        <Field data-invalid={!!form.formState.errors.year_established}>
+          <FieldLabel htmlFor="year_established" required>Year established</FieldLabel>
           <FieldContent>
             <Input
-              id="yearEstablished"
+              id="year_established"
               type="number"
               inputMode="numeric"
               placeholder="e.g. 2018"
-              {...form.register("yearEstablished")}
+              {...form.register("year_established")}
             />
-            <FieldError errors={[form.formState.errors.yearEstablished]} />
+            <FieldError errors={[form.formState.errors.year_established]} />
           </FieldContent>
         </Field>
 
         <Field orientation="responsive" className="sm:col-span-2">
-          <FieldLabel htmlFor="colorPrimary" optional>Team colors</FieldLabel>
+          <FieldLabel htmlFor="color_primary" optional>Team colors</FieldLabel>
           <FieldContent>
             <div className="flex items-center gap-3">
               <input
-                id="colorPrimary"
+                id="color_primary"
                 type="color"
                 className="size-9 rounded-lg border border-input"
-                {...form.register("colorPrimary")}
+                {...form.register("color_primary")}
               />
               <input
                 type="color"
                 aria-label="Secondary color"
                 className="size-9 rounded-lg border border-input"
-                {...form.register("colorSecondary")}
+                {...form.register("color_secondary")}
               />
             </div>
           </FieldContent>

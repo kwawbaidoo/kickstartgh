@@ -30,11 +30,11 @@ function SuccessCard({ team, staff }: SuccessCardProps) {
         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
           <span className="flex items-center justify-center gap-1.5">
             <MapPin className="size-4" />
-            {[team.homeGround, team.region].filter(Boolean).join(", ")}
+            {[team.home_ground, team.region].filter(Boolean).join(", ")}
           </span>
           <span className="flex items-center justify-center gap-1.5">
             <Shield className="size-4" />
-            Est. {team.yearEstablished}
+            Est. {team.year_established}
           </span>
           <span className="flex items-center justify-center gap-1.5">
             <Users className="size-4" />

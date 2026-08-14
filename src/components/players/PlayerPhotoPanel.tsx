@@ -19,11 +19,11 @@ function PlayerPhotoPanel({ player, className }: PlayerPhotoPanelProps) {
         <img src={player.photo} alt="" className="size-full object-cover" />
       ) : (
         <div className="flex size-full items-center justify-center text-6xl font-semibold text-primary-foreground">
-          {getInitials(player.fullName)}
+          {getInitials(player.full_name)}
         </div>
       )}
       <span className="absolute right-3 bottom-3 flex size-11 items-center justify-center rounded-full bg-accent text-base font-bold text-accent-foreground ring-4 ring-background">
-        {player.jerseyNumber}
+        {player.jersey_number}
       </span>
     </div>
   );

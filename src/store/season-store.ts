@@ -6,14 +6,14 @@ import { currentTeam } from "@/mock/teams";
 
 export type SeasonInput = {
   name: string;
-  startDate: string;
-  endDate: string;
+  start_date: string;
+  end_date: string;
   description?: string;
   objectives?: string;
-  competitionCategory?: string;
+  competition_category?: string;
   budget?: number;
-  colorPrimary?: string;
-  colorSecondary?: string;
+  color_primary?: string;
+  color_secondary?: string;
 };
 
 type SeasonState = {
@@ -42,9 +42,9 @@ export const useSeasonStore = create<SeasonState>()(
       addSeason: (input) => {
         const newSeason: Season = {
           id: crypto.randomUUID(),
-          teamId: currentTeam.id,
+          team_id: currentTeam.id,
           status: "upcoming" as SeasonStatus,
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
           ...input,
         };
         set({ seasons: [...get().seasons, newSeason] });
@@ -91,7 +91,7 @@ export const useSeasonStore = create<SeasonState>()(
           id: crypto.randomUUID(),
           name,
           status: "upcoming",
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         };
         set({ seasons: [...get().seasons, duplicate] });
         return duplicate;

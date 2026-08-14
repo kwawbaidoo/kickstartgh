@@ -34,8 +34,8 @@ export default function MatchLineupPage({ params }: { params: Promise<{ id: stri
     );
   }
 
-  const squad = getSeasonRoster(players, match.seasonId).filter(
-    (player) => getSeasonRecord(player, match.seasonId)?.status === "Active"
+  const squad = getSeasonRoster(players, match.season_id).filter(
+    (player) => getSeasonRecord(player, match.season_id)?.status === "Active"
   );
 
   function handleSave(lineup: Lineup) {

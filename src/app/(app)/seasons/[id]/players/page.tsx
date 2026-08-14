@@ -41,7 +41,7 @@ import { cn, getInitials } from "@/lib/utils";
 const PAGE_SIZE = 16;
 
 const statsSortItems: Record<SeasonPlayerStatsSort, string> = {
-  jerseyNumber: "Jersey number",
+  jersey_number: "Jersey number",
   name: "Name (A–Z)",
   goals: "Most goals",
   assists: "Most assists",
@@ -66,14 +66,14 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
   const [tab, setTab] = useState<RosterTab>("players");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
-  const [jerseyNumber, setJerseyNumber] = useState("");
+  const [jersey_number, setJerseyNumber] = useState("");
   const [carryOpen, setCarryOpen] = useState(false);
   const [sourceSeasonId, setSourceSeasonId] = useState<string | null>(null);
   const [view, setView] = useState<CardListView>("card");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [statsSearch, setStatsSearch] = useState("");
-  const [statsSort, setStatsSort] = useState<SeasonPlayerStatsSort>("jerseyNumber");
+  const [statsSort, setStatsSort] = useState<SeasonPlayerStatsSort>("jersey_number");
   const [statsPage, setStatsPage] = useState(1);
 
   const season = seasons.find((candidate) => candidate.id === id);
@@ -99,8 +99,8 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
     ? roster.filter((player) => {
         const record = getSeasonRecord(player, id);
         return (
-          player.fullName.toLowerCase().includes(query) ||
-          String(record?.jerseyNumber ?? "").includes(query)
+          player.full_name.toLowerCase().includes(query) ||
+          String(record?.jersey_number ?? "").includes(query)
         );
       })
     : roster;
@@ -117,8 +117,8 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
   const filteredStats = statsQuery
     ? seasonStats.filter(
         (entry) =>
-          entry.player.fullName.toLowerCase().includes(statsQuery) ||
-          String(entry.jerseyNumber).includes(statsQuery)
+          entry.player.full_name.toLowerCase().includes(statsQuery) ||
+          String(entry.jersey_number).includes(statsQuery)
       )
     : seasonStats;
   const sortedStats = sortSeasonPlayerStats(filteredStats, statsSort);
@@ -130,8 +130,8 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
   );
 
   function handleRegister() {
-    if (!selectedPlayerId || !jerseyNumber) return;
-    registerPlayerForSeason(selectedPlayerId, id, Number(jerseyNumber));
+    if (!selectedPlayerId || !jersey_number) return;
+    registerPlayerForSeason(selectedPlayerId, id, Number(jersey_number));
     setSelectedPlayerId(null);
     setJerseyNumber("");
     setPickerOpen(false);
@@ -234,7 +234,7 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
                         <SeasonPlayerCard
                           key={player.id}
                           player={player}
-                          jerseyNumber={record.jerseyNumber}
+                          jersey_number={record.jersey_number}
                           status={record.status}
                           onRemove={
                             isActive ? () => removePlayerFromSeason(player.id, id) : undefined
@@ -262,15 +262,15 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={player.photo} alt="" className="size-full object-cover" />
                               ) : (
-                                getInitials(player.fullName)
+                                getInitials(player.full_name)
                               )}
                             </div>
                             <div className="flex min-w-0 flex-1 flex-col">
                               <span className="truncate text-sm font-medium text-foreground">
-                                {player.fullName}
+                                {player.full_name}
                               </span>
                               <span className="text-xs text-muted-foreground">
-                                {player.position} · #{record.jerseyNumber}
+                                {player.position} · #{record.jersey_number}
                               </span>
                             </div>
                           </Link>
@@ -286,7 +286,7 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
                             <button
                               type="button"
                               onClick={() => removePlayerFromSeason(player.id, id)}
-                              aria-label={`Remove ${player.fullName} from season`}
+                              aria-label={`Remove ${player.full_name} from season`}
                               className="text-muted-foreground hover:text-destructive"
                             >
                               <X className="size-4" />
@@ -321,7 +321,7 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
                 items={statsSortItems}
                 value={statsSort}
                 onValueChange={(value) => {
-                  setStatsSort((value as SeasonPlayerStatsSort) ?? "jerseyNumber");
+                  setStatsSort((value as SeasonPlayerStatsSort) ?? "jersey_number");
                   setStatsPage(1);
                 }}
               >
@@ -378,7 +378,7 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
               <>
                 <Select
                   items={Object.fromEntries(
-                    unregisteredPlayers.map((player) => [player.id, player.fullName])
+                    unregisteredPlayers.map((player) => [player.id, player.full_name])
                   )}
                   value={selectedPlayerId}
                   onValueChange={setSelectedPlayerId}
@@ -389,7 +389,7 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
                   <SelectContent>
                     {unregisteredPlayers.map((player) => (
                       <SelectItem key={player.id} value={player.id}>
-                        {player.fullName}
+                        {player.full_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -398,12 +398,12 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
                   type="number"
                   inputMode="numeric"
                   placeholder="Jersey number for this season"
-                  value={jerseyNumber}
+                  value={jersey_number}
                   onChange={(event) => setJerseyNumber(event.target.value)}
                 />
                 <Button
                   className="w-full"
-                  disabled={!selectedPlayerId || !jerseyNumber}
+                  disabled={!selectedPlayerId || !jersey_number}
                   onClick={handleRegister}
                 >
                   Register Player

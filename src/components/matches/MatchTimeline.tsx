@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 type MatchTimelineProps = {
   events: MatchEvent[];
   playerNames: Record<string, string>;
-  onRemove?: (eventId: string) => void;
+  onRemove?: (event_id: string) => void;
 };
 
 function MatchTimeline({ events, playerNames, onRemove }: MatchTimelineProps) {

@@ -31,7 +31,7 @@ function PlayerActionsMenu({ player }: { player: Player }) {
     "⚽ Player Profile",
     "",
     "Name:",
-    player.fullName,
+    player.full_name,
     "",
     "Position:",
     player.position,
@@ -102,7 +102,7 @@ function PlayerActionsMenu({ player }: { player: Player }) {
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         title="Remove this player?"
-        description={`${player.fullName} will be removed from your squad. This can't be undone.`}
+        description={`${player.full_name} will be removed from your squad. This can't be undone.`}
         footer={
           <>
             <Button variant="outline" onClick={() => setDeleteOpen(false)}>

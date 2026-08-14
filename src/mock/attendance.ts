@@ -17,12 +17,12 @@ export type SessionStatus = "upcoming" | "completed" | "cancelled";
 
 export type AttendanceSession = {
   id: string;
-  teamId: string;
-  seasonId: string;
+  team_id: string;
+  season_id: string;
   title: string;
   date: string;
-  startTime: string;
-  endTime: string;
+  start_time: string;
+  end_time: string;
   venue: string;
   description?: string;
   focus?: TrainingFocus;
@@ -30,7 +30,7 @@ export type AttendanceSession = {
   notes?: string;
   status: SessionStatus;
   records: Record<string, AttendanceStatus>;
-  createdAt: string;
+  created_at: string;
 };
 
 const sessionDates = [
@@ -82,19 +82,19 @@ const activePlayers = players.filter((player) => player.status === "Active");
 
 export const attendanceSessions: AttendanceSession[] = sessionDates.map((date, index) => ({
   id: `session_${String(index + 1).padStart(3, "0")}`,
-  teamId: "team_001",
-  seasonId: DEFAULT_SEASON_ID,
+  team_id: "team_001",
+  season_id: DEFAULT_SEASON_ID,
   title: "Tuesday Training",
   date,
-  startTime: "16:00",
-  endTime: "17:30",
+  start_time: "16:00",
+  end_time: "17:30",
   venue: "Community Park",
   focus: "General Training",
   status: "completed",
   records: Object.fromEntries(
     activePlayers.map((player) => [player.id, pickStatus(`${player.id}-${index}`)])
   ),
-  createdAt: `${date}T08:00:00Z`,
+  created_at: `${date}T08:00:00Z`,
 }));
 
 // A session for today (so the dashboard's "Today's Session" has real data)
@@ -102,34 +102,34 @@ export const attendanceSessions: AttendanceSession[] = sessionDates.map((date, i
 attendanceSessions.push(
   {
     id: "session_014",
-    teamId: "team_001",
-    seasonId: DEFAULT_SEASON_ID,
+    team_id: "team_001",
+    season_id: DEFAULT_SEASON_ID,
     title: "Sharpening Session",
     date: "2026-07-13",
-    startTime: "16:00",
-    endTime: "17:30",
+    start_time: "16:00",
+    end_time: "17:30",
     venue: "Community Park",
     description: "Light session to keep sharp before the weekend cup tie.",
     focus: "Tactical",
     equipment: ["Cones", "Bibs", "Match balls"],
     status: "upcoming",
     records: {},
-    createdAt: "2026-07-10T08:00:00Z",
+    created_at: "2026-07-10T08:00:00Z",
   },
   {
     id: "session_015",
-    teamId: "team_001",
-    seasonId: DEFAULT_SEASON_ID,
+    team_id: "team_001",
+    season_id: DEFAULT_SEASON_ID,
     title: "Pre-Cup Sharpening Session",
     date: "2026-07-19",
-    startTime: "16:00",
-    endTime: "17:30",
+    start_time: "16:00",
+    end_time: "17:30",
     venue: "Community Park",
     description: "Final session before the Regional Cup fixture vs Sekondi Warriors.",
     focus: "Tactical",
     equipment: ["Cones", "Bibs", "Match balls"],
     status: "upcoming",
     records: {},
-    createdAt: "2026-07-13T08:00:00Z",
+    created_at: "2026-07-13T08:00:00Z",
   }
 );

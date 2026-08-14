@@ -56,7 +56,7 @@ export default function DataExportPage() {
     teamReportColumns.map((column) => column.key)
   );
 
-  const playerNames = Object.fromEntries(players.map((player) => [player.id, player.fullName]));
+  const playerNames = Object.fromEntries(players.map((player) => [player.id, player.full_name]));
   const matchTable = buildMatchReportTable(
     matches,
     playerNames,
@@ -74,16 +74,16 @@ export default function DataExportPage() {
 
   const reportsTable: ReportTable = {
     columns: [
-      { key: "reportType", label: "Report Type" },
+      { key: "report_type", label: "Report Type" },
       { key: "format", label: "Format" },
-      { key: "templateName", label: "Template" },
-      { key: "createdAt", label: "Generated" },
+      { key: "template_name", label: "Template" },
+      { key: "created_at", label: "Generated" },
     ],
     rows: historyEntries.map((entry) => ({
-      reportType: entry.reportType,
+      report_type: entry.report_type,
       format: entry.format,
-      templateName: entry.templateName ?? "—",
-      createdAt: new Date(entry.createdAt).toLocaleString(),
+      template_name: entry.template_name ?? "—",
+      created_at: new Date(entry.created_at).toLocaleString(),
     })),
   };
 

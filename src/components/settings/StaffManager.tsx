@@ -42,13 +42,13 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
 
   const form = useForm<StaffFormInput>({
     resolver: zodResolver(staffFormSchema),
-    defaultValues: { fullName: "", phone: "", email: "" },
+    defaultValues: { full_name: "", phone: "", email: "" },
   });
 
   function handleAdd(data: StaffFormInput) {
     const member: StaffMember = { id: crypto.randomUUID(), ...data };
     onAdd(member);
-    form.reset({ fullName: "", phone: "", email: "" });
+    form.reset({ full_name: "", phone: "", email: "" });
     setFormKey((current) => current + 1);
 
     const tempPassword = generateTempPassword();
@@ -107,11 +107,11 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
         </FieldGroup>
 
         <FieldGroup className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <Field data-invalid={!!form.formState.errors.fullName}>
-            <FieldLabel htmlFor="fullName">Full name</FieldLabel>
+          <Field data-invalid={!!form.formState.errors.full_name}>
+            <FieldLabel htmlFor="full_name">Full name</FieldLabel>
             <FieldContent>
-              <Input id="fullName" placeholder="e.g. Kojo Boateng" {...form.register("fullName")} />
-              <FieldError errors={[form.formState.errors.fullName]} />
+              <Input id="full_name" placeholder="e.g. Kojo Boateng" {...form.register("full_name")} />
+              <FieldError errors={[form.formState.errors.full_name]} />
             </FieldContent>
           </Field>
 
@@ -154,10 +154,10 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
             >
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-                  {getInitials(member.fullName)}
+                  {getInitials(member.full_name)}
                 </div>
                 <div className="flex min-w-0 flex-col">
-                  <span className="truncate text-sm font-medium text-foreground">{member.fullName}</span>
+                  <span className="truncate text-sm font-medium text-foreground">{member.full_name}</span>
                   <span className="truncate text-xs text-muted-foreground">{member.phone}</span>
                 </div>
               </div>
@@ -183,7 +183,7 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  aria-label={`Remove ${member.fullName}`}
+                  aria-label={`Remove ${member.full_name}`}
                   onClick={() => onRemove(member.id)}
                 >
                   <X className="size-4" />
@@ -201,7 +201,7 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
         onOpenChange={(open) => !open && setCredentialState(null)}
         title="Staff account created"
         description={
-          credentialState ? `${credentialState.member.fullName} has been added to your team.` : undefined
+          credentialState ? `${credentialState.member.full_name} has been added to your team.` : undefined
         }
       >
         {credentialState && (

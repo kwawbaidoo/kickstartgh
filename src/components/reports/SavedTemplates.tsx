@@ -11,14 +11,14 @@ import type { ReportType } from "@/config/reports";
 import { useReportsStore, type ReportTemplate } from "@/store/reports-store";
 
 type SavedTemplatesProps = {
-  reportType: ReportType;
+  report_type: ReportType;
   currentColumns: string[];
   onApply: (template: ReportTemplate) => void;
 };
 
-function SavedTemplates({ reportType, currentColumns, onApply }: SavedTemplatesProps) {
+function SavedTemplates({ report_type, currentColumns, onApply }: SavedTemplatesProps) {
   const allTemplates = useReportsStore((state) => state.templates);
-  const templates = allTemplates.filter((template) => template.reportType === reportType);
+  const templates = allTemplates.filter((template) => template.report_type === report_type);
   const saveTemplate = useReportsStore((state) => state.saveTemplate);
   const renameTemplate = useReportsStore((state) => state.renameTemplate);
   const duplicateTemplate = useReportsStore((state) => state.duplicateTemplate);
@@ -29,7 +29,7 @@ function SavedTemplates({ reportType, currentColumns, onApply }: SavedTemplatesP
 
   function handleSave() {
     if (name.trim().length < 2) return;
-    saveTemplate(name.trim(), reportType, currentColumns);
+    saveTemplate(name.trim(), report_type, currentColumns);
     setName("");
     setSaveOpen(false);
   }

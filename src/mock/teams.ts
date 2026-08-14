@@ -4,10 +4,10 @@ export type Team = {
   nickname: string;
   region: string;
   district: string;
-  homeGround: string;
-  yearEstablished: number;
-  headCoach: string;
-  logoInitials: string;
+  home_ground: string;
+  year_established: number;
+  head_coach: string;
+  logo_initials: string;
 };
 
 export const currentTeam: Team = {
@@ -16,10 +16,10 @@ export const currentTeam: Team = {
   nickname: "The Lions",
   region: "Western Region",
   district: "Ellembelle",
-  homeGround: "Community Park",
-  yearEstablished: 2018,
-  headCoach: "Coach Kojo Boateng",
-  logoInitials: "OFC",
+  home_ground: "Community Park",
+  year_established: 2018,
+  head_coach: "Coach Kojo Boateng",
+  logo_initials: "OFC",
 };
 
 export const teams: Team[] = [currentTeam];

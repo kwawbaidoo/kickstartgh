@@ -42,7 +42,7 @@ export default function MatchEventsPage({ params }: { params: Promise<{ id: stri
     );
   }
 
-  const playerNames = Object.fromEntries(players.map((player) => [player.id, player.fullName]));
+  const playerNames = Object.fromEntries(players.map((player) => [player.id, player.full_name]));
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
@@ -70,7 +70,7 @@ export default function MatchEventsPage({ params }: { params: Promise<{ id: stri
           <MatchTimeline
             events={match.events}
             playerNames={playerNames}
-            onRemove={(eventId) => removeEvent(id, eventId)}
+            onRemove={(event_id) => removeEvent(id, event_id)}
           />
         </CardContent>
       </Card>

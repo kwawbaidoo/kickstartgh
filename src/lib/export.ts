@@ -127,7 +127,7 @@ export function exportLineupPdf(
   match: Match,
   team: ActiveTeam,
   players: Player[],
-  benchOfficials: ResolvedBenchOfficial[]
+  bench_officials: ResolvedBenchOfficial[]
 ) {
   if (!match.lineup) return;
   const lineup = match.lineup;
@@ -188,8 +188,8 @@ export function exportLineupPdf(
   const slots = getFormationSlots(lineup.formation);
   const circleRadius = 6;
   slots.forEach((slot) => {
-    const playerId = lineup.startingXI[slot.slot];
-    const player = playerId ? playerMap.get(playerId) : undefined;
+    const player_id = lineup.starting_xi[slot.slot];
+    const player = player_id ? playerMap.get(player_id) : undefined;
     if (!player) return;
     const cx = pitchX + (slot.x / 100) * pitchWidth;
     const cy = pitchY + (slot.y / 100) * pitchHeight;
@@ -199,11 +199,11 @@ export function exportLineupPdf(
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7);
     doc.setTextColor(255, 255, 255);
-    const initials = getInitials(player.fullName);
+    const initials = getInitials(player.full_name);
     const initialsWidth = doc.getTextWidth(initials);
     doc.text(initials, cx - initialsWidth / 2, cy + 1.5);
 
-    const label = `${player.fullName.split(" ")[0]}${lineup.captainId === player.id ? " (C)" : ""}`;
+    const label = `${player.full_name.split(" ")[0]}${lineup.captain_id === player.id ? " (C)" : ""}`;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6.5);
     const labelWidth = doc.getTextWidth(label);
@@ -232,7 +232,7 @@ export function exportLineupPdf(
     y += 6;
   } else {
     for (const player of substitutePlayers) {
-      doc.text(`${player.fullName} — ${player.position} #${player.jerseyNumber}`, margin, y);
+      doc.text(`${player.full_name} — ${player.position} #${player.jersey_number}`, margin, y);
       y += 5.5;
     }
   }
@@ -246,12 +246,12 @@ export function exportLineupPdf(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(60);
-  if (benchOfficials.length === 0) {
+  if (bench_officials.length === 0) {
     doc.text("No bench officials named.", margin, y);
     y += 6;
   } else {
-    for (const official of benchOfficials) {
-      doc.text(`${official.fullName} — ${official.role}`, margin, y);
+    for (const official of bench_officials) {
+      doc.text(`${official.full_name} — ${official.role}`, margin, y);
       y += 5.5;
     }
   }
@@ -283,15 +283,15 @@ export function exportPlayerMatchReportPdf(player: Player, match: Match, team: A
   y += 10;
 
   const badgeSize = 14;
-  drawBadge(doc, margin, y, badgeSize, getInitials(player.fullName));
+  drawBadge(doc, margin, y, badgeSize, getInitials(player.full_name));
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   doc.setTextColor(0);
-  doc.text(player.fullName, margin + badgeSize + 5, y + badgeSize / 2 - 1);
+  doc.text(player.full_name, margin + badgeSize + 5, y + badgeSize / 2 - 1);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(120);
-  doc.text(`${player.position} · #${player.jerseyNumber}`, margin + badgeSize + 5, y + badgeSize / 2 + 6);
+  doc.text(`${player.position} · #${player.jersey_number}`, margin + badgeSize + 5, y + badgeSize / 2 + 6);
   y += badgeSize + 10;
 
   doc.setDrawColor(220);
@@ -314,9 +314,9 @@ export function exportPlayerMatchReportPdf(player: Player, match: Match, team: A
   y += 6;
 
   const result = getMatchResult(match);
-  if (result && match.teamScore !== undefined && match.opponentScore !== undefined) {
+  if (result && match.team_score !== undefined && match.opponent_score !== undefined) {
     const resultLabel = { win: "Win", draw: "Draw", loss: "Loss" }[result];
-    doc.text(`Result: ${resultLabel} ${match.teamScore}–${match.opponentScore}`, margin, y);
+    doc.text(`Result: ${resultLabel} ${match.team_score}–${match.opponent_score}`, margin, y);
     y += 6;
   }
 
@@ -328,10 +328,10 @@ export function exportPlayerMatchReportPdf(player: Player, match: Match, team: A
   const started = match.lineup ? getStartingPlayerIds(match.lineup).includes(player.id) : false;
   const onBench = match.lineup?.substitutes.includes(player.id) ?? false;
   const subOnEvent = match.events.find(
-    (event) => event.type === "substitution" && event.playerInId === player.id
+    (event) => event.type === "substitution" && event.player_in_id === player.id
   );
   const subOffEvent = match.events.find(
-    (event) => event.type === "substitution" && event.playerOutId === player.id
+    (event) => event.type === "substitution" && event.player_out_id === player.id
   );
 
   doc.setFont("helvetica", "bold");
@@ -347,16 +347,16 @@ export function exportPlayerMatchReportPdf(player: Player, match: Match, team: A
   else if (started) roleLine = "Started the match.";
   else if (onBench) roleLine = "Named among the substitutes.";
   if (started && subOffEvent) roleLine += ` Substituted off at minute ${subOffEvent.minute}.`;
-  if (match.lineup?.captainId === player.id) roleLine += " Team captain.";
+  if (match.lineup?.captain_id === player.id) roleLine += " Team captain.";
   doc.text(roleLine, margin, y);
   y += 10;
 
-  const goals = match.events.filter((event) => event.type === "goal" && event.playerId === player.id);
+  const goals = match.events.filter((event) => event.type === "goal" && event.player_id === player.id);
   const assists = match.events.filter(
-    (event) => event.type === "goal" && event.assistPlayerId === player.id
+    (event) => event.type === "goal" && event.assist_player_id === player.id
   );
   const cards = match.events.filter(
-    (event) => (event.type === "yellow_card" || event.type === "red_card") && event.playerId === player.id
+    (event) => (event.type === "yellow_card" || event.type === "red_card") && event.player_id === player.id
   );
 
   doc.setFont("helvetica", "bold");
@@ -394,6 +394,6 @@ export function exportPlayerMatchReportPdf(player: Player, match: Match, team: A
   doc.setTextColor(150);
   doc.text(`Generated ${format(new Date(), "d MMM yyyy, HH:mm")} · KickStartGH`, margin, y);
 
-  const filename = `${player.fullName.toLowerCase().replace(/\s+/g, "-")}-vs-${match.opponent.toLowerCase().replace(/\s+/g, "-")}`;
+  const filename = `${player.full_name.toLowerCase().replace(/\s+/g, "-")}-vs-${match.opponent.toLowerCase().replace(/\s+/g, "-")}`;
   doc.save(`${filename}.pdf`);
 }

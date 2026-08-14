@@ -18,8 +18,8 @@ type AttendanceState = {
   addSession: (input: TrainingFormInput) => AttendanceSession;
   updateSession: (id: string, input: TrainingFormInput) => void;
   deleteSession: (id: string) => void;
-  setAttendance: (sessionId: string, playerId: string, status: AttendanceStatus) => void;
-  setBulkAttendance: (sessionId: string, playerIds: string[], status: AttendanceStatus) => void;
+  setAttendance: (session_id: string, player_id: string, status: AttendanceStatus) => void;
+  setBulkAttendance: (session_id: string, playerIds: string[], status: AttendanceStatus) => void;
   completeSession: (id: string) => void;
   cancelSession: (id: string) => void;
   migrateSeasonIds: () => void;
@@ -35,11 +35,11 @@ export const useAttendanceStore = create<AttendanceState>()(
       addSession: (input) => {
         const newSession: AttendanceSession = {
           id: crypto.randomUUID(),
-          teamId: currentTeam.id,
-          seasonId: useSeasonStore.getState().activeSeasonId,
+          team_id: currentTeam.id,
+          season_id: useSeasonStore.getState().activeSeasonId,
           status: "upcoming",
           records: {},
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
           ...input,
         };
         set({ sessions: [...get().sessions, newSession] });
@@ -58,22 +58,22 @@ export const useAttendanceStore = create<AttendanceState>()(
         set({ sessions: get().sessions.filter((session) => session.id !== id) });
       },
 
-      setAttendance: (sessionId, playerId, status) => {
+      setAttendance: (session_id, player_id, status) => {
         set({
           sessions: get().sessions.map((session) =>
-            session.id === sessionId
-              ? { ...session, records: { ...session.records, [playerId]: status } }
+            session.id === session_id
+              ? { ...session, records: { ...session.records, [player_id]: status } }
               : session
           ),
         });
       },
 
-      setBulkAttendance: (sessionId, playerIds, status) => {
+      setBulkAttendance: (session_id, playerIds, status) => {
         set({
           sessions: get().sessions.map((session) => {
-            if (session.id !== sessionId) return session;
+            if (session.id !== session_id) return session;
             const records = { ...session.records };
-            for (const playerId of playerIds) records[playerId] = status;
+            for (const player_id of playerIds) records[player_id] = status;
             return { ...session, records };
           }),
         });
@@ -99,7 +99,7 @@ export const useAttendanceStore = create<AttendanceState>()(
       migrateSeasonIds: () => {
         set({
           sessions: get().sessions.map((session) =>
-            session.seasonId ? session : { ...session, seasonId: DEFAULT_SEASON_ID }
+            session.season_id ? session : { ...session, season_id: DEFAULT_SEASON_ID }
           ),
         });
       },

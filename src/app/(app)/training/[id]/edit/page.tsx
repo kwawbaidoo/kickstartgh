@@ -37,8 +37,8 @@ export default function EditTrainingPage({ params }: { params: Promise<{ id: str
   const defaultValues: Partial<TrainingFormInput> = {
     title: session.title,
     date: session.date,
-    startTime: session.startTime,
-    endTime: session.endTime,
+    start_time: session.start_time,
+    end_time: session.end_time,
     venue: session.venue,
     description: session.description,
     focus: session.focus,

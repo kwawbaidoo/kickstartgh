@@ -24,18 +24,18 @@ const roleItems = toSelectItems(roleOptions.map((option) => ({ value: option.id,
 
 type ProfileFormProps = {
   defaultValues: ProfileFormInput;
-  dateJoined: string;
+  date_joined: string;
   teamName: string;
   onSubmit: (data: ProfileFormInput) => void;
 };
 
-function ProfileForm({ defaultValues, dateJoined, teamName, onSubmit }: ProfileFormProps) {
+function ProfileForm({ defaultValues, date_joined, teamName, onSubmit }: ProfileFormProps) {
   const form = useForm<ProfileFormInput>({
     resolver: zodResolver(profileFormSchema),
     defaultValues,
   });
 
-  const fullName = useWatch({ control: form.control, name: "fullName" });
+  const full_name = useWatch({ control: form.control, name: "full_name" });
   const photo = useWatch({ control: form.control, name: "photo" });
 
   return (
@@ -43,17 +43,17 @@ function ProfileForm({ defaultValues, dateJoined, teamName, onSubmit }: ProfileF
       <AvatarUpload
         value={photo}
         onChange={(dataUrl) => form.setValue("photo", dataUrl)}
-        fallbackText={fullName ? getInitials(fullName) : undefined}
+        fallbackText={full_name ? getInitials(full_name) : undefined}
         label="Profile picture"
         alt="Profile picture preview"
       />
 
       <FieldGroup>
-        <Field data-invalid={!!form.formState.errors.fullName}>
-          <FieldLabel htmlFor="fullName">Full name</FieldLabel>
+        <Field data-invalid={!!form.formState.errors.full_name}>
+          <FieldLabel htmlFor="full_name">Full name</FieldLabel>
           <FieldContent>
-            <Input id="fullName" placeholder="e.g. Kojo Boateng" {...form.register("fullName")} />
-            <FieldError errors={[form.formState.errors.fullName]} />
+            <Input id="full_name" placeholder="e.g. Kojo Boateng" {...form.register("full_name")} />
+            <FieldError errors={[form.formState.errors.full_name]} />
           </FieldContent>
         </Field>
 
@@ -74,14 +74,14 @@ function ProfileForm({ defaultValues, dateJoined, teamName, onSubmit }: ProfileF
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="preferredRole">Preferred role</FieldLabel>
+          <FieldLabel htmlFor="preferred_role">Preferred role</FieldLabel>
           <FieldContent>
             <Controller
               control={form.control}
-              name="preferredRole"
+              name="preferred_role"
               render={({ field }) => (
                 <Select items={roleItems} value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger id="preferredRole" className="w-full">
+                  <SelectTrigger id="preferred_role" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -100,7 +100,7 @@ function ProfileForm({ defaultValues, dateJoined, teamName, onSubmit }: ProfileF
         <Field orientation="responsive">
           <FieldLabel>Date joined</FieldLabel>
           <FieldContent>
-            <p className="text-sm text-muted-foreground">{format(new Date(dateJoined), "d MMM yyyy")}</p>
+            <p className="text-sm text-muted-foreground">{format(new Date(date_joined), "d MMM yyyy")}</p>
           </FieldContent>
         </Field>
 

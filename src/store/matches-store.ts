@@ -20,18 +20,18 @@ type MatchesState = {
   addMatch: (input: MatchFormInput) => Match;
   updateMatch: (id: string, input: MatchFormInput) => void;
   deleteMatch: (id: string) => void;
-  setLineup: (matchId: string, lineup: Lineup) => void;
-  addEvent: (matchId: string, event: MatchEventInput) => void;
-  removeEvent: (matchId: string, eventId: string) => void;
-  completeMatch: (matchId: string, teamScore: number, opponentScore: number) => void;
-  cancelMatch: (matchId: string) => void;
-  reactivateMatch: (matchId: string) => void;
+  setLineup: (match_id: string, lineup: Lineup) => void;
+  addEvent: (match_id: string, event: MatchEventInput) => void;
+  removeEvent: (match_id: string, event_id: string) => void;
+  completeMatch: (match_id: string, team_score: number, opponent_score: number) => void;
+  cancelMatch: (match_id: string) => void;
+  reactivateMatch: (match_id: string) => void;
   migrateSeasonIds: () => void;
 };
 
 function fromFormInput(input: MatchFormInput) {
   const { homeAway, ...rest } = input;
-  return { ...rest, isHome: homeAway === "Home" };
+  return { ...rest, is_home: homeAway === "Home" };
 }
 
 export const useMatchesStore = create<MatchesState>()(
@@ -44,12 +44,12 @@ export const useMatchesStore = create<MatchesState>()(
       addMatch: (input) => {
         const newMatch: Match = {
           id: crypto.randomUUID(),
-          teamId: currentTeam.id,
-          seasonId: useSeasonStore.getState().activeSeasonId,
+          team_id: currentTeam.id,
+          season_id: useSeasonStore.getState().activeSeasonId,
           status: "upcoming",
           lineup: null,
           events: [],
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
           ...fromFormInput(input),
         };
         set({ matches: [...get().matches, newMatch] });
@@ -68,51 +68,51 @@ export const useMatchesStore = create<MatchesState>()(
         set({ matches: get().matches.filter((match) => match.id !== id) });
       },
 
-      setLineup: (matchId, lineup) => {
+      setLineup: (match_id, lineup) => {
         set({
-          matches: get().matches.map((match) => (match.id === matchId ? { ...match, lineup } : match)),
+          matches: get().matches.map((match) => (match.id === match_id ? { ...match, lineup } : match)),
         });
       },
 
-      addEvent: (matchId, event) => {
+      addEvent: (match_id, event) => {
         const newEvent = { ...event, id: crypto.randomUUID() } as MatchEvent;
         set({
           matches: get().matches.map((match) =>
-            match.id === matchId ? { ...match, events: [...match.events, newEvent] } : match
+            match.id === match_id ? { ...match, events: [...match.events, newEvent] } : match
           ),
         });
       },
 
-      removeEvent: (matchId, eventId) => {
+      removeEvent: (match_id, event_id) => {
         set({
           matches: get().matches.map((match) =>
-            match.id === matchId
-              ? { ...match, events: match.events.filter((event) => event.id !== eventId) }
+            match.id === match_id
+              ? { ...match, events: match.events.filter((event) => event.id !== event_id) }
               : match
           ),
         });
       },
 
-      completeMatch: (matchId, teamScore, opponentScore) => {
+      completeMatch: (match_id, team_score, opponent_score) => {
         set({
           matches: get().matches.map((match) =>
-            match.id === matchId ? { ...match, status: "completed", teamScore, opponentScore } : match
+            match.id === match_id ? { ...match, status: "completed", team_score, opponent_score } : match
           ),
         });
       },
 
-      cancelMatch: (matchId) => {
+      cancelMatch: (match_id) => {
         set({
           matches: get().matches.map((match) =>
-            match.id === matchId ? { ...match, status: "cancelled" } : match
+            match.id === match_id ? { ...match, status: "cancelled" } : match
           ),
         });
       },
 
-      reactivateMatch: (matchId) => {
+      reactivateMatch: (match_id) => {
         set({
           matches: get().matches.map((match) =>
-            match.id === matchId ? { ...match, status: "upcoming" } : match
+            match.id === match_id ? { ...match, status: "upcoming" } : match
           ),
         });
       },
@@ -121,7 +121,7 @@ export const useMatchesStore = create<MatchesState>()(
       migrateSeasonIds: () => {
         set({
           matches: get().matches.map((match) =>
-            match.seasonId ? match : { ...match, seasonId: DEFAULT_SEASON_ID }
+            match.season_id ? match : { ...match, season_id: DEFAULT_SEASON_ID }
           ),
         });
       },

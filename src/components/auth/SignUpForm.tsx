@@ -18,7 +18,7 @@ function SignUpForm() {
 
   const form = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { fullName: "", email: "", phone: "", password: "", confirmPassword: "" },
+    defaultValues: { full_name: "", email: "", phone: "", password: "", confirm_password: "" },
   });
 
   async function handleSignUp(data: SignUpInput) {
@@ -30,16 +30,16 @@ function SignUpForm() {
   return (
     <form onSubmit={form.handleSubmit(handleSignUp)} className="flex flex-col gap-5">
       <FieldGroup>
-        <Field data-invalid={!!form.formState.errors.fullName}>
-          <FieldLabel htmlFor="fullName" required>Full name</FieldLabel>
+        <Field data-invalid={!!form.formState.errors.full_name}>
+          <FieldLabel htmlFor="full_name" required>Full name</FieldLabel>
           <FieldContent>
             <Input
-              id="fullName"
+              id="full_name"
               placeholder="e.g. Kojo Boateng"
               autoComplete="name"
-              {...form.register("fullName")}
+              {...form.register("full_name")}
             />
-            <FieldError errors={[form.formState.errors.fullName]} />
+            <FieldError errors={[form.formState.errors.full_name]} />
           </FieldContent>
         </Field>
 
@@ -81,8 +81,8 @@ function SignUpForm() {
         <PasswordField
           label="Confirm password"
           autoComplete="new-password"
-          error={form.formState.errors.confirmPassword}
-          {...form.register("confirmPassword")}
+          error={form.formState.errors.confirm_password}
+          {...form.register("confirm_password")}
         />
       </FieldGroup>
 

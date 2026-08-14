@@ -15,8 +15,8 @@ export type Formation = "4-4-2" | "4-3-3" | "3-5-2" | "5-3-2" | "3-4-3" | "4-2-3
  * match only, since not every matchday helper is on the permanent staff roster.
  */
 export type BenchOfficial =
-  | { id: string; source: "staff"; staffId: string }
-  | { id: string; source: "adhoc"; fullName: string; role: string };
+  | { id: string; source: "staff"; staff_id: string }
+  | { id: string; source: "adhoc"; full_name: string; role: string };
 
 export type Lineup = {
   formation: Formation;
@@ -26,19 +26,19 @@ export type Lineup = {
    * slots exist depends on the formation. Use `getStartingPlayerIds`
    * (lib/matches.ts) when only the flat list of player ids is needed.
    */
-  startingXI: Partial<Record<Slot, string>>;
+  starting_xi: Partial<Record<Slot, string>>;
   substitutes: string[];
-  captainId?: string;
-  benchOfficials: BenchOfficial[];
+  captain_id?: string;
+  bench_officials: BenchOfficial[];
 };
 
 export type MatchEventType = "goal" | "yellow_card" | "red_card" | "substitution" | "injury";
 
 export type MatchEvent =
-  | { id: string; type: "goal"; minute: number; playerId: string; assistPlayerId?: string }
-  | { id: string; type: "yellow_card" | "red_card"; minute: number; playerId: string }
-  | { id: string; type: "substitution"; minute: number; playerOutId: string; playerInId: string }
-  | { id: string; type: "injury"; minute: number; playerId: string };
+  | { id: string; type: "goal"; minute: number; player_id: string; assist_player_id?: string }
+  | { id: string; type: "yellow_card" | "red_card"; minute: number; player_id: string }
+  | { id: string; type: "substitution"; minute: number; player_out_id: string; player_in_id: string }
+  | { id: string; type: "injury"; minute: number; player_id: string };
 
 /** Plain `Omit` collapses a discriminated union to its common fields; this distributes over each member instead. */
 type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never;
@@ -47,29 +47,29 @@ export type MatchEventInput = DistributiveOmit<MatchEvent, "id">;
 
 export type Match = {
   id: string;
-  teamId: string;
-  seasonId: string;
+  team_id: string;
+  season_id: string;
   opponent: string;
   competition: string;
-  matchType: MatchType;
+  match_type: MatchType;
   venue: string;
-  isHome: boolean;
+  is_home: boolean;
   date: string;
-  kickoffTime: string;
+  kickoff_time: string;
   referee?: string;
   notes?: string;
   poster?: string;
   status: MatchStatus;
-  teamScore?: number;
-  opponentScore?: number;
+  team_score?: number;
+  opponent_score?: number;
   lineup: Lineup | null;
   events: MatchEvent[];
-  createdAt: string;
+  created_at: string;
 };
 
 const coreLineup: Lineup = {
   formation: "4-4-2",
-  startingXI: {
+  starting_xi: {
     GK: "player_004",
     LB: "player_009",
     CB1: "player_010",
@@ -83,164 +83,164 @@ const coreLineup: Lineup = {
     ST2: "player_007",
   },
   substitutes: ["player_008", "player_015", "player_016"],
-  captainId: "player_001",
-  benchOfficials: [
-    { id: "bench_001", source: "adhoc", fullName: "Dr. Nana Yaw", role: "Team Physio" },
+  captain_id: "player_001",
+  bench_officials: [
+    { id: "bench_001", source: "adhoc", full_name: "Dr. Nana Yaw", role: "Team Physio" },
   ],
 };
 
-const seedMatches: Omit<Match, "seasonId">[] = [
+const seedMatches: Omit<Match, "season_id">[] = [
   {
     id: "match_001",
-    teamId: "team_001",
+    team_id: "team_001",
     opponent: "Unity FC",
     competition: "Ellembelle District League",
-    matchType: "League",
+    match_type: "League",
     venue: "Community Park",
-    isHome: true,
+    is_home: true,
     date: "2026-05-03",
-    kickoffTime: "16:00",
+    kickoff_time: "16:00",
     status: "completed",
-    teamScore: 2,
-    opponentScore: 1,
+    team_score: 2,
+    opponent_score: 1,
     lineup: coreLineup,
     events: [
-      { id: "evt_001", type: "goal", minute: 23, playerId: "player_001", assistPlayerId: "player_013" },
-      { id: "evt_002", type: "goal", minute: 68, playerId: "player_007", assistPlayerId: "player_005" },
-      { id: "evt_003", type: "yellow_card", minute: 55, playerId: "player_009" },
-      { id: "evt_004", type: "substitution", minute: 80, playerOutId: "player_007", playerInId: "player_016" },
+      { id: "evt_001", type: "goal", minute: 23, player_id: "player_001", assist_player_id: "player_013" },
+      { id: "evt_002", type: "goal", minute: 68, player_id: "player_007", assist_player_id: "player_005" },
+      { id: "evt_003", type: "yellow_card", minute: 55, player_id: "player_009" },
+      { id: "evt_004", type: "substitution", minute: 80, player_out_id: "player_007", player_in_id: "player_016" },
     ],
-    createdAt: "2026-05-02T08:00:00Z",
+    created_at: "2026-05-02T08:00:00Z",
   },
   {
     id: "match_002",
-    teamId: "team_001",
+    team_id: "team_001",
     opponent: "Nzema Kotoko",
     competition: "Ellembelle District League",
-    matchType: "League",
+    match_type: "League",
     venue: "Nzema Park",
-    isHome: false,
+    is_home: false,
     date: "2026-05-17",
-    kickoffTime: "15:30",
+    kickoff_time: "15:30",
     status: "completed",
-    teamScore: 1,
-    opponentScore: 1,
+    team_score: 1,
+    opponent_score: 1,
     lineup: coreLineup,
     events: [
-      { id: "evt_005", type: "goal", minute: 34, playerId: "player_001", assistPlayerId: "player_014" },
-      { id: "evt_006", type: "substitution", minute: 70, playerOutId: "player_002", playerInId: "player_015" },
+      { id: "evt_005", type: "goal", minute: 34, player_id: "player_001", assist_player_id: "player_014" },
+      { id: "evt_006", type: "substitution", minute: 70, player_out_id: "player_002", player_in_id: "player_015" },
     ],
-    createdAt: "2026-05-16T08:00:00Z",
+    created_at: "2026-05-16T08:00:00Z",
   },
   {
     id: "match_003",
-    teamId: "team_001",
+    team_id: "team_001",
     opponent: "Axim Stars",
     competition: "Ellembelle District League",
-    matchType: "League",
+    match_type: "League",
     venue: "Community Park",
-    isHome: true,
+    is_home: true,
     date: "2026-05-31",
-    kickoffTime: "16:00",
+    kickoff_time: "16:00",
     status: "completed",
-    teamScore: 3,
-    opponentScore: 0,
+    team_score: 3,
+    opponent_score: 0,
     lineup: coreLineup,
     events: [
-      { id: "evt_007", type: "goal", minute: 15, playerId: "player_001", assistPlayerId: "player_013" },
-      { id: "evt_008", type: "goal", minute: 50, playerId: "player_007", assistPlayerId: "player_005" },
-      { id: "evt_009", type: "goal", minute: 77, playerId: "player_002", assistPlayerId: "player_014" },
-      { id: "evt_010", type: "yellow_card", minute: 40, playerId: "player_010" },
-      { id: "evt_011", type: "substitution", minute: 78, playerOutId: "player_005", playerInId: "player_016" },
+      { id: "evt_007", type: "goal", minute: 15, player_id: "player_001", assist_player_id: "player_013" },
+      { id: "evt_008", type: "goal", minute: 50, player_id: "player_007", assist_player_id: "player_005" },
+      { id: "evt_009", type: "goal", minute: 77, player_id: "player_002", assist_player_id: "player_014" },
+      { id: "evt_010", type: "yellow_card", minute: 40, player_id: "player_010" },
+      { id: "evt_011", type: "substitution", minute: 78, player_out_id: "player_005", player_in_id: "player_016" },
     ],
-    createdAt: "2026-05-30T08:00:00Z",
+    created_at: "2026-05-30T08:00:00Z",
   },
   {
     id: "match_004",
-    teamId: "team_001",
+    team_id: "team_001",
     opponent: "Half Assini United",
     competition: "Ellembelle District League",
-    matchType: "League",
+    match_type: "League",
     venue: "Half Assini Park",
-    isHome: false,
+    is_home: false,
     date: "2026-06-14",
-    kickoffTime: "15:00",
+    kickoff_time: "15:00",
     referee: "Mr. Kwabena Sarfo",
     notes: "Tough away trip, went down to 10 men after the hour mark.",
     status: "completed",
-    teamScore: 0,
-    opponentScore: 2,
+    team_score: 0,
+    opponent_score: 2,
     lineup: coreLineup,
-    events: [{ id: "evt_012", type: "red_card", minute: 65, playerId: "player_011" }],
-    createdAt: "2026-06-13T08:00:00Z",
+    events: [{ id: "evt_012", type: "red_card", minute: 65, player_id: "player_011" }],
+    created_at: "2026-06-13T08:00:00Z",
   },
   {
     id: "match_005",
-    teamId: "team_001",
+    team_id: "team_001",
     opponent: "Bonsaso Youth FC",
     competition: "Regional Cup",
-    matchType: "Tournament",
+    match_type: "Tournament",
     venue: "Community Park",
-    isHome: true,
+    is_home: true,
     date: "2026-06-28",
-    kickoffTime: "16:00",
+    kickoff_time: "16:00",
     notes: "Cup quarter-final. Kojo Antwi scored a late winner off the bench.",
     status: "completed",
-    teamScore: 4,
-    opponentScore: 2,
+    team_score: 4,
+    opponent_score: 2,
     lineup: coreLineup,
     events: [
-      { id: "evt_013", type: "goal", minute: 10, playerId: "player_001", assistPlayerId: "player_013" },
-      { id: "evt_014", type: "goal", minute: 44, playerId: "player_001", assistPlayerId: "player_014" },
-      { id: "evt_015", type: "goal", minute: 58, playerId: "player_007", assistPlayerId: "player_005" },
-      { id: "evt_016", type: "yellow_card", minute: 30, playerId: "player_012" },
-      { id: "evt_017", type: "substitution", minute: 60, playerOutId: "player_007", playerInId: "player_015" },
-      { id: "evt_018", type: "goal", minute: 88, playerId: "player_015" },
+      { id: "evt_013", type: "goal", minute: 10, player_id: "player_001", assist_player_id: "player_013" },
+      { id: "evt_014", type: "goal", minute: 44, player_id: "player_001", assist_player_id: "player_014" },
+      { id: "evt_015", type: "goal", minute: 58, player_id: "player_007", assist_player_id: "player_005" },
+      { id: "evt_016", type: "yellow_card", minute: 30, player_id: "player_012" },
+      { id: "evt_017", type: "substitution", minute: 60, player_out_id: "player_007", player_in_id: "player_015" },
+      { id: "evt_018", type: "goal", minute: 88, player_id: "player_015" },
     ],
-    createdAt: "2026-06-27T08:00:00Z",
+    created_at: "2026-06-27T08:00:00Z",
   },
   {
     id: "match_006",
-    teamId: "team_001",
+    team_id: "team_001",
     opponent: "Sekondi Warriors",
     competition: "Regional Cup",
-    matchType: "Tournament",
+    match_type: "Tournament",
     venue: "Community Park",
-    isHome: true,
+    is_home: true,
     date: "2026-07-20",
-    kickoffTime: "16:00",
+    kickoff_time: "16:00",
     status: "upcoming",
     lineup: null,
     events: [],
-    createdAt: "2026-07-13T08:00:00Z",
+    created_at: "2026-07-13T08:00:00Z",
   },
 ];
 
 export const matches: Match[] = seedMatches.map((match) => ({
   ...match,
-  seasonId: DEFAULT_SEASON_ID,
+  season_id: DEFAULT_SEASON_ID,
 }));
 
-export function getMatchesByTeam(teamId: string): Match[] {
-  return matches.filter((match) => match.teamId === teamId);
+export function getMatchesByTeam(team_id: string): Match[] {
+  return matches.filter((match) => match.team_id === team_id);
 }
 
 export function getMatchResult(match: Match): MatchResult | null {
-  if (match.status !== "completed" || match.teamScore === undefined || match.opponentScore === undefined) {
+  if (match.status !== "completed" || match.team_score === undefined || match.opponent_score === undefined) {
     return null;
   }
-  if (match.teamScore > match.opponentScore) return "win";
-  if (match.teamScore < match.opponentScore) return "loss";
+  if (match.team_score > match.opponent_score) return "win";
+  if (match.team_score < match.opponent_score) return "loss";
   return "draw";
 }
 
-export function getUpcomingMatches(teamId: string, matchList: Match[] = matches, limit?: number): Match[] {
+export function getUpcomingMatches(team_id: string, matchList: Match[] = matches, limit?: number): Match[] {
   const sorted = matchList
-    .filter((match) => match.teamId === teamId && match.status === "upcoming")
+    .filter((match) => match.team_id === team_id && match.status === "upcoming")
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   return limit ? sorted.slice(0, limit) : sorted;
 }
 
-export function getUpcomingMatch(teamId: string, matchList: Match[] = matches): Match | undefined {
-  return getUpcomingMatches(teamId, matchList)[0];
+export function getUpcomingMatch(team_id: string, matchList: Match[] = matches): Match | undefined {
+  return getUpcomingMatches(team_id, matchList)[0];
 }

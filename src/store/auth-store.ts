@@ -4,7 +4,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import type { SignUpInput } from "@/schemas/auth";
 
 export type AuthUser = {
-  fullName: string;
+  full_name: string;
   email: string;
   phone: string;
 };
@@ -38,7 +38,7 @@ export const useAuthStore = create<AuthState>()(
       signUp: (input) =>
         set({
           isAuthenticated: true,
-          user: { fullName: input.fullName, email: input.email, phone: input.phone },
+          user: { full_name: input.full_name, email: input.email, phone: input.phone },
         }),
 
       signIn: (identifier) => {
@@ -46,10 +46,10 @@ export const useAuthStore = create<AuthState>()(
         set({
           isAuthenticated: true,
           user:
-            existing && (existing.email === identifier || existing.fullName === identifier)
+            existing && (existing.email === identifier || existing.full_name === identifier)
               ? existing
               : existing ?? {
-                  fullName: guessNameFromIdentifier(identifier),
+                  full_name: guessNameFromIdentifier(identifier),
                   email: identifier.includes("@") ? identifier : "",
                   phone: "",
                 },

@@ -18,14 +18,14 @@ function PlayerInfoCard({ player, seasons }: PlayerInfoCardProps) {
     { icon: Mail, label: "Email", value: player.email || "Not provided" },
   ];
 
-  const registeredSeasons = player.seasonRecords
-    .map((record) => seasons.find((season) => season.id === record.seasonId))
+  const registeredSeasons = player.season_records
+    .map((record) => seasons.find((season) => season.id === record.season_id))
     .filter((season): season is Season => !!season);
 
   const emergencyContactRows = [
-    { icon: User, label: "Name", value: player.emergencyContact?.name || "Not provided" },
-    { icon: Phone, label: "Phone", value: player.emergencyContact?.phone || "Not provided" },
-    { icon: Mail, label: "Email", value: player.emergencyContact?.email || "Not provided" },
+    { icon: User, label: "Name", value: player.emergency_contact?.name || "Not provided" },
+    { icon: Phone, label: "Phone", value: player.emergency_contact?.phone || "Not provided" },
+    { icon: Mail, label: "Email", value: player.emergency_contact?.email || "Not provided" },
   ];
 
   return (

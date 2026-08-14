@@ -46,7 +46,7 @@ export default function MatchReportPage() {
     useInitialReportColumns("match", matchReportDefaultColumns)
   );
 
-  const playerNames = Object.fromEntries(players.map((player) => [player.id, player.fullName]));
+  const playerNames = Object.fromEntries(players.map((player) => [player.id, player.full_name]));
   const competitions = getMatchCompetitions(matches);
   const table = buildMatchReportTable(matches, playerNames, filters, columns);
 
@@ -109,7 +109,7 @@ export default function MatchReportPage() {
       />
 
       <SavedTemplates
-        reportType="match"
+        report_type="match"
         currentColumns={columns}
         onApply={(template) => setColumns(template.columns)}
       />

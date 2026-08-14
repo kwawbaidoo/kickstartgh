@@ -43,8 +43,8 @@ type TeamSettingsFormProps = {
 const stepLabels = ["Identity", "Location & History", "Social Links"];
 
 const stepFields: (keyof TeamDetailsInput)[][] = [
-  ["name", "nickname", "slogan", "colorPrimary", "colorSecondary", "logo", "coverImage"],
-  ["region", "district", "homeGround", "yearEstablished"],
+  ["name", "nickname", "slogan", "color_primary", "color_secondary", "logo", "coverImage"],
+  ["region", "district", "home_ground", "year_established"],
   ["facebook", "instagram", "tiktok", "website"],
 ];
 
@@ -121,20 +121,20 @@ function TeamSettingsForm({ defaultValues, onSubmit }: TeamSettingsFormProps) {
               </Field>
 
               <Field orientation="responsive">
-                <FieldLabel htmlFor="colorPrimary">Team colors</FieldLabel>
+                <FieldLabel htmlFor="color_primary">Team colors</FieldLabel>
                 <FieldContent>
                   <div className="flex items-center gap-3">
                     <input
-                      id="colorPrimary"
+                      id="color_primary"
                       type="color"
                       className="size-9 rounded-lg border border-input"
-                      {...form.register("colorPrimary")}
+                      {...form.register("color_primary")}
                     />
                     <input
                       type="color"
                       aria-label="Secondary color"
                       className="size-9 rounded-lg border border-input"
-                      {...form.register("colorSecondary")}
+                      {...form.register("color_secondary")}
                     />
                     <FieldDescription>Optional</FieldDescription>
                   </div>
@@ -187,25 +187,25 @@ function TeamSettingsForm({ defaultValues, onSubmit }: TeamSettingsFormProps) {
               </FieldContent>
             </Field>
 
-            <Field data-invalid={!!form.formState.errors.homeGround}>
-              <FieldLabel htmlFor="homeGround">Home ground</FieldLabel>
+            <Field data-invalid={!!form.formState.errors.home_ground}>
+              <FieldLabel htmlFor="home_ground">Home ground</FieldLabel>
               <FieldContent>
-                <Input id="homeGround" placeholder="e.g. Community Park" {...form.register("homeGround")} />
-                <FieldError errors={[form.formState.errors.homeGround]} />
+                <Input id="home_ground" placeholder="e.g. Community Park" {...form.register("home_ground")} />
+                <FieldError errors={[form.formState.errors.home_ground]} />
               </FieldContent>
             </Field>
 
-            <Field data-invalid={!!form.formState.errors.yearEstablished}>
-              <FieldLabel htmlFor="yearEstablished">Year established</FieldLabel>
+            <Field data-invalid={!!form.formState.errors.year_established}>
+              <FieldLabel htmlFor="year_established">Year established</FieldLabel>
               <FieldContent>
                 <Input
-                  id="yearEstablished"
+                  id="year_established"
                   type="number"
                   inputMode="numeric"
                   placeholder="e.g. 2018"
-                  {...form.register("yearEstablished")}
+                  {...form.register("year_established")}
                 />
-                <FieldError errors={[form.formState.errors.yearEstablished]} />
+                <FieldError errors={[form.formState.errors.year_established]} />
               </FieldContent>
             </Field>
           </FieldGroup>

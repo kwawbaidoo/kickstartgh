@@ -44,7 +44,7 @@ function TemplateCard({ template, onApply, onRename, onDuplicate, onDelete }: Te
         >
           <span className="truncate text-sm font-medium text-foreground">{template.name}</span>
           <span className="text-xs text-muted-foreground">
-            {reportTypeLabels[template.reportType]} · {template.columns.length} columns
+            {reportTypeLabels[template.report_type]} · {template.columns.length} columns
           </span>
         </button>
         <DropdownMenu>

@@ -48,16 +48,16 @@ const stepLabels = ["Personal Info", "Football Info", "Additional Info", "Market
 
 const stepFields: (keyof PlayerFormInput)[][] = [
   [
-    "fullName",
+    "full_name",
     "nickname",
-    "dateOfBirth",
+    "date_of_birth",
     "phone",
     "email",
-    "emergencyContact",
+    "emergency_contact",
     "photo",
   ],
-  ["jerseyNumber", "position", "secondaryPosition", "preferredFoot"],
-  ["village", "previousClub", "status"],
+  ["jersey_number", "position", "secondary_position", "preferred_foot"],
+  ["village", "previous_club", "status"],
   ["profile"],
 ];
 
@@ -86,34 +86,34 @@ function PlayerForm({
   const form = useForm<PlayerFormValues, unknown, PlayerFormInput>({
     resolver: zodResolver(schema),
     defaultValues: {
-      fullName: "",
+      full_name: "",
       nickname: "",
       phone: "",
       email: "",
-      emergencyContact: { name: "", phone: "", email: "" },
+      emergency_contact: { name: "", phone: "", email: "" },
       village: "",
-      previousClub: "",
-      preferredFoot: "Right",
+      previous_club: "",
+      preferred_foot: "Right",
       status: "Active",
       profile: {
         nationality: "",
         height: "",
         education: [],
-        workExperience: [],
+        work_experience: [],
         achievements: [],
-        otherSports: [],
-        socialLinks: { instagram: "", twitter: "", facebook: "", tiktok: "" },
+        other_sports: [],
+        social_links: { instagram: "", twitter: "", facebook: "", tiktok: "" },
       },
       ...defaultValues,
     },
   });
 
-  const fullName = useWatch({ control: form.control, name: "fullName" });
+  const full_name = useWatch({ control: form.control, name: "full_name" });
   const photo = useWatch({ control: form.control, name: "photo" });
   const education = useWatch({ control: form.control, name: "profile.education" }) ?? [];
-  const workExperience = useWatch({ control: form.control, name: "profile.workExperience" }) ?? [];
+  const work_experience = useWatch({ control: form.control, name: "profile.work_experience" }) ?? [];
   const achievements = useWatch({ control: form.control, name: "profile.achievements" }) ?? [];
-  const otherSports = useWatch({ control: form.control, name: "profile.otherSports" }) ?? [];
+  const other_sports = useWatch({ control: form.control, name: "profile.other_sports" }) ?? [];
 
   const [educationInstitution, setEducationInstitution] = useState("");
   const [educationPeriod, setEducationPeriod] = useState("");
@@ -158,21 +158,21 @@ function PlayerForm({
           <AvatarUpload
             value={photo}
             onChange={(dataUrl) => form.setValue("photo", dataUrl)}
-            fallbackText={fullName ? getInitials(fullName) : undefined}
+            fallbackText={full_name ? getInitials(full_name) : undefined}
             label="Player photo (optional)"
             alt="Player photo preview"
           />
 
           <FieldGroup className="grid md:grid-cols-2 grid-cols-1 gap-4">
-            <Field data-invalid={!!form.formState.errors.fullName}>
-              <FieldLabel htmlFor="fullName" required>Full name</FieldLabel>
+            <Field data-invalid={!!form.formState.errors.full_name}>
+              <FieldLabel htmlFor="full_name" required>Full name</FieldLabel>
               <FieldContent>
                 <Input
-                  id="fullName"
+                  id="full_name"
                   placeholder="e.g. Kwesi Mensah"
-                  {...form.register("fullName")}
+                  {...form.register("full_name")}
                 />
-                <FieldError errors={[form.formState.errors.fullName]} />
+                <FieldError errors={[form.formState.errors.full_name]} />
               </FieldContent>
             </Field>
 
@@ -189,15 +189,15 @@ function PlayerForm({
           </FieldGroup>
 
           <FieldGroup className="grid md:grid-cols-2 grid-cols-1 gap-4">
-            <Field data-invalid={!!form.formState.errors.dateOfBirth}>
-              <FieldLabel htmlFor="dateOfBirth" required>Date of birth</FieldLabel>
+            <Field data-invalid={!!form.formState.errors.date_of_birth}>
+              <FieldLabel htmlFor="date_of_birth" required>Date of birth</FieldLabel>
               <FieldContent>
                 <Input
-                  id="dateOfBirth"
+                  id="date_of_birth"
                   type="date"
-                  {...form.register("dateOfBirth")}
+                  {...form.register("date_of_birth")}
                 />
-                <FieldError errors={[form.formState.errors.dateOfBirth]} />
+                <FieldError errors={[form.formState.errors.date_of_birth]} />
               </FieldContent>
             </Field>
 
@@ -241,7 +241,7 @@ function PlayerForm({
                 <Input
                   id="emergencyContactName"
                   placeholder="e.g. Comfort Mensah"
-                  {...form.register("emergencyContact.name")}
+                  {...form.register("emergency_contact.name")}
                 />
               </FieldContent>
             </Field>
@@ -254,14 +254,14 @@ function PlayerForm({
                 <Input
                   id="emergencyContactPhone"
                   placeholder="e.g. 024 000 0000"
-                  {...form.register("emergencyContact.phone")}
+                  {...form.register("emergency_contact.phone")}
                 />
               </FieldContent>
             </Field>
           </FieldGroup>
           <Field
             orientation="responsive"
-            data-invalid={!!form.formState.errors.emergencyContact?.email}
+            data-invalid={!!form.formState.errors.emergency_contact?.email}
           >
             <FieldLabel htmlFor="emergencyContactEmail" optional>
               Contact email
@@ -271,10 +271,10 @@ function PlayerForm({
                 id="emergencyContactEmail"
                 type="email"
                 placeholder="e.g. contact@example.com"
-                {...form.register("emergencyContact.email")}
+                {...form.register("emergency_contact.email")}
               />
               <FieldError
-                errors={[form.formState.errors.emergencyContact?.email]}
+                errors={[form.formState.errors.emergency_contact?.email]}
               />
             </FieldContent>
           </Field>
@@ -286,17 +286,17 @@ function PlayerForm({
           <FieldLegend>Football Information</FieldLegend>
 
           <FieldGroup>
-            <Field data-invalid={!!form.formState.errors.jerseyNumber}>
-              <FieldLabel htmlFor="jerseyNumber" required>Jersey number</FieldLabel>
+            <Field data-invalid={!!form.formState.errors.jersey_number}>
+              <FieldLabel htmlFor="jersey_number" required>Jersey number</FieldLabel>
               <FieldContent>
                 <Input
-                  id="jerseyNumber"
+                  id="jersey_number"
                   type="number"
                   inputMode="numeric"
                   placeholder="e.g. 9"
-                  {...form.register("jerseyNumber")}
+                  {...form.register("jersey_number")}
                 />
-                <FieldError errors={[form.formState.errors.jerseyNumber]} />
+                <FieldError errors={[form.formState.errors.jersey_number]} />
               </FieldContent>
             </Field>
 
@@ -329,21 +329,21 @@ function PlayerForm({
               </FieldContent>
             </Field>
 
-            <Field data-invalid={!!form.formState.errors.secondaryPosition}>
-              <FieldLabel htmlFor="secondaryPosition" optional>
+            <Field data-invalid={!!form.formState.errors.secondary_position}>
+              <FieldLabel htmlFor="secondary_position" optional>
                 Secondary position
               </FieldLabel>
               <FieldContent>
                 <Controller
                   control={form.control}
-                  name="secondaryPosition"
+                  name="secondary_position"
                   render={({ field }) => (
                     <Select
                       items={positionItems}
                       value={field.value ?? null}
                       onValueChange={field.onChange}
                     >
-                      <SelectTrigger id="secondaryPosition" className="w-full">
+                      <SelectTrigger id="secondary_position" className="w-full">
                         <SelectValue placeholder="None" />
                       </SelectTrigger>
                       <SelectContent>
@@ -357,17 +357,17 @@ function PlayerForm({
                   )}
                 />
                 <FieldError
-                  errors={[form.formState.errors.secondaryPosition]}
+                  errors={[form.formState.errors.secondary_position]}
                 />
               </FieldContent>
             </Field>
 
-            <Field data-invalid={!!form.formState.errors.preferredFoot}>
+            <Field data-invalid={!!form.formState.errors.preferred_foot}>
               <FieldLabel required>Preferred foot</FieldLabel>
               <FieldContent>
                 <Controller
                   control={form.control}
-                  name="preferredFoot"
+                  name="preferred_foot"
                   render={({ field }) => (
                     <RadioGroup
                       value={field.value}
@@ -383,7 +383,7 @@ function PlayerForm({
                     </RadioGroup>
                   )}
                 />
-                <FieldError errors={[form.formState.errors.preferredFoot]} />
+                <FieldError errors={[form.formState.errors.preferred_foot]} />
               </FieldContent>
             </Field>
           </FieldGroup>
@@ -407,12 +407,12 @@ function PlayerForm({
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="previousClub" optional>Previous club</FieldLabel>
+              <FieldLabel htmlFor="previous_club" optional>Previous club</FieldLabel>
               <FieldContent>
                 <Input
-                  id="previousClub"
+                  id="previous_club"
                   placeholder="e.g. Axim Stars Youth"
-                  {...form.register("previousClub")}
+                  {...form.register("previous_club")}
                 />
               </FieldContent>
             </Field>
@@ -536,12 +536,12 @@ function PlayerForm({
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="workExperience" optional>Work experience</FieldLabel>
+            <FieldLabel htmlFor="work_experience" optional>Work experience</FieldLabel>
             <FieldContent>
               <TagListInput
-                id="workExperience"
-                value={workExperience}
-                onChange={(value) => form.setValue("profile.workExperience", value)}
+                id="work_experience"
+                value={work_experience}
+                onChange={(value) => form.setValue("profile.work_experience", value)}
                 placeholder="e.g. Coaching assistant"
               />
             </FieldContent>
@@ -560,12 +560,12 @@ function PlayerForm({
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="otherSports" optional>Other sports</FieldLabel>
+            <FieldLabel htmlFor="other_sports" optional>Other sports</FieldLabel>
             <FieldContent>
               <TagListInput
-                id="otherSports"
-                value={otherSports}
-                onChange={(value) => form.setValue("profile.otherSports", value)}
+                id="other_sports"
+                value={other_sports}
+                onChange={(value) => form.setValue("profile.other_sports", value)}
                 placeholder="e.g. Athletics"
               />
             </FieldContent>
@@ -576,51 +576,51 @@ function PlayerForm({
           </span>
 
           <FieldGroup className="grid md:grid-cols-2 grid-cols-1 gap-4">
-            <Field data-invalid={!!form.formState.errors.profile?.socialLinks?.instagram}>
+            <Field data-invalid={!!form.formState.errors.profile?.social_links?.instagram}>
               <FieldLabel htmlFor="instagram" optional>Instagram</FieldLabel>
               <FieldContent>
                 <Input
                   id="instagram"
                   placeholder="https://instagram.com/..."
-                  {...form.register("profile.socialLinks.instagram")}
+                  {...form.register("profile.social_links.instagram")}
                 />
-                <FieldError errors={[form.formState.errors.profile?.socialLinks?.instagram]} />
+                <FieldError errors={[form.formState.errors.profile?.social_links?.instagram]} />
               </FieldContent>
             </Field>
 
-            <Field data-invalid={!!form.formState.errors.profile?.socialLinks?.twitter}>
+            <Field data-invalid={!!form.formState.errors.profile?.social_links?.twitter}>
               <FieldLabel htmlFor="twitter" optional>X / Twitter</FieldLabel>
               <FieldContent>
                 <Input
                   id="twitter"
                   placeholder="https://x.com/..."
-                  {...form.register("profile.socialLinks.twitter")}
+                  {...form.register("profile.social_links.twitter")}
                 />
-                <FieldError errors={[form.formState.errors.profile?.socialLinks?.twitter]} />
+                <FieldError errors={[form.formState.errors.profile?.social_links?.twitter]} />
               </FieldContent>
             </Field>
 
-            <Field data-invalid={!!form.formState.errors.profile?.socialLinks?.facebook}>
+            <Field data-invalid={!!form.formState.errors.profile?.social_links?.facebook}>
               <FieldLabel htmlFor="facebook" optional>Facebook</FieldLabel>
               <FieldContent>
                 <Input
                   id="facebook"
                   placeholder="https://facebook.com/..."
-                  {...form.register("profile.socialLinks.facebook")}
+                  {...form.register("profile.social_links.facebook")}
                 />
-                <FieldError errors={[form.formState.errors.profile?.socialLinks?.facebook]} />
+                <FieldError errors={[form.formState.errors.profile?.social_links?.facebook]} />
               </FieldContent>
             </Field>
 
-            <Field data-invalid={!!form.formState.errors.profile?.socialLinks?.tiktok}>
+            <Field data-invalid={!!form.formState.errors.profile?.social_links?.tiktok}>
               <FieldLabel htmlFor="tiktok" optional>TikTok</FieldLabel>
               <FieldContent>
                 <Input
                   id="tiktok"
                   placeholder="https://tiktok.com/@..."
-                  {...form.register("profile.socialLinks.tiktok")}
+                  {...form.register("profile.social_links.tiktok")}
                 />
-                <FieldError errors={[form.formState.errors.profile?.socialLinks?.tiktok]} />
+                <FieldError errors={[form.formState.errors.profile?.social_links?.tiktok]} />
               </FieldContent>
             </Field>
           </FieldGroup>

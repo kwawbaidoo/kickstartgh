@@ -74,8 +74,8 @@ export default function PreferencesPage() {
         </CardHeader>
         <CardContent>
           <RadioGroup
-            value={preferences.dateFormat}
-            onValueChange={(value) => updatePreferences({ dateFormat: value as typeof preferences.dateFormat })}
+            value={preferences.date_format}
+            onValueChange={(value) => updatePreferences({ date_format: value as typeof preferences.date_format })}
           >
             {dateFormatOptions.map((option) => (
               <FieldLabel key={option.value} className="font-normal">
@@ -93,14 +93,14 @@ export default function PreferencesPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <Field>
-            <FieldLabel htmlFor="defaultHomeScreen">Default home screen</FieldLabel>
+            <FieldLabel htmlFor="default_home_screen">Default home screen</FieldLabel>
             <FieldContent>
               <Select
                 items={homeScreenItems}
-                value={preferences.defaultHomeScreen}
-                onValueChange={(value) => value && updatePreferences({ defaultHomeScreen: value })}
+                value={preferences.default_home_screen}
+                onValueChange={(value) => value && updatePreferences({ default_home_screen: value })}
               >
-                <SelectTrigger id="defaultHomeScreen" className="w-full">
+                <SelectTrigger id="default_home_screen" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -121,7 +121,7 @@ export default function PreferencesPage() {
                 {favoriteShortcutOptions.map((option) => (
                   <label key={option.value} className="flex items-center gap-2 text-sm text-foreground">
                     <Checkbox
-                      checked={preferences.favoriteShortcuts.includes(option.value)}
+                      checked={preferences.favorite_shortcuts.includes(option.value)}
                       onCheckedChange={() => toggleFavoriteShortcut(option.value)}
                     />
                     {option.label}

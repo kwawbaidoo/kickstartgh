@@ -7,17 +7,17 @@ export const trainingFormSchema = z
   .object({
     title: z.string().min(2, "Please enter a session title."),
     date: z.string().min(1, "Please select a date."),
-    startTime: z.string().min(1, "Please select a start time."),
-    endTime: z.string().min(1, "Please select an end time."),
+    start_time: z.string().min(1, "Please select a start time."),
+    end_time: z.string().min(1, "Please select an end time."),
     venue: z.string().min(2, "Please enter a venue."),
     description: z.string().trim().optional(),
     focus: z.enum(trainingFocusOptions as [TrainingFocus, ...TrainingFocus[]]).optional(),
     equipment: z.array(z.string()).optional(),
     notes: z.string().trim().optional(),
   })
-  .refine((data) => data.endTime > data.startTime, {
+  .refine((data) => data.end_time > data.start_time, {
     message: "End time must be after start time.",
-    path: ["endTime"],
+    path: ["end_time"],
   });
 
 export type TrainingFormInput = z.infer<typeof trainingFormSchema>;

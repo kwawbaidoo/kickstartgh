@@ -28,12 +28,12 @@ function MatchListRow({ match }: { match: Match }) {
       </TableCell>
       <TableCell>
         <span className="rounded-full border border-input px-2 py-0.5 text-xs text-foreground">
-          {match.isHome ? "Home" : "Away"}
+          {match.is_home ? "Home" : "Away"}
         </span>
       </TableCell>
       <TableCell className="font-medium text-foreground">
         {match.status === "completed"
-          ? `${match.teamScore}–${match.opponentScore}`
+          ? `${match.team_score}–${match.opponent_score}`
           : match.status === "cancelled"
             ? "—"
             : "vs"}

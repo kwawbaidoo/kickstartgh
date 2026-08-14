@@ -76,15 +76,15 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
     );
   }
 
-  const playerNames = Object.fromEntries(players.map((player) => [player.id, player.fullName]));
-  const season = seasons.find((candidate) => candidate.id === match.seasonId);
+  const playerNames = Object.fromEntries(players.map((player) => [player.id, player.full_name]));
+  const season = seasons.find((candidate) => candidate.id === match.season_id);
 
   const goals = match.events.filter((event) => event.type === "goal").length;
   const cards = match.events.filter((event) => event.type === "yellow_card" || event.type === "red_card").length;
   const subs = match.events.filter((event) => event.type === "substitution").length;
 
   const resolvedBenchOfficials = match.lineup
-    ? resolveBenchOfficials(match.lineup.benchOfficials, activeTeam.staff)
+    ? resolveBenchOfficials(match.lineup.bench_officials, activeTeam.staff)
     : [];
   const fixtureMessage = buildFixtureShareMessage(match, activeTeam.name);
   const resultMessage = buildResultShareMessage(match, activeTeam.name, playerNames);
@@ -101,10 +101,10 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
   }
 
   function handleFinish() {
-    const teamScore = Number(teamScoreInput);
-    const opponentScore = Number(opponentScoreInput);
-    if (Number.isNaN(teamScore) || Number.isNaN(opponentScore)) return;
-    completeMatch(id, teamScore, opponentScore);
+    const team_score = Number(teamScoreInput);
+    const opponent_score = Number(opponentScoreInput);
+    if (Number.isNaN(team_score) || Number.isNaN(opponent_score)) return;
+    completeMatch(id, team_score, opponent_score);
     setFinishOpen(false);
   }
 
@@ -169,7 +169,7 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
         <CardContent className="flex flex-col gap-4">
           <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
             <Trophy className="size-3.5" />
-            {match.competition} · {match.matchType}
+            {match.competition} · {match.match_type}
           </div>
           {season && (
             <Link
@@ -183,18 +183,18 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
             teamName={activeTeam.name}
             teamLogo={activeTeam.logo}
             opponent={match.opponent}
-            teamScore={match.teamScore}
-            opponentScore={match.opponentScore}
+            team_score={match.team_score}
+            opponent_score={match.opponent_score}
             status={match.status}
           />
           <div className="flex flex-col gap-2 rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <CalendarClock className="size-4" />
-              {format(new Date(match.date), "EEE, d MMM yyyy")} · {match.kickoffTime}
+              {format(new Date(match.date), "EEE, d MMM yyyy")} · {match.kickoff_time}
             </span>
             <span className="flex items-center gap-1.5">
               <MapPin className="size-4" />
-              {match.venue} ({match.isHome ? "Home" : "Away"})
+              {match.venue} ({match.is_home ? "Home" : "Away"})
             </span>
             {match.referee && (
               <span className="flex items-center gap-1.5">

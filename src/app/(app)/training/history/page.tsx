@@ -41,7 +41,7 @@ export default function TrainingHistoryPage() {
 
   const playerItems = {
     All: "All players",
-    ...Object.fromEntries(players.map((player) => [player.id, player.fullName])),
+    ...Object.fromEntries(players.map((player) => [player.id, player.full_name])),
   };
   const statusItems = {
     All: "All statuses",
@@ -55,8 +55,8 @@ export default function TrainingHistoryPage() {
       <FilterPanel>
         <Select
           items={playerItems}
-          value={filters.playerId}
-          onValueChange={(value) => setFilters({ ...filters, playerId: value ?? "All" })}
+          value={filters.player_id}
+          onValueChange={(value) => setFilters({ ...filters, player_id: value ?? "All" })}
         >
           <SelectTrigger className="w-full sm:w-auto">
             <SelectValue />
@@ -65,7 +65,7 @@ export default function TrainingHistoryPage() {
             <SelectItem value="All">All players</SelectItem>
             {players.map((player) => (
               <SelectItem key={player.id} value={player.id}>
-                {player.fullName}
+                {player.full_name}
               </SelectItem>
             ))}
           </SelectContent>
