@@ -20,11 +20,11 @@ export default function ProfileSettingsPage() {
   }
 
   const defaultValues: ProfileFormInput = {
-    fullName: profile.fullName,
+    full_name: profile.full_name,
     phone: profile.phone,
     email: profile.email,
     photo: profile.photo,
-    preferredRole: profile.preferredRole,
+    preferred_role: profile.preferred_role,
   };
 
   return (
@@ -33,7 +33,7 @@ export default function ProfileSettingsPage() {
       {saved && <p className="text-sm text-primary">Profile updated.</p>}
       <ProfileForm
         defaultValues={defaultValues}
-        dateJoined={profile.dateJoined}
+        date_joined={profile.date_joined}
         teamName={teamName}
         onSubmit={handleSubmit}
       />

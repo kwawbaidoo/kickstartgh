@@ -35,33 +35,33 @@ const marketabilityProfileFormSchema = z.object({
   nationality: z.string().trim().optional(),
   height: z.string().trim().optional(),
   education: z.array(educationEntryFormSchema).optional(),
-  workExperience: z.array(z.string()).optional(),
+  work_experience: z.array(z.string()).optional(),
   achievements: z.array(z.string()).optional(),
-  otherSports: z.array(z.string()).optional(),
-  socialLinks: socialLinksFormSchema.optional(),
+  other_sports: z.array(z.string()).optional(),
+  social_links: socialLinksFormSchema.optional(),
 });
 
 const basePlayerFormSchema = z.object({
-  fullName: z.string().min(2, "Please enter the player's full name."),
+  full_name: z.string().min(2, "Please enter the player's full name."),
   nickname: z.string().trim().optional(),
-  dateOfBirth: z
+  date_of_birth: z
     .string()
     .min(1, "Please enter a date of birth.")
     .refine((value) => new Date(value) <= new Date(), "Date of birth can't be in the future."),
   photo: z.string().optional(),
   phone: z.string().trim().optional(),
   email: z.email("Please enter a valid email.").optional().or(z.literal("")),
-  emergencyContact: emergencyContactFormSchema.optional(),
-  jerseyNumber: z.coerce
+  emergency_contact: emergencyContactFormSchema.optional(),
+  jersey_number: z.coerce
     .number({ error: "Please enter a jersey number." })
     .int("Jersey number must be a whole number.")
     .min(1, "Jersey number must be between 1 and 99.")
     .max(99, "Jersey number must be between 1 and 99."),
   position: positionEnum,
-  secondaryPosition: positionEnum.optional(),
-  preferredFoot: preferredFootEnum,
+  secondary_position: positionEnum.optional(),
+  preferred_foot: preferredFootEnum,
   village: z.string().trim().optional(),
-  previousClub: z.string().trim().optional(),
+  previous_club: z.string().trim().optional(),
   status: statusEnum,
   profile: marketabilityProfileFormSchema.optional(),
 });
@@ -69,20 +69,20 @@ const basePlayerFormSchema = z.object({
 export function createPlayerFormSchema(existingPlayers: Player[] = [], excludeId?: string) {
   return basePlayerFormSchema
     .refine(
-      (data) => !data.secondaryPosition || data.secondaryPosition !== data.position,
+      (data) => !data.secondary_position || data.secondary_position !== data.position,
       {
         message: "Secondary position should differ from the primary position.",
-        path: ["secondaryPosition"],
+        path: ["secondary_position"],
       }
     )
     .refine(
       (data) =>
         !existingPlayers.some(
-          (player) => player.id !== excludeId && player.jerseyNumber === data.jerseyNumber
+          (player) => player.id !== excludeId && player.jersey_number === data.jersey_number
         ),
       {
         message: "This jersey number is already taken.",
-        path: ["jerseyNumber"],
+        path: ["jersey_number"],
       }
     );
 }

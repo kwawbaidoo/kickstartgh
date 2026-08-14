@@ -58,8 +58,8 @@ export default function TrainingDetailsPage({ params }: { params: Promise<{ id: 
   }
 
   const FocusIcon = session.focus ? trainingFocusIcon[session.focus] : null;
-  const headCoach = activeTeam.staff.find((member) => member.role === "headCoach")?.fullName;
-  const season = seasons.find((candidate) => candidate.id === session.seasonId);
+  const headCoach = activeTeam.staff.find((member) => member.role === "headCoach")?.full_name;
+  const season = seasons.find((candidate) => candidate.id === session.season_id);
   const summary = getSessionAttendanceSummary(session, players);
   const shareMessage = buildTrainingShareMessage(session, activeTeam.name);
   const reminderMessage = buildTrainingReminderMessage(session, activeTeam.name);
@@ -111,7 +111,7 @@ export default function TrainingDetailsPage({ params }: { params: Promise<{ id: 
           <div className="flex flex-col gap-2 rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <CalendarClock className="size-4" />
-              {format(new Date(session.date), "EEE, d MMM yyyy")} · {session.startTime}–{session.endTime}
+              {format(new Date(session.date), "EEE, d MMM yyyy")} · {session.start_time}–{session.end_time}
             </span>
             <span className="flex items-center gap-1.5">
               <MapPin className="size-4" />

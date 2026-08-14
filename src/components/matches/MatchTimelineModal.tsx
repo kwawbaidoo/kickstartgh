@@ -12,7 +12,7 @@ import { usePlayersStore } from "@/store/players-store";
 function MatchTimelineModal({ match }: { match: Match }) {
   const [open, setOpen] = useState(false);
   const players = usePlayersStore((state) => state.players);
-  const playerNames = Object.fromEntries(players.map((player) => [player.id, player.fullName]));
+  const playerNames = Object.fromEntries(players.map((player) => [player.id, player.full_name]));
 
   return (
     <Modal

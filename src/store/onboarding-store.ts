@@ -11,12 +11,12 @@ export type ActiveTeam = {
   nickname: string;
   region: string;
   district: string;
-  homeGround: string;
-  yearEstablished: number;
+  home_ground: string;
+  year_established: number;
   logo?: string;
   coverImage?: string;
-  colorPrimary?: string;
-  colorSecondary?: string;
+  color_primary?: string;
+  color_secondary?: string;
   slogan?: string;
   facebook?: string;
   instagram?: string;
@@ -30,7 +30,7 @@ type OnboardingDraft = {
   role: RoleId | null;
   team: Partial<TeamDetailsInput>;
   staff: StaffMember[];
-  inviteCode: string | null;
+  invite_code: string | null;
 };
 
 type OnboardingState = {
@@ -58,7 +58,7 @@ const initialDraft: OnboardingDraft = {
   role: null,
   team: {},
   staff: [],
-  inviteCode: null,
+  invite_code: null,
 };
 
 export const useOnboardingStore = create<OnboardingState>()(
@@ -70,8 +70,8 @@ export const useOnboardingStore = create<OnboardingState>()(
     nickname: currentTeam.nickname,
     region: currentTeam.region,
     district: currentTeam.district,
-    homeGround: currentTeam.homeGround,
-    yearEstablished: currentTeam.yearEstablished,
+    home_ground: currentTeam.home_ground,
+    year_established: currentTeam.year_established,
     staff: [],
     photos: [],
   },
@@ -91,7 +91,7 @@ export const useOnboardingStore = create<OnboardingState>()(
       draft: { ...state.draft, staff: state.draft.staff.filter((member) => member.id !== id) },
     })),
 
-  setInviteCode: (inviteCode) => set((state) => ({ draft: { ...state.draft, inviteCode } })),
+  setInviteCode: (invite_code) => set((state) => ({ draft: { ...state.draft, invite_code } })),
 
   completeOnboarding: () => {
     const { team, staff } = get().draft;
@@ -104,12 +104,12 @@ export const useOnboardingStore = create<OnboardingState>()(
         nickname: team.nickname || getInitials(team.name),
         region: team.region ?? "",
         district: team.district ?? "",
-        homeGround: team.homeGround ?? "",
-        yearEstablished: team.yearEstablished ?? new Date().getFullYear(),
+        home_ground: team.home_ground ?? "",
+        year_established: team.year_established ?? new Date().getFullYear(),
         logo: team.logo,
         coverImage: team.coverImage,
-        colorPrimary: team.colorPrimary,
-        colorSecondary: team.colorSecondary,
+        color_primary: team.color_primary,
+        color_secondary: team.color_secondary,
         slogan: team.slogan,
         facebook: team.facebook,
         instagram: team.instagram,

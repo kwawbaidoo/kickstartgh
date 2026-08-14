@@ -75,7 +75,7 @@ export default function TeamReportPage() {
       />
 
       <SavedTemplates
-        reportType="team"
+        report_type="team"
         currentColumns={columns}
         onApply={(template) => setColumns(template.columns)}
       />

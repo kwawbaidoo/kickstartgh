@@ -56,8 +56,8 @@ export default function SeasonSettingsPage({ params }: { params: Promise<{ id: s
     rows: [
       { metric: "Season", value: season.name },
       { metric: "Status", value: seasonStatusLabels[season.status] },
-      { metric: "Start Date", value: format(new Date(season.startDate), "d MMM yyyy") },
-      { metric: "End Date", value: format(new Date(season.endDate), "d MMM yyyy") },
+      { metric: "Start Date", value: format(new Date(season.start_date), "d MMM yyyy") },
+      { metric: "End Date", value: format(new Date(season.end_date), "d MMM yyyy") },
       { metric: "Registered Players", value: String(stats.registeredPlayers) },
       { metric: "Matches Played", value: String(stats.played) },
       { metric: "Wins", value: String(stats.wins) },

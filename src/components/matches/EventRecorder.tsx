@@ -30,10 +30,10 @@ type EventRecorderProps = {
 function EventRecorder({ lineup, squad, events, onRecord }: EventRecorderProps) {
   const [activeType, setActiveType] = useState<MatchEventType | null>(null);
   const [minute, setMinute] = useState("");
-  const [playerId, setPlayerId] = useState<string | null>(null);
+  const [player_id, setPlayerId] = useState<string | null>(null);
   const [assistId, setAssistId] = useState<string | null>(null);
-  const [playerOutId, setPlayerOutId] = useState<string | null>(null);
-  const [playerInId, setPlayerInId] = useState<string | null>(null);
+  const [player_out_id, setPlayerOutId] = useState<string | null>(null);
+  const [player_in_id, setPlayerInId] = useState<string | null>(null);
 
   const playerMap = new Map(squad.map((player) => [player.id, player]));
   const startingIds = getStartingPlayerIds(lineup);
@@ -45,16 +45,16 @@ function EventRecorder({ lineup, squad, events, onRecord }: EventRecorderProps) 
   const onPitchIds = new Set(startingIds);
   for (const event of events) {
     if (event.type === "substitution") {
-      onPitchIds.delete(event.playerOutId);
-      onPitchIds.add(event.playerInId);
+      onPitchIds.delete(event.player_out_id);
+      onPitchIds.add(event.player_in_id);
     }
   }
   const onPitchPlayers = squadPlayers.filter((player) => onPitchIds.has(player.id));
   const benchPlayers = squadPlayers.filter((player) => !onPitchIds.has(player.id));
 
-  const squadItems = Object.fromEntries(squadPlayers.map((player) => [player.id, player.fullName]));
-  const onPitchItems = Object.fromEntries(onPitchPlayers.map((player) => [player.id, player.fullName]));
-  const benchItems = Object.fromEntries(benchPlayers.map((player) => [player.id, player.fullName]));
+  const squadItems = Object.fromEntries(squadPlayers.map((player) => [player.id, player.full_name]));
+  const onPitchItems = Object.fromEntries(onPitchPlayers.map((player) => [player.id, player.full_name]));
+  const benchItems = Object.fromEntries(benchPlayers.map((player) => [player.id, player.full_name]));
 
   function openModal(type: MatchEventType) {
     setActiveType(type);
@@ -74,22 +74,22 @@ function EventRecorder({ lineup, squad, events, onRecord }: EventRecorderProps) 
   const isValid =
     isMinuteValid &&
     (activeType === "goal" || activeType === "yellow_card" || activeType === "red_card" || activeType === "injury"
-      ? !!playerId
+      ? !!player_id
       : activeType === "substitution"
-        ? !!playerOutId && !!playerInId
+        ? !!player_out_id && !!player_in_id
         : false);
 
   function handleSubmit() {
     if (!isValid || !activeType) return;
 
-    if (activeType === "goal" && playerId) {
-      onRecord({ type: "goal", minute: minuteValue, playerId, assistPlayerId: assistId ?? undefined });
-    } else if ((activeType === "yellow_card" || activeType === "red_card") && playerId) {
-      onRecord({ type: activeType, minute: minuteValue, playerId });
-    } else if (activeType === "substitution" && playerOutId && playerInId) {
-      onRecord({ type: "substitution", minute: minuteValue, playerOutId, playerInId });
-    } else if (activeType === "injury" && playerId) {
-      onRecord({ type: "injury", minute: minuteValue, playerId });
+    if (activeType === "goal" && player_id) {
+      onRecord({ type: "goal", minute: minuteValue, player_id, assist_player_id: assistId ?? undefined });
+    } else if ((activeType === "yellow_card" || activeType === "red_card") && player_id) {
+      onRecord({ type: activeType, minute: minuteValue, player_id });
+    } else if (activeType === "substitution" && player_out_id && player_in_id) {
+      onRecord({ type: "substitution", minute: minuteValue, player_out_id, player_in_id });
+    } else if (activeType === "injury" && player_id) {
+      onRecord({ type: "injury", minute: minuteValue, player_id });
     }
     closeModal();
   }
@@ -148,14 +148,14 @@ function EventRecorder({ lineup, squad, events, onRecord }: EventRecorderProps) 
               <Field>
                 <FieldLabel>Scorer</FieldLabel>
                 <FieldContent>
-                  <Select items={squadItems} value={playerId} onValueChange={setPlayerId}>
+                  <Select items={squadItems} value={player_id} onValueChange={setPlayerId}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select scorer" />
                     </SelectTrigger>
                     <SelectContent>
                       {squadPlayers.map((player) => (
                         <SelectItem key={player.id} value={player.id}>
-                          {player.fullName}
+                          {player.full_name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -172,7 +172,7 @@ function EventRecorder({ lineup, squad, events, onRecord }: EventRecorderProps) 
                     <SelectContent>
                       {squadPlayers.map((player) => (
                         <SelectItem key={player.id} value={player.id}>
-                          {player.fullName}
+                          {player.full_name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -186,14 +186,14 @@ function EventRecorder({ lineup, squad, events, onRecord }: EventRecorderProps) 
             <Field>
               <FieldLabel>Player</FieldLabel>
               <FieldContent>
-                <Select items={squadItems} value={playerId} onValueChange={setPlayerId}>
+                <Select items={squadItems} value={player_id} onValueChange={setPlayerId}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select player" />
                   </SelectTrigger>
                   <SelectContent>
                     {squadPlayers.map((player) => (
                       <SelectItem key={player.id} value={player.id}>
-                        {player.fullName}
+                        {player.full_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -207,14 +207,14 @@ function EventRecorder({ lineup, squad, events, onRecord }: EventRecorderProps) 
               <Field>
                 <FieldLabel>Player out</FieldLabel>
                 <FieldContent>
-                  <Select items={onPitchItems} value={playerOutId} onValueChange={setPlayerOutId}>
+                  <Select items={onPitchItems} value={player_out_id} onValueChange={setPlayerOutId}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select player out" />
                     </SelectTrigger>
                     <SelectContent>
                       {onPitchPlayers.map((player) => (
                         <SelectItem key={player.id} value={player.id}>
-                          {player.fullName}
+                          {player.full_name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -224,14 +224,14 @@ function EventRecorder({ lineup, squad, events, onRecord }: EventRecorderProps) 
               <Field>
                 <FieldLabel>Player in</FieldLabel>
                 <FieldContent>
-                  <Select items={benchItems} value={playerInId} onValueChange={setPlayerInId}>
+                  <Select items={benchItems} value={player_in_id} onValueChange={setPlayerInId}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select player in" />
                     </SelectTrigger>
                     <SelectContent>
                       {benchPlayers.map((player) => (
                         <SelectItem key={player.id} value={player.id}>
-                          {player.fullName}
+                          {player.full_name}
                         </SelectItem>
                       ))}
                     </SelectContent>

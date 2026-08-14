@@ -27,7 +27,7 @@ import { getSeasonRoster } from "@/lib/players";
 import { fadeInUp } from "@/lib/motion";
 import { getInitials } from "@/lib/utils";
 
-const socialLinks = [
+const social_links = [
   { key: "facebook", label: "Facebook", icon: Link2 },
   { key: "instagram", label: "Instagram", icon: AtSign },
   { key: "tiktok", label: "TikTok", icon: Music2 },
@@ -45,10 +45,10 @@ export default function TeamPage() {
   const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
   const players = getSeasonRoster(allPlayers, activeSeasonId);
 
-  const location = [activeTeam.homeGround, activeTeam.district, activeTeam.region]
+  const location = [activeTeam.home_ground, activeTeam.district, activeTeam.region]
     .filter(Boolean)
     .join(", ");
-  const activeSocialLinks = socialLinks.filter((link) => activeTeam[link.key]);
+  const activeSocialLinks = social_links.filter((link) => activeTeam[link.key]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -71,7 +71,7 @@ export default function TeamPage() {
         style={
           !activeTeam.coverImage
             ? {
-                background: `linear-gradient(135deg, ${activeTeam.colorPrimary ?? "#1e3a8a"}, ${activeTeam.colorSecondary ?? "#2563eb"})`,
+                background: `linear-gradient(135deg, ${activeTeam.color_primary ?? "#1e3a8a"}, ${activeTeam.color_secondary ?? "#2563eb"})`,
               }
             : undefined
         }
@@ -106,18 +106,18 @@ export default function TeamPage() {
                   <span className="text-sm text-muted-foreground">&ldquo;{activeTeam.nickname}&rdquo;</span>
                 )}
               </div>
-              {(activeTeam.colorPrimary || activeTeam.colorSecondary) && (
+              {(activeTeam.color_primary || activeTeam.color_secondary) && (
                 <div className="ml-auto flex shrink-0 items-center gap-1.5">
-                  {activeTeam.colorPrimary && (
+                  {activeTeam.color_primary && (
                     <span
                       className="size-5 rounded-full ring-1 ring-foreground/10"
-                      style={{ backgroundColor: activeTeam.colorPrimary }}
+                      style={{ backgroundColor: activeTeam.color_primary }}
                     />
                   )}
-                  {activeTeam.colorSecondary && (
+                  {activeTeam.color_secondary && (
                     <span
                       className="size-5 rounded-full ring-1 ring-foreground/10"
-                      style={{ backgroundColor: activeTeam.colorSecondary }}
+                      style={{ backgroundColor: activeTeam.color_secondary }}
                     />
                   )}
                 </div>
@@ -137,7 +137,7 @@ export default function TeamPage() {
               )}
               <span className="flex items-center gap-1.5">
                 <CalendarDays className="size-4" />
-                Established {activeTeam.yearEstablished}
+                Established {activeTeam.year_established}
               </span>
             </div>
 

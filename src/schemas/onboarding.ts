@@ -9,16 +9,16 @@ export const teamDetailsSchema = z.object({
   nickname: z.string().trim().optional(),
   region: z.string().min(1, "Please select a region."),
   district: z.string().min(1, "Please enter a district."),
-  homeGround: z.string().min(2, "Please enter your home ground."),
-  yearEstablished: z.coerce
+  home_ground: z.string().min(2, "Please enter your home ground."),
+  year_established: z.coerce
     .number({ error: "Please enter a valid year." })
     .int("Please enter a valid year.")
     .min(1900, "Year must be 1900 or later.")
     .max(currentYear, `Year can't be later than ${currentYear}.`),
   logo: z.string().optional(),
   coverImage: z.string().optional(),
-  colorPrimary: z.string().optional(),
-  colorSecondary: z.string().optional(),
+  color_primary: z.string().optional(),
+  color_secondary: z.string().optional(),
   slogan: z
     .string()
     .max(120, "Keep your slogan under 120 characters.")
@@ -34,7 +34,7 @@ export type TeamDetailsInput = z.infer<typeof teamDetailsSchema>;
 
 export const staffFormSchema = z.object({
   role: z.enum(roleIds, { error: "Please select a role." }),
-  fullName: z.string().min(2, "Please enter a full name."),
+  full_name: z.string().min(2, "Please enter a full name."),
   phone: z
     .string()
     .min(9, "Please enter a valid phone number.")

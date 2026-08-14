@@ -16,11 +16,11 @@ function PlayerListRow({ player }: { player: Player }) {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={player.photo} alt="" className="size-full object-cover" />
             ) : (
-              getInitials(player.fullName)
+              getInitials(player.full_name)
             )}
           </span>
           <span className="flex min-w-0 flex-col">
-            <span className="truncate font-medium text-foreground">{player.fullName}</span>
+            <span className="truncate font-medium text-foreground">{player.full_name}</span>
             {player.nickname && (
               <span className="truncate text-xs text-muted-foreground">&ldquo;{player.nickname}&rdquo;</span>
             )}
@@ -28,7 +28,7 @@ function PlayerListRow({ player }: { player: Player }) {
         </Link>
       </TableCell>
       <TableCell className="text-muted-foreground">{player.position}</TableCell>
-      <TableCell className="text-muted-foreground">#{player.jerseyNumber}</TableCell>
+      <TableCell className="text-muted-foreground">#{player.jersey_number}</TableCell>
       <TableCell>
         <span
           className={cn(

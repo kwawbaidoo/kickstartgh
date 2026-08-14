@@ -5,13 +5,13 @@ type ScoreBoardProps = {
   teamName: string;
   teamLogo?: string;
   opponent: string;
-  teamScore?: number;
-  opponentScore?: number;
+  team_score?: number;
+  opponent_score?: number;
   status: MatchStatus;
 };
 
-function ScoreBoard({ teamName, teamLogo, opponent, teamScore, opponentScore, status }: ScoreBoardProps) {
-  const hasScore = status === "completed" && teamScore !== undefined && opponentScore !== undefined;
+function ScoreBoard({ teamName, teamLogo, opponent, team_score, opponent_score, status }: ScoreBoardProps) {
+  const hasScore = status === "completed" && team_score !== undefined && opponent_score !== undefined;
 
   return (
     <div className="flex items-center justify-between gap-3">
@@ -30,7 +30,7 @@ function ScoreBoard({ teamName, teamLogo, opponent, teamScore, opponentScore, st
       <div className="flex flex-col items-center gap-1">
         {hasScore ? (
           <span className="font-heading text-3xl font-bold text-foreground">
-            {teamScore}–{opponentScore}
+            {team_score}–{opponent_score}
           </span>
         ) : (
           <span className="text-sm font-semibold text-muted-foreground">

@@ -28,7 +28,7 @@ function AttendanceTableRow({
         <Checkbox
           checked={selected}
           onCheckedChange={onToggleSelect}
-          aria-label={`Select ${player.fullName}`}
+          aria-label={`Select ${player.full_name}`}
         />
       </TableCell>
       <TableCell>
@@ -38,14 +38,14 @@ function AttendanceTableRow({
               // eslint-disable-next-line @next/next/no-img-element
               <img src={player.photo} alt="" className="size-full object-cover" />
             ) : (
-              getInitials(player.fullName)
+              getInitials(player.full_name)
             )}
           </div>
-          <span className="truncate font-medium text-foreground">{player.fullName}</span>
+          <span className="truncate font-medium text-foreground">{player.full_name}</span>
         </div>
       </TableCell>
       <TableCell className="text-muted-foreground">{player.position}</TableCell>
-      <TableCell className="text-muted-foreground">#{player.jerseyNumber}</TableCell>
+      <TableCell className="text-muted-foreground">#{player.jersey_number}</TableCell>
       <TableCell>
         <div className="flex gap-1">
           {attendanceStatusOptions.map((option) => {

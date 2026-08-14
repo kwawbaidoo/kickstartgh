@@ -22,16 +22,16 @@ function PlayerCard({ player }: { player: Player }) {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={player.photo} alt="" className="size-full object-cover" />
             ) : (
-              getInitials(player.fullName)
+              getInitials(player.full_name)
             )}
           </div>
           <span className="absolute -right-1 -bottom-1 flex size-4 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-accent-foreground ring-2 ring-card">
-            {player.jerseyNumber}
+            {player.jersey_number}
           </span>
         </div>
 
         <div className="flex flex-col gap-0.5">
-          <span className="truncate text-xs font-medium text-foreground">{player.fullName}</span>
+          <span className="truncate text-xs font-medium text-foreground">{player.full_name}</span>
           <span className="truncate text-[10px] text-muted-foreground">
             {player.nickname ? `"${player.nickname}" · ` : ""}
             {player.position}

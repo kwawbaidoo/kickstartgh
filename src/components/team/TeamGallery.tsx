@@ -20,7 +20,7 @@ function TeamGallery({ staff, players }: TeamGalleryProps) {
             {staff.map((member) => (
               <GalleryTile
                 key={member.id}
-                name={member.fullName}
+                name={member.full_name}
                 identification={
                   staffRoleOptions.find((option) => option.value === member.role)?.label ?? "Staff"
                 }
@@ -40,7 +40,7 @@ function TeamGallery({ staff, players }: TeamGalleryProps) {
               <GalleryTile
                 key={player.id}
                 photo={player.photo}
-                name={player.fullName}
+                name={player.full_name}
                 identification={player.position}
                 href={`/players/${player.id}`}
               />

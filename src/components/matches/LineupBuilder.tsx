@@ -33,28 +33,28 @@ type LineupBuilderProps = {
 
 function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderProps) {
   const [formation, setFormation] = useState<Formation>(initialLineup?.formation ?? "4-4-2");
-  const [startingXI, setStartingXI] = useState<Partial<Record<Slot, string>>>(() =>
-    initialLineup && initialLineup.formation === formation ? initialLineup.startingXI : {}
+  const [starting_xi, setStartingXI] = useState<Partial<Record<Slot, string>>>(() =>
+    initialLineup && initialLineup.formation === formation ? initialLineup.starting_xi : {}
   );
   const [substitutes, setSubstitutes] = useState<string[]>(initialLineup?.substitutes ?? []);
-  const [captainId, setCaptainId] = useState<string | undefined>(initialLineup?.captainId);
+  const [captain_id, setCaptainId] = useState<string | undefined>(initialLineup?.captain_id);
   const [pickerSlot, setPickerSlot] = useState<Slot | null>(null);
-  const [benchOfficials, setBenchOfficials] = useState<BenchOfficial[]>(
-    initialLineup?.benchOfficials ?? []
+  const [bench_officials, setBenchOfficials] = useState<BenchOfficial[]>(
+    initialLineup?.bench_officials ?? []
   );
   const [adhocName, setAdhocName] = useState("");
   const [adhocRole, setAdhocRole] = useState("");
 
   const slots = getFormationSlots(formation);
   const playerMap = new Map(squad.map((player) => [player.id, player]));
-  const assignedIds = new Set(Object.values(startingXI));
+  const assignedIds = new Set(Object.values(starting_xi));
   const availablePlayers = squad.filter((player) => !assignedIds.has(player.id));
-  const filledCount = Object.keys(startingXI).length;
+  const filledCount = Object.keys(starting_xi).length;
   const canSave = filledCount === slots.length;
 
-  const resolvedOfficials = resolveBenchOfficials(benchOfficials, staff);
+  const resolvedOfficials = resolveBenchOfficials(bench_officials, staff);
   const addedStaffIds = new Set(
-    benchOfficials.filter((official) => official.source === "staff").map((official) => official.staffId)
+    bench_officials.filter((official) => official.source === "staff").map((official) => official.staff_id)
   );
   const availableStaff = staff.filter((member) => !addedStaffIds.has(member.id));
 
@@ -65,47 +65,47 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
   }
 
   function handleSlotTap(slot: Slot) {
-    const currentId = startingXI[slot];
+    const currentId = starting_xi[slot];
     if (currentId) {
       setStartingXI((prev) => {
         const next = { ...prev };
         delete next[slot];
         return next;
       });
-      if (captainId === currentId) setCaptainId(undefined);
+      if (captain_id === currentId) setCaptainId(undefined);
     } else {
       setPickerSlot(slot);
     }
   }
 
-  function assignPlayer(playerId: string) {
+  function assignPlayer(player_id: string) {
     if (pickerSlot === null) return;
-    setStartingXI((prev) => ({ ...prev, [pickerSlot]: playerId }));
-    setSubstitutes((prev) => prev.filter((id) => id !== playerId));
+    setStartingXI((prev) => ({ ...prev, [pickerSlot]: player_id }));
+    setSubstitutes((prev) => prev.filter((id) => id !== player_id));
     setPickerSlot(null);
   }
 
-  function toggleSubstitute(playerId: string) {
+  function toggleSubstitute(player_id: string) {
     setSubstitutes((prev) =>
-      prev.includes(playerId) ? prev.filter((id) => id !== playerId) : [...prev, playerId]
+      prev.includes(player_id) ? prev.filter((id) => id !== player_id) : [...prev, player_id]
     );
   }
 
-  function toggleStaffOfficial(staffId: string) {
+  function toggleStaffOfficial(staff_id: string) {
     setBenchOfficials((prev) => {
-      const exists = prev.some((official) => official.source === "staff" && official.staffId === staffId);
+      const exists = prev.some((official) => official.source === "staff" && official.staff_id === staff_id);
       if (exists) {
-        return prev.filter((official) => !(official.source === "staff" && official.staffId === staffId));
+        return prev.filter((official) => !(official.source === "staff" && official.staff_id === staff_id));
       }
-      return [...prev, { id: crypto.randomUUID(), source: "staff", staffId }];
+      return [...prev, { id: crypto.randomUUID(), source: "staff", staff_id }];
     });
   }
 
   function addAdhocOfficial() {
-    const fullName = adhocName.trim();
+    const full_name = adhocName.trim();
     const role = adhocRole.trim();
-    if (!fullName || !role) return;
-    setBenchOfficials((prev) => [...prev, { id: crypto.randomUUID(), source: "adhoc", fullName, role }]);
+    if (!full_name || !role) return;
+    setBenchOfficials((prev) => [...prev, { id: crypto.randomUUID(), source: "adhoc", full_name, role }]);
     setAdhocName("");
     setAdhocRole("");
   }
@@ -117,15 +117,15 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
   function handleSave() {
     onSave({
       formation,
-      startingXI,
+      starting_xi,
       substitutes,
-      captainId,
-      benchOfficials,
+      captain_id,
+      bench_officials,
     });
   }
 
   const captainItems = Object.fromEntries(
-    Object.values(startingXI).map((id) => [id, playerMap.get(id)?.fullName ?? ""])
+    Object.values(starting_xi).map((id) => [id, playerMap.get(id)?.full_name ?? ""])
   );
 
   return (
@@ -140,8 +140,8 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
       <div className="relative aspect-[17/25] w-full overflow-hidden rounded-2xl lg:aspect-[25/17]">
         <PitchBackground />
         {slots.map((slot) => {
-          const playerId = startingXI[slot.slot];
-          const player = playerId ? playerMap.get(playerId) : undefined;
+          const player_id = starting_xi[slot.slot];
+          const player = player_id ? playerMap.get(player_id) : undefined;
           const positionLabel = positionLabels[slot.position];
           return (
             <button
@@ -149,7 +149,7 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
               type="button"
               onClick={() => handleSlotTap(slot.slot)}
               style={getPitchSlotStyle(slot)}
-              aria-label={player ? `${player.fullName}, ${positionLabel}` : `Assign ${positionLabel}`}
+              aria-label={player ? `${player.full_name}, ${positionLabel}` : `Assign ${positionLabel}`}
               className="absolute left-[var(--slot-left)] top-[var(--slot-top)] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 lg:left-[var(--slot-left-lg)] lg:top-[var(--slot-top-lg)]"
             >
               <div
@@ -158,12 +158,12 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
                   player ? "bg-primary text-primary-foreground" : "bg-white/20 text-white"
                 )}
               >
-                {player ? getInitials(player.fullName) : "+"}
+                {player ? getInitials(player.full_name) : "+"}
               </div>
               {player && (
                 <span className="max-w-16 truncate rounded bg-black/40 px-1 text-[10px] font-medium text-white">
-                  {player.fullName.split(" ")[0]}
-                  {captainId === player.id ? " (C)" : ""}
+                  {player.full_name.split(" ")[0]}
+                  {captain_id === player.id ? " (C)" : ""}
                 </span>
               )}
             </button>
@@ -175,16 +175,16 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
         <span className="text-sm font-medium text-foreground">Captain</span>
         <Select
           items={captainItems}
-          value={captainId ?? null}
+          value={captain_id ?? null}
           onValueChange={(value) => setCaptainId(value ?? undefined)}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select captain" />
           </SelectTrigger>
           <SelectContent>
-            {Object.values(startingXI).map((id) => (
+            {Object.values(starting_xi).map((id) => (
               <SelectItem key={id} value={id}>
-                {playerMap.get(id)?.fullName}
+                {playerMap.get(id)?.full_name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -214,8 +214,8 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
                     : "border-border text-muted-foreground"
                 )}
               >
-                {player.fullName}
-                <span className="text-xs">#{player.jerseyNumber}</span>
+                {player.full_name}
+                <span className="text-xs">#{player.jersey_number}</span>
               </button>
             );
           })}
@@ -235,14 +235,14 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
             {resolvedOfficials.map((official) => (
               <div key={official.id} className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2">
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
-                  {getInitials(official.fullName)}
+                  {getInitials(official.full_name)}
                 </span>
-                <span className="min-w-0 flex-1 truncate text-sm text-foreground">{official.fullName}</span>
+                <span className="min-w-0 flex-1 truncate text-sm text-foreground">{official.full_name}</span>
                 <span className="text-xs text-muted-foreground">{official.role}</span>
                 <button
                   type="button"
                   onClick={() => removeOfficial(official.id)}
-                  aria-label={`Remove ${official.fullName}`}
+                  aria-label={`Remove ${official.full_name}`}
                   className="text-muted-foreground hover:text-destructive"
                 >
                   <X className="size-4" />
@@ -263,7 +263,7 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
                   onClick={() => toggleStaffOfficial(member.id)}
                   className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors"
                 >
-                  {member.fullName}
+                  {member.full_name}
                   <span className="text-xs">
                     {staffRoleOptions.find((option) => option.value === member.role)?.label}
                   </span>
@@ -325,12 +325,12 @@ function LineupBuilder({ squad, staff, initialLineup, onSave }: LineupBuilderPro
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-muted"
                 >
                   <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-                    {getInitials(player.fullName)}
+                    {getInitials(player.full_name)}
                   </span>
                   <span className="flex flex-col">
-                    <span className="text-sm font-medium text-foreground">{player.fullName}</span>
+                    <span className="text-sm font-medium text-foreground">{player.full_name}</span>
                     <span className="text-xs text-muted-foreground">
-                      {player.position} · #{player.jerseyNumber}
+                      {player.position} · #{player.jersey_number}
                     </span>
                   </span>
                 </button>

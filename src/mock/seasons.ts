@@ -2,18 +2,18 @@ export type SeasonStatus = "upcoming" | "active" | "completed" | "archived";
 
 export type Season = {
   id: string;
-  teamId: string;
+  team_id: string;
   name: string;
-  startDate: string;
-  endDate: string;
+  start_date: string;
+  end_date: string;
   status: SeasonStatus;
   description?: string;
   objectives?: string;
-  competitionCategory?: string;
+  competition_category?: string;
   budget?: number;
-  colorPrimary?: string;
-  colorSecondary?: string;
-  createdAt: string;
+  color_primary?: string;
+  color_secondary?: string;
+  created_at: string;
 };
 
 /**
@@ -25,13 +25,13 @@ export const DEFAULT_SEASON_ID = "season_2026";
 export const seasons: Season[] = [
   {
     id: DEFAULT_SEASON_ID,
-    teamId: "team_001",
+    team_id: "team_001",
     name: "2026 Season",
-    startDate: "2026-01-01",
-    endDate: "2026-12-31",
+    start_date: "2026-01-01",
+    end_date: "2026-12-31",
     status: "active",
-    competitionCategory: "Ellembelle District League",
-    createdAt: "2026-01-01T00:00:00Z",
+    competition_category: "Ellembelle District League",
+    created_at: "2026-01-01T00:00:00Z",
   },
 ];
 

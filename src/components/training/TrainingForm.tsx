@@ -35,7 +35,7 @@ const focusItems = toSelectItems(trainingFocusOptions);
 const stepLabels = ["Session Details", "Focus & Notes"];
 
 const stepFields: (keyof TrainingFormInput)[][] = [
-  ["title", "date", "startTime", "endTime", "venue"],
+  ["title", "date", "start_time", "end_time", "venue"],
   ["focus", "description", "equipment", "notes"],
 ];
 
@@ -54,8 +54,8 @@ function TrainingForm({ defaultValues, onSubmit, submitLabel = "Schedule Session
     defaultValues: {
       title: "",
       date: "",
-      startTime: "",
-      endTime: "",
+      start_time: "",
+      end_time: "",
       venue: "",
       description: "",
       notes: "",
@@ -116,21 +116,21 @@ function TrainingForm({ defaultValues, onSubmit, submitLabel = "Schedule Session
               </FieldContent>
             </Field>
 
-            <Field data-invalid={!!form.formState.errors.startTime}>
-              <FieldLabel htmlFor="startTime">Start time</FieldLabel>
+            <Field data-invalid={!!form.formState.errors.start_time}>
+              <FieldLabel htmlFor="start_time">Start time</FieldLabel>
               <FieldContent>
-                <Input id="startTime" type="time" {...form.register("startTime")} />
-                <FieldError errors={[form.formState.errors.startTime]} />
+                <Input id="start_time" type="time" {...form.register("start_time")} />
+                <FieldError errors={[form.formState.errors.start_time]} />
               </FieldContent>
             </Field>
           </FieldGroup>
 
           <FieldGroup className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Field data-invalid={!!form.formState.errors.endTime}>
-              <FieldLabel htmlFor="endTime">End time</FieldLabel>
+            <Field data-invalid={!!form.formState.errors.end_time}>
+              <FieldLabel htmlFor="end_time">End time</FieldLabel>
               <FieldContent>
-                <Input id="endTime" type="time" {...form.register("endTime")} />
-                <FieldError errors={[form.formState.errors.endTime]} />
+                <Input id="end_time" type="time" {...form.register("end_time")} />
+                <FieldError errors={[form.formState.errors.end_time]} />
               </FieldContent>
             </Field>
 

@@ -20,8 +20,8 @@ function MatchLineupModal({ match }: { match: Match }) {
 
   function handleDownload() {
     if (!match.lineup) return;
-    const benchOfficials = resolveBenchOfficials(match.lineup.benchOfficials, activeTeam.staff);
-    exportLineupPdf(match, activeTeam, players, benchOfficials);
+    const bench_officials = resolveBenchOfficials(match.lineup.bench_officials, activeTeam.staff);
+    exportLineupPdf(match, activeTeam, players, bench_officials);
   }
 
   return (

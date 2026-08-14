@@ -26,7 +26,7 @@ const bulkStatusItems = toSelectItems(
 type AttendanceBoardProps = {
   players: Player[];
   records: Record<string, AttendanceStatus>;
-  onSetAttendance: (playerId: string, status: AttendanceStatus) => void;
+  onSetAttendance: (player_id: string, status: AttendanceStatus) => void;
   onSetBulkAttendance: (playerIds: string[], status: AttendanceStatus) => void;
 };
 
@@ -45,16 +45,16 @@ function AttendanceBoard({ players, records, onSetAttendance, onSetBulkAttendanc
       if (unmarkedOnly && records[player.id]) return false;
       if (!query) return true;
       return (
-        player.fullName.toLowerCase().includes(query) || String(player.jerseyNumber).includes(query)
+        player.full_name.toLowerCase().includes(query) || String(player.jersey_number).includes(query)
       );
     });
   }, [players, records, search, unmarkedOnly]);
 
-  function toggleSelect(playerId: string) {
+  function toggleSelect(player_id: string) {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(playerId)) next.delete(playerId);
-      else next.add(playerId);
+      if (next.has(player_id)) next.delete(player_id);
+      else next.add(player_id);
       return next;
     });
   }
@@ -144,7 +144,7 @@ function AttendanceBoard({ players, records, onSetAttendance, onSetBulkAttendanc
               selected={selected}
               onToggleSelect={toggleSelect}
               onToggleSelectAll={toggleSelectAll}
-              onStatusChange={(playerId, status) => onSetAttendance(playerId, status)}
+              onStatusChange={(player_id, status) => onSetAttendance(player_id, status)}
             />
           </div>
           <div className="flex flex-col gap-2 sm:hidden">

@@ -60,7 +60,7 @@ export function buildPlayerReportTable(
   const filtered = players.filter((player) => {
     if (filters.position !== "All" && player.position !== filters.position) return false;
     if (filters.status !== "All" && player.status !== filters.status) return false;
-    if (filters.ageGroup !== "All" && getAgeGroup(player.dateOfBirth) !== filters.ageGroup) return false;
+    if (filters.ageGroup !== "All" && getAgeGroup(player.date_of_birth) !== filters.ageGroup) return false;
     return true;
   });
 
@@ -68,12 +68,12 @@ export function buildPlayerReportTable(
     const matchStats = getPlayerMatchStats(player.id, matches);
     const attendanceStats = getPlayerAttendanceStats(player.id, sessions, matches);
     const row: Record<string, string> = {
-      fullName: player.fullName,
+      fullName: player.full_name,
       nickname: player.nickname ?? EMPTY,
-      dateOfBirth: format(new Date(player.dateOfBirth), "d MMM yyyy"),
+      dateOfBirth: format(new Date(player.date_of_birth), "d MMM yyyy"),
       position: player.position,
-      jerseyNumber: String(player.jerseyNumber),
-      preferredFoot: player.preferredFoot,
+      jerseyNumber: String(player.jersey_number),
+      preferredFoot: player.preferred_foot,
       phone: player.phone ?? EMPTY,
       matchesPlayed: String(matchStats.matchesPlayed),
       goals: String(matchStats.goals),
@@ -100,12 +100,12 @@ export function buildTeamReportTable(
 ): ReportTable {
   const stats = getTeamStats(matches);
   const findStaff = (role: string) =>
-    team.staff.find((member) => member.role === role)?.fullName ?? EMPTY;
+    team.staff.find((member) => member.role === role)?.full_name ?? EMPTY;
 
   const row: Record<string, string> = {
     name: team.name,
     region: team.region || EMPTY,
-    homeGround: team.homeGround || EMPTY,
+    homeGround: team.home_ground || EMPTY,
     headCoach: findStaff("headCoach"),
     assistantCoach: findStaff("assistantCoach"),
     captain: findStaff("captain"),
@@ -154,15 +154,15 @@ export function buildMatchReportTable(
     const scorers =
       match.events
         .filter((event) => event.type === "goal")
-        .map((event) => (event.type === "goal" ? playerNames[event.playerId] ?? "Unknown" : ""))
+        .map((event) => (event.type === "goal" ? playerNames[event.player_id] ?? "Unknown" : ""))
         .join(", ") || EMPTY;
 
     const assists =
       match.events
-        .filter((event) => event.type === "goal" && event.assistPlayerId)
+        .filter((event) => event.type === "goal" && event.assist_player_id)
         .map((event) =>
-          event.type === "goal" && event.assistPlayerId
-            ? playerNames[event.assistPlayerId] ?? "Unknown"
+          event.type === "goal" && event.assist_player_id
+            ? playerNames[event.assist_player_id] ?? "Unknown"
             : ""
         )
         .filter(Boolean)
@@ -173,7 +173,7 @@ export function buildMatchReportTable(
         .filter((event) => event.type === "yellow_card" || event.type === "red_card")
         .map((event) =>
           event.type === "yellow_card" || event.type === "red_card"
-            ? `${playerNames[event.playerId] ?? "Unknown"} (${event.type === "yellow_card" ? "Y" : "R"})`
+            ? `${playerNames[event.player_id] ?? "Unknown"} (${event.type === "yellow_card" ? "Y" : "R"})`
             : ""
         )
         .join(", ") || EMPTY;
@@ -183,14 +183,14 @@ export function buildMatchReportTable(
         .filter((event) => event.type === "substitution")
         .map((event) =>
           event.type === "substitution"
-            ? `${playerNames[event.playerInId] ?? "?"} ↔ ${playerNames[event.playerOutId] ?? "?"}`
+            ? `${playerNames[event.player_in_id] ?? "?"} ↔ ${playerNames[event.player_out_id] ?? "?"}`
             : ""
         )
         .join(", ") || EMPTY;
 
     const scoreline =
       match.status === "completed"
-        ? `${match.teamScore}–${match.opponentScore}`
+        ? `${match.team_score}–${match.opponent_score}`
         : match.status === "cancelled"
           ? "Cancelled"
           : "Upcoming";
@@ -233,7 +233,7 @@ export function buildAttendanceReportTable(
   const rows = ranking.map((entry, index) => {
     const row: Record<string, string> = {
       rank: String(index + 1),
-      fullName: entry.player.fullName,
+      fullName: entry.player.full_name,
       attendancePercentage: `${entry.stats.attendancePercentage}%`,
       presentCount: String(entry.stats.presentCount),
       absentCount: String(entry.stats.absentCount),
@@ -268,7 +268,7 @@ export function buildPlayerReportShareMessage(player: Player, matches: Match[]):
   return [
     "⚽ Player Report",
     "",
-    player.fullName,
+    player.full_name,
     "",
     `Position: ${player.position}`,
     `Goals: ${stats.goals}`,

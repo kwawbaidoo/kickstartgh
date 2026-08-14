@@ -155,7 +155,7 @@ export default function PlayerReportPage() {
       />
 
       <SavedTemplates
-        reportType="player"
+        report_type="player"
         currentColumns={columns}
         onApply={(template) => setColumns(template.columns)}
       />

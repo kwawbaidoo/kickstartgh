@@ -48,7 +48,7 @@ function TrainingCard({ session, attendanceRate }: TrainingCardProps) {
           </span>
           <span className="flex items-center gap-1">
             <Clock className="size-3" />
-            {session.startTime}
+            {session.start_time}
           </span>
         </div>
 

@@ -36,7 +36,7 @@ const matchTypeItems = toSelectItems(matchTypeOptions);
 const stepLabels = ["Match Details", "Extras"];
 
 const stepFields: (keyof MatchFormInput)[][] = [
-  ["opponent", "competition", "matchType", "venue", "homeAway", "date", "kickoffTime"],
+  ["opponent", "competition", "match_type", "venue", "homeAway", "date", "kickoff_time"],
   ["referee", "notes", "poster"],
 ];
 
@@ -59,7 +59,7 @@ function MatchForm({ defaultValues, competitions, onSubmit, submitLabel = "Creat
       venue: "",
       homeAway: "Home",
       date: "",
-      kickoffTime: "",
+      kickoff_time: "",
       referee: "",
       notes: "",
       ...defaultValues,
@@ -123,15 +123,15 @@ function MatchForm({ defaultValues, competitions, onSubmit, submitLabel = "Creat
           </FieldGroup>
 
           <FieldGroup className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Field data-invalid={!!form.formState.errors.matchType}>
-              <FieldLabel htmlFor="matchType">Match type</FieldLabel>
+            <Field data-invalid={!!form.formState.errors.match_type}>
+              <FieldLabel htmlFor="match_type">Match type</FieldLabel>
               <FieldContent>
                 <Controller
                   control={form.control}
-                  name="matchType"
+                  name="match_type"
                   render={({ field }) => (
                     <Select items={matchTypeItems} value={field.value ?? null} onValueChange={field.onChange}>
-                      <SelectTrigger id="matchType" className="w-full">
+                      <SelectTrigger id="match_type" className="w-full">
                         <SelectValue placeholder="Select match type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -144,7 +144,7 @@ function MatchForm({ defaultValues, competitions, onSubmit, submitLabel = "Creat
                     </Select>
                   )}
                 />
-                <FieldError errors={[form.formState.errors.matchType]} />
+                <FieldError errors={[form.formState.errors.match_type]} />
               </FieldContent>
             </Field>
 
@@ -187,11 +187,11 @@ function MatchForm({ defaultValues, competitions, onSubmit, submitLabel = "Creat
               </FieldContent>
             </Field>
 
-            <Field data-invalid={!!form.formState.errors.kickoffTime}>
-              <FieldLabel htmlFor="kickoffTime">Kickoff time</FieldLabel>
+            <Field data-invalid={!!form.formState.errors.kickoff_time}>
+              <FieldLabel htmlFor="kickoff_time">Kickoff time</FieldLabel>
               <FieldContent>
-                <Input id="kickoffTime" type="time" {...form.register("kickoffTime")} />
-                <FieldError errors={[form.formState.errors.kickoffTime]} />
+                <Input id="kickoff_time" type="time" {...form.register("kickoff_time")} />
+                <FieldError errors={[form.formState.errors.kickoff_time]} />
               </FieldContent>
             </Field>
           </FieldGroup>

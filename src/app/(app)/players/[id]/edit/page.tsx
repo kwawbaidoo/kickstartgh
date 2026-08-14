@@ -39,19 +39,19 @@ export default function EditPlayerPage({ params }: { params: Promise<{ id: strin
   }
 
   const defaultValues: Partial<PlayerFormInput> = {
-    fullName: player.fullName,
+    full_name: player.full_name,
     nickname: player.nickname,
-    dateOfBirth: player.dateOfBirth,
+    date_of_birth: player.date_of_birth,
     photo: player.photo,
     phone: player.phone,
     email: player.email,
-    emergencyContact: player.emergencyContact,
-    jerseyNumber: player.jerseyNumber,
+    emergency_contact: player.emergency_contact,
+    jersey_number: player.jersey_number,
     position: player.position,
-    secondaryPosition: player.secondaryPosition,
-    preferredFoot: player.preferredFoot,
+    secondary_position: player.secondary_position,
+    preferred_foot: player.preferred_foot,
     village: player.village,
-    previousClub: player.previousClub,
+    previous_club: player.previous_club,
     status: player.status,
   };
 
@@ -64,7 +64,7 @@ export default function EditPlayerPage({ params }: { params: Promise<{ id: strin
         <ArrowLeft className="size-4" />
         Back to Players
       </Link>
-      <SectionHeader title="Edit Player" description={`Update ${player.fullName}'s details.`} />
+      <SectionHeader title="Edit Player" description={`Update ${player.full_name}'s details.`} />
       <PlayerForm
         existingPlayers={players}
         excludeId={id}

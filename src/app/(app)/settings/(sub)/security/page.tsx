@@ -14,8 +14,8 @@ export default function SecuritySettingsPage() {
     <div className="flex flex-col gap-6">
       <SectionHeader title="Security" description="Keep your account and team data safe." />
       <SecurityCard
-        lastLogin={security.lastLogin}
-        twoFactorEnabled={security.twoFactorEnabled}
+        last_login={security.last_login}
+        two_factor_enabled={security.two_factor_enabled}
         sessions={security.sessions}
         onToggleTwoFactor={toggleTwoFactor}
         onLogOutSession={logOutSession}

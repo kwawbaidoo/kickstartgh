@@ -5,20 +5,20 @@ import type { Player, PlayerSeasonRecord, PlayerStatus, Position } from "@/mock/
 import type { Match } from "@/mock/matches";
 import { getStartingPlayerIds } from "@/lib/matches";
 
-export function getSeasonRecord(player: Player, seasonId: string): PlayerSeasonRecord | undefined {
-  return player.seasonRecords.find((record) => record.seasonId === seasonId);
+export function getSeasonRecord(player: Player, season_id: string): PlayerSeasonRecord | undefined {
+  return player.season_records.find((record) => record.season_id === season_id);
 }
 
-export function isRegisteredInSeason(player: Player, seasonId: string): boolean {
-  return player.seasonRecords.some((record) => record.seasonId === seasonId);
+export function isRegisteredInSeason(player: Player, season_id: string): boolean {
+  return player.season_records.some((record) => record.season_id === season_id);
 }
 
-export function getSeasonRoster(players: Player[], seasonId: string): Player[] {
-  return players.filter((player) => isRegisteredInSeason(player, seasonId));
+export function getSeasonRoster(players: Player[], season_id: string): Player[] {
+  return players.filter((player) => isRegisteredInSeason(player, season_id));
 }
 
-export function getAge(dateOfBirth: string): number {
-  const dob = new Date(dateOfBirth);
+export function getAge(date_of_birth: string): number {
+  const dob = new Date(date_of_birth);
   const today = new Date();
   let age = today.getFullYear() - dob.getFullYear();
   const hasHadBirthdayThisYear =
@@ -28,8 +28,8 @@ export function getAge(dateOfBirth: string): number {
   return age;
 }
 
-export function getAgeGroup(dateOfBirth: string): AgeGroup {
-  const age = getAge(dateOfBirth);
+export function getAgeGroup(date_of_birth: string): AgeGroup {
+  const age = getAge(date_of_birth);
   if (age < 18) return "Under 18";
   if (age <= 24) return "18-24";
   if (age <= 30) return "25-30";
@@ -56,15 +56,15 @@ export function filterPlayers(players: Player[], filters: PlayerFilters): Player
   return players.filter((player) => {
     if (query) {
       const matchesQuery =
-        player.fullName.toLowerCase().includes(query) ||
+        player.full_name.toLowerCase().includes(query) ||
         player.nickname?.toLowerCase().includes(query) ||
-        String(player.jerseyNumber).includes(query);
+        String(player.jersey_number).includes(query);
       if (!matchesQuery) return false;
     }
 
     if (filters.position !== "All" && player.position !== filters.position) return false;
     if (filters.status !== "All" && player.status !== filters.status) return false;
-    if (filters.ageGroup !== "All" && getAgeGroup(player.dateOfBirth) !== filters.ageGroup) {
+    if (filters.ageGroup !== "All" && getAgeGroup(player.date_of_birth) !== filters.ageGroup) {
       return false;
     }
 
@@ -72,21 +72,21 @@ export function filterPlayers(players: Player[], filters: PlayerFilters): Player
   });
 }
 
-export type PlayerSort = "name" | "jerseyNumber" | "recent";
+export type PlayerSort = "name" | "jersey_number" | "recent";
 
 export function sortPlayers(players: Player[], sort: PlayerSort): Player[] {
   const sorted = [...players];
 
   switch (sort) {
-    case "jerseyNumber":
-      return sorted.sort((a, b) => a.jerseyNumber - b.jerseyNumber);
+    case "jersey_number":
+      return sorted.sort((a, b) => a.jersey_number - b.jersey_number);
     case "recent":
       return sorted.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
     case "name":
     default:
-      return sorted.sort((a, b) => a.fullName.localeCompare(b.fullName));
+      return sorted.sort((a, b) => a.full_name.localeCompare(b.full_name));
   }
 }
 
@@ -120,17 +120,17 @@ export type PlayerTimelineEntry = {
   type: PlayerTimelineEventType;
   label: string;
   /** Present on match-day entries — lets the UI offer a per-game report. */
-  matchId?: string;
+  match_id?: string;
   /** Present on "status" entries, so the UI can pick an icon per status. */
   status?: PlayerStatus;
 };
 
 export function buildPlayerTimeline(player: Player, matches: Match[]): PlayerTimelineEntry[] {
   const entries: PlayerTimelineEntry[] = [
-    { id: "joined", date: player.createdAt, type: "joined", label: "Joined team" },
+    { id: "joined", date: player.created_at, type: "joined", label: "Joined team" },
   ];
 
-  player.statusHistory.slice(1).forEach((change, index) => {
+  player.status_history.slice(1).forEach((change, index) => {
     entries.push({
       id: `status-${index}`,
       date: change.date,
@@ -145,7 +145,7 @@ export function buildPlayerTimeline(player: Player, matches: Match[]): PlayerTim
     const started = getStartingPlayerIds(match.lineup).includes(player.id);
     const onBench = match.lineup?.substitutes.includes(player.id) ?? false;
     const subbedOn = match.events.some(
-      (event) => event.type === "substitution" && event.playerInId === player.id
+      (event) => event.type === "substitution" && event.player_in_id === player.id
     );
     if (!started && !onBench && !subbedOn) continue;
 
@@ -154,35 +154,35 @@ export function buildPlayerTimeline(player: Player, matches: Match[]): PlayerTim
       date: match.date,
       type: "match",
       label: `Played vs ${match.opponent}`,
-      matchId: match.id,
+      match_id: match.id,
     });
 
     for (const event of match.events) {
-      if (event.type === "goal" && event.playerId === player.id) {
+      if (event.type === "goal" && event.player_id === player.id) {
         entries.push({
           id: `${event.id}-goal`,
           date: match.date,
           type: "goal",
           label: `Scored vs ${match.opponent}`,
-          matchId: match.id,
+          match_id: match.id,
         });
       }
-      if (event.type === "goal" && event.assistPlayerId === player.id) {
+      if (event.type === "goal" && event.assist_player_id === player.id) {
         entries.push({
           id: `${event.id}-assist`,
           date: match.date,
           type: "assist",
           label: `Assisted vs ${match.opponent}`,
-          matchId: match.id,
+          match_id: match.id,
         });
       }
-      if ((event.type === "yellow_card" || event.type === "red_card") && event.playerId === player.id) {
+      if ((event.type === "yellow_card" || event.type === "red_card") && event.player_id === player.id) {
         entries.push({
           id: event.id,
           date: match.date,
           type: event.type,
           label: `${event.type === "yellow_card" ? "Yellow" : "Red"} card vs ${match.opponent}`,
-          matchId: match.id,
+          match_id: match.id,
         });
       }
     }

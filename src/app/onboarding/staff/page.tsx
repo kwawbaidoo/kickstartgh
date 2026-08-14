@@ -34,12 +34,12 @@ export default function StaffSetupPage() {
 
   const form = useForm<StaffFormInput>({
     resolver: zodResolver(staffFormSchema),
-    defaultValues: { fullName: "", phone: "" },
+    defaultValues: { full_name: "", phone: "" },
   });
 
   function handleAdd(data: StaffFormInput) {
     addStaffMember({ id: crypto.randomUUID(), ...data });
-    form.reset({ fullName: "", phone: "" });
+    form.reset({ full_name: "", phone: "" });
   }
 
   function handleContinue() {
@@ -84,15 +84,15 @@ export default function StaffSetupPage() {
             </FieldContent>
           </Field>
 
-          <Field  data-invalid={!!form.formState.errors.fullName}>
-            <FieldLabel htmlFor="fullName" required>Full name</FieldLabel>
+          <Field  data-invalid={!!form.formState.errors.full_name}>
+            <FieldLabel htmlFor="full_name" required>Full name</FieldLabel>
             <FieldContent>
               <Controller
                 control={form.control}
-                name="fullName"
+                name="full_name"
                 render={({ field }) => (
                   <Input
-                    id="fullName"
+                    id="full_name"
                     placeholder="e.g. Kojo Boateng"
                     value={field.value}
                     onChange={field.onChange}
@@ -100,7 +100,7 @@ export default function StaffSetupPage() {
                   />
                 )}
               />
-              <FieldError errors={[form.formState.errors.fullName]} />
+              <FieldError errors={[form.formState.errors.full_name]} />
             </FieldContent>
           </Field>
 

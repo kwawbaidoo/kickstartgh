@@ -11,7 +11,7 @@ function PlayerProfileHeader({ player }: PlayerProfileHeaderProps) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="font-heading text-2xl font-semibold text-foreground">{player.fullName}</h1>
+        <h1 className="font-heading text-2xl font-semibold text-foreground">{player.full_name}</h1>
         {player.nickname && (
           <span className="text-base font-normal text-muted-foreground">
             &ldquo;{player.nickname}&rdquo;
@@ -25,8 +25,8 @@ function PlayerProfileHeader({ player }: PlayerProfileHeaderProps) {
       </div>
       <p className="text-sm text-muted-foreground">
         {player.position}
-        {player.secondaryPosition && ` / ${player.secondaryPosition}`}
-        {" · "}#{player.jerseyNumber}
+        {player.secondary_position && ` / ${player.secondary_position}`}
+        {" · "}#{player.jersey_number}
       </p>
     </div>
   );
