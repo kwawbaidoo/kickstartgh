@@ -1,0 +1,22 @@
+name: Deploy to Firebase App Hosting
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_DEPLOYER_KEY }}
+
+      - name: Deploy
+        run: npx firebase-tools deploy --only apphosting --project=kickstartgh-cba35 --non-interactive

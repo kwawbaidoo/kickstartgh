@@ -24,7 +24,14 @@
       "Bash(nslookup -type=TXT kickstartgh.com)",
       "Bash(nslookup -type=A kickstartgh.com ns25.domaincontrol.com)",
       "Bash(nslookup -type=TXT kickstartgh.com ns25.domaincontrol.com)",
-      "Bash(curl -s -H 'Authorization: Bearer __CMDSUB_OUTPUT__' https://firebaseapphosting.googleapis.com/v1/projects/kickstartgh-cba35/locations/europe-west4/backends/kick-start-web-app/domains/kickstartgh.com)"
+      "Bash(curl -s -H 'Authorization: Bearer __CMDSUB_OUTPUT__' https://firebaseapphosting.googleapis.com/v1/projects/kickstartgh-cba35/locations/europe-west4/backends/kick-start-web-app/domains/kickstartgh.com)",
+      "Bash(firebase apphosting:backends:get kick-start-web-app --project=kickstartgh-cba35)",
+      "Bash(gcloud iam *)",
+      "Bash(gcloud projects *)",
+      "Bash(cp \"C:\\\\Users\\\\Painkiller\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Painkiller-Desktop-kickstartgh\\\\b2ad0e6c-6445-40bb-b5d3-05f165fb25dc\\\\scratchpad\\\\github-actions-deployer-key.json\" \"C:\\\\Users\\\\Painkiller\\\\Desktop\\\\firebase-deployer-key.json\" *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\Painkiller\\Desktop"
     ]
   }
 }
