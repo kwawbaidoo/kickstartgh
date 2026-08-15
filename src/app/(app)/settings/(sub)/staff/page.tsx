@@ -8,9 +8,9 @@ import { useOnboardingStore } from "@/store/onboarding-store";
 export default function StaffSettingsPage() {
   const staff = useOnboardingStore((state) => state.activeTeam.staff);
   const teamName = useOnboardingStore((state) => state.activeTeam.name);
-  const addActiveStaffMember = useOnboardingStore((state) => state.addActiveStaffMember);
-  const removeActiveStaffMember = useOnboardingStore((state) => state.removeActiveStaffMember);
-  const updateActiveStaffMemberRole = useOnboardingStore((state) => state.updateActiveStaffMemberRole);
+  const addStaffMember = useOnboardingStore((state) => state.addStaffMember);
+  const removeStaffMember = useOnboardingStore((state) => state.removeStaffMember);
+  const updateStaffMemberRole = useOnboardingStore((state) => state.updateStaffMemberRole);
 
   return (
     <div className="flex flex-col gap-8">
@@ -19,9 +19,9 @@ export default function StaffSettingsPage() {
       <StaffManager
         staff={staff}
         teamName={teamName}
-        onAdd={addActiveStaffMember}
-        onRemove={removeActiveStaffMember}
-        onChangeRole={updateActiveStaffMemberRole}
+        onAdd={addStaffMember}
+        onRemove={removeStaffMember}
+        onChangeRole={updateStaffMemberRole}
       />
 
       <section className="flex flex-col gap-3">

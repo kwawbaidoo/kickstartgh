@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, UserPlus } from "lucide-react";
@@ -9,26 +8,35 @@ import { Field, FieldContent, FieldError, FieldGroup, FieldLabel } from "@/compo
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PasswordField } from "@/components/auth/PasswordField";
-import { signUpSchema, type SignUpInput } from "@/schemas/auth";
+import { registerSchema, type RegisterInput } from "@/schemas/auth";
+import { applyApiErrors } from "@/lib/api-client";
 import { useAuthStore } from "@/store/auth-store";
 
-function SignUpForm() {
-  const router = useRouter();
-  const signUp = useAuthStore((state) => state.signUp);
+type RegisterFormProps = {
+  /** Registration only creates the account — it does not sign the user in. Called with
+   * the just-registered phone number so the caller can hand off to sign in. */
+  onRegistered: (phone: string) => void;
+};
 
-  const form = useForm<SignUpInput>({
-    resolver: zodResolver(signUpSchema),
+function RegisterForm({ onRegistered }: RegisterFormProps) {
+  const register = useAuthStore((state) => state.register);
+
+  const form = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
     defaultValues: { full_name: "", email: "", phone: "", password: "", confirm_password: "" },
   });
 
-  async function handleSignUp(data: SignUpInput) {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    signUp(data);
-    router.push("/onboarding");
+  async function handleRegister(data: RegisterInput) {
+    try {
+      await register(data);
+      onRegistered(data.phone);
+    } catch (error) {
+      applyApiErrors(error, (field, err) => form.setError(field as keyof RegisterInput, err));
+    }
   }
 
   return (
-    <form onSubmit={form.handleSubmit(handleSignUp)} className="flex flex-col gap-5">
+    <form onSubmit={form.handleSubmit(handleRegister)} className="flex flex-col gap-5">
       <FieldGroup>
         <Field data-invalid={!!form.formState.errors.full_name}>
           <FieldLabel htmlFor="full_name" required>Full name</FieldLabel>
@@ -43,20 +51,6 @@ function SignUpForm() {
           </FieldContent>
         </Field>
 
-        <Field data-invalid={!!form.formState.errors.email}>
-          <FieldLabel htmlFor="email" required>Email</FieldLabel>
-          <FieldContent>
-            <Input
-              id="email"
-              type="email"
-              placeholder="e.g. you@example.com"
-              autoComplete="email"
-              {...form.register("email")}
-            />
-            <FieldError errors={[form.formState.errors.email]} />
-          </FieldContent>
-        </Field>
-
         <Field data-invalid={!!form.formState.errors.phone}>
           <FieldLabel htmlFor="phone" required>Phone number</FieldLabel>
           <FieldContent>
@@ -67,6 +61,20 @@ function SignUpForm() {
               {...form.register("phone")}
             />
             <FieldError errors={[form.formState.errors.phone]} />
+          </FieldContent>
+        </Field>
+
+        <Field data-invalid={!!form.formState.errors.email}>
+          <FieldLabel htmlFor="email" optional>Email</FieldLabel>
+          <FieldContent>
+            <Input
+              id="email"
+              type="email"
+              placeholder="e.g. you@example.com"
+              autoComplete="email"
+              {...form.register("email")}
+            />
+            <FieldError errors={[form.formState.errors.email]} />
           </FieldContent>
         </Field>
 
@@ -84,6 +92,8 @@ function SignUpForm() {
           error={form.formState.errors.confirm_password}
           {...form.register("confirm_password")}
         />
+
+        <FieldError errors={[form.formState.errors.root]} />
       </FieldGroup>
 
       <Button type="submit" size="lg" className="w-full" disabled={form.formState.isSubmitting}>
@@ -103,4 +113,4 @@ function SignUpForm() {
   );
 }
 
-export { SignUpForm };
+export { RegisterForm };

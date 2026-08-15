@@ -35,7 +35,7 @@ export const useSeasonStore = create<SeasonState>()(
   persist(
     (set, get) => ({
       seasons: seedSeasons,
-      activeSeasonId: initialActiveSeason.id,
+      activeSeasonId: initialActiveSeason?.id ?? "",
       hasHydrated: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
 
@@ -98,7 +98,7 @@ export const useSeasonStore = create<SeasonState>()(
       },
     }),
     {
-      name: "kickstartgh-seasons",
+      name: "kickstartgh-seasons-v3",
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       onRehydrateStorage: () => (state) => {

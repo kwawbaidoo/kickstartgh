@@ -9,11 +9,11 @@ import type { TeamDetailsInput } from "@/schemas/onboarding";
 
 export default function TeamSettingsPage() {
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
-  const updateTeam = useOnboardingStore((state) => state.updateTeam);
+  const saveTeam = useOnboardingStore((state) => state.saveTeam);
   const [saved, setSaved] = useState(false);
 
-  function handleSubmit(data: TeamDetailsInput) {
-    updateTeam(data);
+  async function handleSubmit(data: TeamDetailsInput) {
+    await saveTeam(data);
     setSaved(true);
   }
 
@@ -25,6 +25,7 @@ export default function TeamSettingsPage() {
     home_ground: activeTeam.home_ground,
     year_established: activeTeam.year_established,
     logo: activeTeam.logo,
+    cover_image: activeTeam.cover_image,
     color_primary: activeTeam.color_primary ?? "#1e3a8a",
     color_secondary: activeTeam.color_secondary ?? "#2563eb",
     slogan: activeTeam.slogan,

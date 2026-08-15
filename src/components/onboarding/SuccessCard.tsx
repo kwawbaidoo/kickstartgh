@@ -1,11 +1,12 @@
 import { MapPin, Shield, Users } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
-import type { StaffMember, TeamDetailsInput } from "@/schemas/onboarding";
+import type { StaffMember } from "@/schemas/onboarding";
+import type { ActiveTeam } from "@/store/onboarding-store";
 import { getInitials } from "@/lib/utils";
 
 type SuccessCardProps = {
-  team: Partial<TeamDetailsInput>;
+  team: ActiveTeam;
   staff: StaffMember[];
 };
 

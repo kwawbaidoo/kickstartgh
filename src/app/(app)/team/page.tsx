@@ -36,9 +36,9 @@ const social_links = [
 
 export default function TeamPage() {
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
-  const addActiveStaffMember = useOnboardingStore((state) => state.addActiveStaffMember);
-  const removeActiveStaffMember = useOnboardingStore((state) => state.removeActiveStaffMember);
-  const updateActiveStaffMemberRole = useOnboardingStore((state) => state.updateActiveStaffMemberRole);
+  const addStaffMember = useOnboardingStore((state) => state.addStaffMember);
+  const removeStaffMember = useOnboardingStore((state) => state.removeStaffMember);
+  const updateStaffMemberRole = useOnboardingStore((state) => state.updateStaffMemberRole);
   const addTeamPhoto = useOnboardingStore((state) => state.addTeamPhoto);
   const removeTeamPhoto = useOnboardingStore((state) => state.removeTeamPhoto);
   const allPlayers = usePlayersStore((state) => state.players);
@@ -69,16 +69,16 @@ export default function TeamPage() {
         variants={fadeInUp}
         className="relative aspect-2/1 w-full overflow-hidden rounded-2xl sm:aspect-3/1"
         style={
-          !activeTeam.coverImage
+          !activeTeam.cover_image
             ? {
                 background: `linear-gradient(135deg, ${activeTeam.color_primary ?? "#1e3a8a"}, ${activeTeam.color_secondary ?? "#2563eb"})`,
               }
             : undefined
         }
       >
-        {activeTeam.coverImage ? (
+        {activeTeam.cover_image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={activeTeam.coverImage} alt="" className="size-full object-cover" />
+          <img src={activeTeam.cover_image} alt="" className="size-full object-cover" />
         ) : (
           <div className="flex size-full items-center justify-center px-4">
             <span className="font-heading text-lg font-semibold text-white/90 sm:text-2xl">
@@ -176,9 +176,9 @@ export default function TeamPage() {
           <StaffManager
             staff={activeTeam.staff}
             teamName={activeTeam.name}
-            onAdd={addActiveStaffMember}
-            onRemove={removeActiveStaffMember}
-            onChangeRole={updateActiveStaffMemberRole}
+            onAdd={addStaffMember}
+            onRemove={removeStaffMember}
+            onChangeRole={updateStaffMemberRole}
           />
         </TabsContent>
 

@@ -16,7 +16,7 @@ export const teamDetailsSchema = z.object({
     .min(1900, "Year must be 1900 or later.")
     .max(currentYear, `Year can't be later than ${currentYear}.`),
   logo: z.string().optional(),
-  coverImage: z.string().optional(),
+  cover_image: z.string().optional(),
   color_primary: z.string().optional(),
   color_secondary: z.string().optional(),
   slogan: z

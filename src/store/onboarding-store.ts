@@ -2,9 +2,9 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 import type { RoleId } from "@/config/roles";
-import type { StaffMember, TeamDetailsInput } from "@/schemas/onboarding";
+import type { StaffFormInput, StaffMember, TeamDetailsInput } from "@/schemas/onboarding";
 import { currentTeam } from "@/mock/teams";
-import { getInitials } from "@/lib/utils";
+import { apiFetch } from "@/lib/api-client";
 
 export type ActiveTeam = {
   name: string;
@@ -14,7 +14,7 @@ export type ActiveTeam = {
   home_ground: string;
   year_established: number;
   logo?: string;
-  coverImage?: string;
+  cover_image?: string;
   color_primary?: string;
   color_secondary?: string;
   slogan?: string;
@@ -26,150 +26,152 @@ export type ActiveTeam = {
   photos: string[];
 };
 
+/**
+ * Assumed response shapes — postman_collection.json has no saved response examples.
+ * Confirm against the real server:
+ * - POST /teams, PATCH /teams/:id -> the Team object directly, with `id`
+ * - POST /teams/:id/staff -> the created StaffMember, with a server `id`
+ * - PATCH /teams/:id/staff/:id -> assumed to need no response body (applied optimistically)
+ * - POST /teams/:id/invites -> { code }
+ */
+type TeamResponse = Omit<ActiveTeam, "staff" | "photos"> & { id: string };
+type InviteResponse = { code: string };
+
 type OnboardingDraft = {
   role: RoleId | null;
-  team: Partial<TeamDetailsInput>;
-  staff: StaffMember[];
   invite_code: string | null;
 };
 
 type OnboardingState = {
   hasOnboarded: boolean;
+  team_id: string | null;
   activeTeam: ActiveTeam;
   draft: OnboardingDraft;
   hasHydrated: boolean;
   setHasHydrated: (value: boolean) => void;
   setRole: (role: RoleId) => void;
-  setTeamDetails: (team: TeamDetailsInput) => void;
-  addStaffMember: (member: StaffMember) => void;
-  removeStaffMember: (id: string) => void;
-  setInviteCode: (code: string) => void;
+  saveTeam: (team: TeamDetailsInput) => Promise<void>;
+  addStaffMember: (input: StaffFormInput) => Promise<StaffMember>;
+  removeStaffMember: (id: string) => Promise<void>;
+  updateStaffMemberRole: (id: string, role: RoleId) => Promise<void>;
+  createInvite: (role: string) => Promise<string>;
   completeOnboarding: () => void;
   resetDraft: () => void;
-  updateTeam: (team: TeamDetailsInput) => void;
-  addActiveStaffMember: (member: StaffMember) => void;
-  removeActiveStaffMember: (id: string) => void;
-  updateActiveStaffMemberRole: (id: string, role: RoleId) => void;
   addTeamPhoto: (photo: string) => void;
   removeTeamPhoto: (photo: string) => void;
 };
 
 const initialDraft: OnboardingDraft = {
   role: null,
-  team: {},
-  staff: [],
   invite_code: null,
 };
 
 export const useOnboardingStore = create<OnboardingState>()(
   persist(
     (set, get) => ({
-  hasOnboarded: false,
-  activeTeam: {
-    name: currentTeam.name,
-    nickname: currentTeam.nickname,
-    region: currentTeam.region,
-    district: currentTeam.district,
-    home_ground: currentTeam.home_ground,
-    year_established: currentTeam.year_established,
-    staff: [],
-    photos: [],
-  },
-  draft: initialDraft,
-  hasHydrated: false,
-  setHasHydrated: (value) => set({ hasHydrated: value }),
-
-  setRole: (role) => set((state) => ({ draft: { ...state.draft, role } })),
-
-  setTeamDetails: (team) => set((state) => ({ draft: { ...state.draft, team } })),
-
-  addStaffMember: (member) =>
-    set((state) => ({ draft: { ...state.draft, staff: [...state.draft.staff, member] } })),
-
-  removeStaffMember: (id) =>
-    set((state) => ({
-      draft: { ...state.draft, staff: state.draft.staff.filter((member) => member.id !== id) },
-    })),
-
-  setInviteCode: (invite_code) => set((state) => ({ draft: { ...state.draft, invite_code } })),
-
-  completeOnboarding: () => {
-    const { team, staff } = get().draft;
-    if (!team.name) return;
-
-    set({
-      hasOnboarded: true,
+      hasOnboarded: false,
+      team_id: null,
       activeTeam: {
-        name: team.name,
-        nickname: team.nickname || getInitials(team.name),
-        region: team.region ?? "",
-        district: team.district ?? "",
-        home_ground: team.home_ground ?? "",
-        year_established: team.year_established ?? new Date().getFullYear(),
-        logo: team.logo,
-        coverImage: team.coverImage,
-        color_primary: team.color_primary,
-        color_secondary: team.color_secondary,
-        slogan: team.slogan,
-        facebook: team.facebook,
-        instagram: team.instagram,
-        tiktok: team.tiktok,
-        website: team.website,
-        staff,
+        name: currentTeam.name,
+        nickname: currentTeam.nickname,
+        region: currentTeam.region,
+        district: currentTeam.district,
+        home_ground: currentTeam.home_ground,
+        year_established: currentTeam.year_established,
+        staff: [],
         photos: [],
       },
-    });
-  },
+      draft: initialDraft,
+      hasHydrated: false,
+      setHasHydrated: (value) => set({ hasHydrated: value }),
 
-  resetDraft: () => set({ draft: initialDraft }),
+      setRole: (role) => set((state) => ({ draft: { ...state.draft, role } })),
 
-  updateTeam: (team) =>
-    set((state) => ({
-      activeTeam: {
-        ...state.activeTeam,
-        ...team,
-        nickname: team.nickname || state.activeTeam.nickname,
+      /** Creates the team on first save (onboarding), updates it on every save after (Settings). */
+      saveTeam: async (team) => {
+        const team_id = get().team_id;
+        const response = await apiFetch<TeamResponse>(
+          team_id ? `/teams/${team_id}` : "/teams",
+          { method: team_id ? "PATCH" : "POST", body: team }
+        );
+        set((state) => ({
+          team_id: response.id,
+          activeTeam: { ...state.activeTeam, ...response },
+        }));
       },
-    })),
 
-  addActiveStaffMember: (member) =>
-    set((state) => ({
-      activeTeam: { ...state.activeTeam, staff: [...state.activeTeam.staff, member] },
-    })),
-
-  removeActiveStaffMember: (id) =>
-    set((state) => ({
-      activeTeam: {
-        ...state.activeTeam,
-        staff: state.activeTeam.staff.filter((member) => member.id !== id),
+      addStaffMember: async (input) => {
+        const team_id = get().team_id;
+        if (!team_id) throw new Error("Create the team before adding staff.");
+        const member = await apiFetch<StaffMember>(`/teams/${team_id}/staff`, {
+          method: "POST",
+          body: input,
+        });
+        set((state) => ({
+          activeTeam: { ...state.activeTeam, staff: [...state.activeTeam.staff, member] },
+        }));
+        return member;
       },
-    })),
 
-  updateActiveStaffMemberRole: (id, role) =>
-    set((state) => ({
-      activeTeam: {
-        ...state.activeTeam,
-        staff: state.activeTeam.staff.map((member) =>
-          member.id === id ? { ...member, role } : member
-        ),
+      removeStaffMember: async (id) => {
+        const team_id = get().team_id;
+        if (!team_id) return;
+        await apiFetch<void>(`/teams/${team_id}/staff/${id}`, { method: "DELETE" });
+        set((state) => ({
+          activeTeam: {
+            ...state.activeTeam,
+            staff: state.activeTeam.staff.filter((member) => member.id !== id),
+          },
+        }));
       },
-    })),
 
-  addTeamPhoto: (photo) =>
-    set((state) => ({
-      activeTeam: { ...state.activeTeam, photos: [...state.activeTeam.photos, photo] },
-    })),
-
-  removeTeamPhoto: (photo) =>
-    set((state) => ({
-      activeTeam: {
-        ...state.activeTeam,
-        photos: state.activeTeam.photos.filter((existing) => existing !== photo),
+      updateStaffMemberRole: async (id, role) => {
+        const team_id = get().team_id;
+        if (!team_id) return;
+        await apiFetch<void>(`/teams/${team_id}/staff/${id}`, {
+          method: "PATCH",
+          body: { role },
+        });
+        set((state) => ({
+          activeTeam: {
+            ...state.activeTeam,
+            staff: state.activeTeam.staff.map((member) =>
+              member.id === id ? { ...member, role } : member
+            ),
+          },
+        }));
       },
-    })),
+
+      createInvite: async (role) => {
+        const team_id = get().team_id;
+        if (!team_id) throw new Error("Create the team before generating an invite.");
+        const response = await apiFetch<InviteResponse>(`/teams/${team_id}/invites`, {
+          method: "POST",
+          body: { role, expires_at: null },
+        });
+        set((state) => ({ draft: { ...state.draft, invite_code: response.code } }));
+        return response.code;
+      },
+
+      completeOnboarding: () => set({ hasOnboarded: true }),
+
+      resetDraft: () => set({ draft: initialDraft }),
+
+      addTeamPhoto: (photo) =>
+        set((state) => ({
+          activeTeam: { ...state.activeTeam, photos: [...state.activeTeam.photos, photo] },
+        })),
+
+      removeTeamPhoto: (photo) =>
+        set((state) => ({
+          activeTeam: {
+            ...state.activeTeam,
+            photos: state.activeTeam.photos.filter((existing) => existing !== photo),
+          },
+        })),
     }),
     {
-      name: "kickstartgh-onboarding",
+      name: "kickstartgh-onboarding-v3",
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       onRehydrateStorage: () => (state) => state?.setHasHydrated(true),

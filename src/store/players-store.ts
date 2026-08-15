@@ -205,7 +205,7 @@ export const usePlayersStore = create<PlayersState>()(
       },
     }),
     {
-      name: "kickstartgh-players",
+      name: "kickstartgh-players-v3",
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       partialize: (state) => ({ players: state.players }),

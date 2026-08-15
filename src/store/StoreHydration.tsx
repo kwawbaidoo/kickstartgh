@@ -13,7 +13,10 @@ import { useAuthStore } from "@/store/auth-store";
 
 function StoreHydration() {
   useEffect(() => {
-    useAuthStore.persist.rehydrate();
+    Promise.resolve(useAuthStore.persist.rehydrate()).then(() => {
+      const { token, fetchCurrentUser, signOut } = useAuthStore.getState();
+      if (token) fetchCurrentUser().catch(() => signOut());
+    });
     useSeasonStore.persist.rehydrate();
     usePlayersStore.persist.rehydrate();
     useMatchesStore.persist.rehydrate();
