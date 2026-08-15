@@ -1,10 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Bell, Menu } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Bell, LogOut, Menu, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
@@ -14,6 +21,7 @@ import {
 } from "@/components/ui/sheet";
 import { SeasonSelector } from "@/components/seasons/SeasonSelector";
 import { mobileNavItems, sidebarNavItems } from "@/config/navigation";
+import { useAuthStore } from "@/store/auth-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { getInitials } from "@/lib/utils";
 
@@ -23,10 +31,16 @@ const moreNavItems = sidebarNavItems.filter(
 
 function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
+  const signOut = useAuthStore((state) => state.signOut);
   const activeItem = sidebarNavItems.find(
     (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
   );
+
+  function handleSignOut() {
+    signOut().finally(() => router.push("/"));
+  }
 
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur-sm print:hidden lg:px-8">
@@ -80,14 +94,35 @@ function Header() {
           </SheetContent>
         </Sheet>
 
-        <div className="ml-1 flex size-8 items-center justify-center overflow-hidden rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-          {activeTeam.logo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={activeTeam.logo} alt="" className="size-full object-cover" />
-          ) : (
-            getInitials(activeTeam.name)
-          )}
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <button
+                type="button"
+                aria-label="Account menu"
+                className="ml-1 flex size-8 items-center justify-center overflow-hidden rounded-full bg-primary text-xs font-semibold text-primary-foreground"
+              />
+            }
+          >
+            {activeTeam.logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={activeTeam.logo} alt="" className="size-full object-cover" />
+            ) : (
+              getInitials(activeTeam.name)
+            )}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem render={<Link href="/settings/profile" />}>
+              <User />
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
+              <LogOut />
+              Log out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

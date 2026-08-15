@@ -33,7 +33,7 @@ export function getFormationSlots(formation: Formation): FormationSlot[] {
  */
 export function getStartingPlayerIds(lineup: Lineup | null | undefined): string[] {
   if (!lineup) return [];
-  return Object.values(lineup.startingXI).filter((id): id is string => !!id);
+  return Object.values(lineup.starting_xi).filter((id): id is string => !!id);
 }
 
 /**
@@ -53,24 +53,24 @@ export function getPitchSlotStyle(coordinate: PitchCoordinate): Record<string, s
   };
 }
 
-export type ResolvedBenchOfficial = { id: string; fullName: string; role: string };
+export type ResolvedBenchOfficial = { id: string; full_name: string; role: string };
 
 /**
- * Staff-sourced bench officials only store a staffId, so their name/role always
+ * Staff-sourced bench officials only store a staff_id, so their name/role always
  * reflects the current staff roster; ad-hoc ones carry their own fields directly.
  */
 export function resolveBenchOfficials(
-  benchOfficials: BenchOfficial[] | undefined,
+  bench_officials: BenchOfficial[] | undefined,
   staff: StaffMember[]
 ): ResolvedBenchOfficial[] {
-  return (benchOfficials ?? []).map((official) => {
+  return (bench_officials ?? []).map((official) => {
     if (official.source === "adhoc") {
-      return { id: official.id, fullName: official.fullName, role: official.role };
+      return { id: official.id, full_name: official.full_name, role: official.role };
     }
-    const member = staff.find((candidate) => candidate.id === official.staffId);
+    const member = staff.find((candidate) => candidate.id === official.staff_id);
     return {
       id: official.id,
-      fullName: member?.fullName ?? "Unknown",
+      full_name: member?.full_name ?? "Unknown",
       role: member
         ? (staffRoleOptions.find((option) => option.value === member.role)?.label ?? member.role)
         : "Staff",
@@ -86,7 +86,7 @@ export type PlayerMatchStats = {
   redCards: number;
 };
 
-export function getPlayerMatchStats(playerId: string, matches: Match[]): PlayerMatchStats {
+export function getPlayerMatchStats(player_id: string, matches: Match[]): PlayerMatchStats {
   const completed = matches.filter((match) => match.status === "completed");
 
   let matchesPlayed = 0;
@@ -97,15 +97,15 @@ export function getPlayerMatchStats(playerId: string, matches: Match[]): PlayerM
 
   for (const match of completed) {
     const startedOrSubbedOn =
-      getStartingPlayerIds(match.lineup).includes(playerId) ||
-      match.events.some((event) => event.type === "substitution" && event.playerInId === playerId);
+      getStartingPlayerIds(match.lineup).includes(player_id) ||
+      match.events.some((event) => event.type === "substitution" && event.player_in_id === player_id);
     if (startedOrSubbedOn) matchesPlayed += 1;
 
     for (const event of match.events) {
-      if (event.type === "goal" && event.playerId === playerId) goals += 1;
-      if (event.type === "goal" && event.assistPlayerId === playerId) assists += 1;
-      if (event.type === "yellow_card" && event.playerId === playerId) yellowCards += 1;
-      if (event.type === "red_card" && event.playerId === playerId) redCards += 1;
+      if (event.type === "goal" && event.player_id === player_id) goals += 1;
+      if (event.type === "goal" && event.assist_player_id === player_id) assists += 1;
+      if (event.type === "yellow_card" && event.player_id === player_id) yellowCards += 1;
+      if (event.type === "red_card" && event.player_id === player_id) redCards += 1;
     }
   }
 
@@ -130,8 +130,8 @@ export function getTeamStats(matches: Match[]): TeamStats {
   const wins = results.filter((result) => result === "win").length;
   const draws = results.filter((result) => result === "draw").length;
   const losses = results.filter((result) => result === "loss").length;
-  const goalsFor = completed.reduce((sum, match) => sum + (match.teamScore ?? 0), 0);
-  const goalsAgainst = completed.reduce((sum, match) => sum + (match.opponentScore ?? 0), 0);
+  const goalsFor = completed.reduce((sum, match) => sum + (match.team_score ?? 0), 0);
+  const goalsAgainst = completed.reduce((sum, match) => sum + (match.opponent_score ?? 0), 0);
   const played = completed.length;
   const winPercentage = played > 0 ? Math.round((wins / played) * 100) : 0;
 
@@ -206,8 +206,8 @@ export function getSeasonPerformance(matches: Match[]): SeasonPerformance {
   const wins = results.filter((result) => result === "win").length;
   const losses = results.filter((result) => result === "loss").length;
   const draws = results.filter((result) => result === "draw").length;
-  const goalsFor = completed.reduce((sum, match) => sum + (match.teamScore ?? 0), 0);
-  const goalsAgainst = completed.reduce((sum, match) => sum + (match.opponentScore ?? 0), 0);
+  const goalsFor = completed.reduce((sum, match) => sum + (match.team_score ?? 0), 0);
+  const goalsAgainst = completed.reduce((sum, match) => sum + (match.opponent_score ?? 0), 0);
 
   const percentageOf = (count: number) => (played > 0 ? Math.round((count / played) * 100) : 0);
   const averageOf = (total: number) => (played > 0 ? Math.round((total / played) * 10) / 10 : 0);
@@ -236,14 +236,14 @@ export function getSeasonPerformance(matches: Match[]): SeasonPerformance {
     goalsFor,
     goalsForAvg: averageOf(goalsFor),
     goalsForTrend: compareTrend(
-      recentMatches.map((match) => match.teamScore ?? 0),
-      earlierMatches.map((match) => match.teamScore ?? 0)
+      recentMatches.map((match) => match.team_score ?? 0),
+      earlierMatches.map((match) => match.team_score ?? 0)
     ),
     goalsAgainst,
     goalsAgainstAvg: averageOf(goalsAgainst),
     goalsAgainstTrend: compareTrend(
-      recentMatches.map((match) => match.opponentScore ?? 0),
-      earlierMatches.map((match) => match.opponentScore ?? 0)
+      recentMatches.map((match) => match.opponent_score ?? 0),
+      earlierMatches.map((match) => match.opponent_score ?? 0)
     ),
   };
 }
@@ -281,33 +281,33 @@ export function filterMatches(
         if (!matchesQuery) return false;
       }
       if (filters.competition !== "All" && match.competition !== filters.competition) return false;
-      if (filters.homeAway === "Home" && !match.isHome) return false;
-      if (filters.homeAway === "Away" && match.isHome) return false;
+      if (filters.homeAway === "Home" && !match.is_home) return false;
+      if (filters.homeAway === "Away" && match.is_home) return false;
       return true;
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-function playerName(playerId: string, playerNames: Record<string, string>): string {
-  return playerNames[playerId] ?? "Unknown player";
+function playerName(player_id: string, playerNames: Record<string, string>): string {
+  return playerNames[player_id] ?? "Unknown player";
 }
 
 export function describeEvent(event: MatchEvent, playerNames: Record<string, string>): string {
   switch (event.type) {
     case "goal": {
-      const scorer = playerName(event.playerId, playerNames);
-      return event.assistPlayerId
-        ? `${scorer} scored (assist: ${playerName(event.assistPlayerId, playerNames)})`
+      const scorer = playerName(event.player_id, playerNames);
+      return event.assist_player_id
+        ? `${scorer} scored (assist: ${playerName(event.assist_player_id, playerNames)})`
         : `${scorer} scored`;
     }
     case "yellow_card":
-      return `${playerName(event.playerId, playerNames)} — yellow card`;
+      return `${playerName(event.player_id, playerNames)} — yellow card`;
     case "red_card":
-      return `${playerName(event.playerId, playerNames)} — red card`;
+      return `${playerName(event.player_id, playerNames)} — red card`;
     case "substitution":
-      return `${playerName(event.playerInId, playerNames)} on for ${playerName(event.playerOutId, playerNames)}`;
+      return `${playerName(event.player_in_id, playerNames)} on for ${playerName(event.player_out_id, playerNames)}`;
     case "injury":
-      return `${playerName(event.playerId, playerNames)} — injury`;
+      return `${playerName(event.player_id, playerNames)} — injury`;
     default:
       return "";
   }
@@ -321,7 +321,7 @@ export function buildFixtureShareMessage(match: Match, teamName: string): string
     "",
     `Competition: ${match.competition}`,
     `Venue: ${match.venue}`,
-    `Kickoff: ${match.kickoffTime}`,
+    `Kickoff: ${match.kickoff_time}`,
   ].join("\n");
 }
 
@@ -334,7 +334,7 @@ export function buildResultShareMessage(
     .filter((event) => event.type === "goal")
     .reduce<Record<string, number>>((acc, event) => {
       if (event.type !== "goal") return acc;
-      const name = playerName(event.playerId, playerNames);
+      const name = playerName(event.player_id, playerNames);
       acc[name] = (acc[name] ?? 0) + 1;
       return acc;
     }, {});
@@ -344,7 +344,7 @@ export function buildResultShareMessage(
   return [
     "⚽ Full Time",
     "",
-    `${teamName} ${match.teamScore}–${match.opponentScore} ${match.opponent}`,
+    `${teamName} ${match.team_score}–${match.opponent_score} ${match.opponent}`,
     "",
     ...(scorerLines.length > 0 ? ["Scorers:", "", ...scorerLines, ""] : []),
     `Competition: ${match.competition}`,
@@ -355,7 +355,7 @@ export function buildLineupShareMessage(
   match: Match,
   teamName: string,
   playerNames: Record<string, string>,
-  benchOfficials: ResolvedBenchOfficial[] = []
+  bench_officials: ResolvedBenchOfficial[] = []
 ): string {
   if (!match.lineup) {
     return `${teamName} lineup for ${match.opponent} hasn't been set yet.`;
@@ -363,15 +363,15 @@ export function buildLineupShareMessage(
   const lineup = match.lineup;
 
   const names = getFormationSlots(lineup.formation)
-    .map((slot) => lineup.startingXI[slot.slot])
+    .map((slot) => lineup.starting_xi[slot.slot])
     .filter((id): id is string => !!id)
     .map((id) => {
       const name = playerName(id, playerNames);
-      return id === lineup.captainId ? `${name} (C)` : name;
+      return id === lineup.captain_id ? `${name} (C)` : name;
     });
 
   const substituteNames = lineup.substitutes.map((id) => playerName(id, playerNames));
-  const officialLines = benchOfficials.map((official) => `${official.fullName} (${official.role})`);
+  const officialLines = bench_officials.map((official) => `${official.full_name} (${official.role})`);
 
   return [
     `⚽ ${teamName} Starting XI`,
@@ -400,8 +400,8 @@ export function getMonthlyGoals(matches: Match[]): MonthlyGoals[] {
     const monthKey = format(date, "MMM yyyy");
     const sortKey = date.getFullYear() * 12 + date.getMonth();
     const existing = monthGroups.get(monthKey);
-    const goalsFor = match.teamScore ?? 0;
-    const goalsAgainst = match.opponentScore ?? 0;
+    const goalsFor = match.team_score ?? 0;
+    const goalsAgainst = match.opponent_score ?? 0;
     if (existing) {
       existing.goalsFor += goalsFor;
       existing.goalsAgainst += goalsAgainst;

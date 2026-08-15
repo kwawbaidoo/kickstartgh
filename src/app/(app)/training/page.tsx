@@ -35,10 +35,10 @@ function AttendeeRow({ entry }: { entry: AttendanceRankingEntry }) {
       className="flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-muted"
     >
       <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-        {getInitials(entry.player.fullName)}
+        {getInitials(entry.player.full_name)}
       </span>
       <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-        {entry.player.fullName}
+        {entry.player.full_name}
       </span>
       <span className="shrink-0 text-sm font-semibold text-foreground">
         {entry.stats.attendancePercentage}%
@@ -106,12 +106,12 @@ export default function TrainingDashboardPage() {
               <StatisticCard title="Team Attendance" value={`${teamStats.teamAttendancePercentage}%`} icon={<Percent />} />
               <StatisticCard
                 title="Most Committed"
-                value={teamStats.mostCommitted[0]?.player.fullName.split(" ")[0] ?? "—"}
+                value={teamStats.mostCommitted[0]?.player.full_name.split(" ")[0] ?? "—"}
                 icon={<TrendingUp />}
               />
               <StatisticCard
                 title="Needs Attention"
-                value={teamStats.lowestAttendance[0]?.player.fullName.split(" ")[0] ?? "—"}
+                value={teamStats.lowestAttendance[0]?.player.full_name.split(" ")[0] ?? "—"}
                 icon={<TrendingDown />}
               />
               <StatisticCard title="Active Squad" value={activePlayers.length} icon={<Users />} />

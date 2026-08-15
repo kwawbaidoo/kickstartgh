@@ -6,17 +6,17 @@ import type { ExportFormat, ReportType } from "@/config/reports";
 export type ReportTemplate = {
   id: string;
   name: string;
-  reportType: ReportType;
+  report_type: ReportType;
   columns: string[];
-  createdAt: string;
+  created_at: string;
 };
 
 export type ReportHistoryEntry = {
   id: string;
-  reportType: ReportType;
+  report_type: ReportType;
   format: ExportFormat;
-  templateName?: string;
-  createdAt: string;
+  template_name?: string;
+  created_at: string;
 };
 
 type ReportsState = {
@@ -24,11 +24,11 @@ type ReportsState = {
   history: ReportHistoryEntry[];
   hasHydrated: boolean;
   setHasHydrated: (value: boolean) => void;
-  saveTemplate: (name: string, reportType: ReportType, columns: string[]) => ReportTemplate;
+  saveTemplate: (name: string, report_type: ReportType, columns: string[]) => ReportTemplate;
   renameTemplate: (id: string, name: string) => void;
   duplicateTemplate: (id: string) => void;
   deleteTemplate: (id: string) => void;
-  addHistoryEntry: (reportType: ReportType, format: ExportFormat, templateName?: string) => void;
+  addHistoryEntry: (report_type: ReportType, format: ExportFormat, template_name?: string) => void;
 };
 
 export const useReportsStore = create<ReportsState>()(
@@ -39,13 +39,13 @@ export const useReportsStore = create<ReportsState>()(
       hasHydrated: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
 
-      saveTemplate: (name, reportType, columns) => {
+      saveTemplate: (name, report_type, columns) => {
         const template: ReportTemplate = {
           id: crypto.randomUUID(),
           name,
-          reportType,
+          report_type,
           columns,
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         };
         set({ templates: [...get().templates, template] });
         return template;
@@ -66,7 +66,7 @@ export const useReportsStore = create<ReportsState>()(
           ...original,
           id: crypto.randomUUID(),
           name: `${original.name} (Copy)`,
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         };
         set({ templates: [...get().templates, copy] });
       },
@@ -75,19 +75,19 @@ export const useReportsStore = create<ReportsState>()(
         set({ templates: get().templates.filter((template) => template.id !== id) });
       },
 
-      addHistoryEntry: (reportType, format, templateName) => {
+      addHistoryEntry: (report_type, format, template_name) => {
         const entry: ReportHistoryEntry = {
           id: crypto.randomUUID(),
-          reportType,
+          report_type,
           format,
-          templateName,
-          createdAt: new Date().toISOString(),
+          template_name,
+          created_at: new Date().toISOString(),
         };
         set({ history: [entry, ...get().history].slice(0, 50) });
       },
     }),
     {
-      name: "kickstartgh-reports",
+      name: "kickstartgh-reports-v2",
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       partialize: (state) => ({ templates: state.templates, history: state.history }),

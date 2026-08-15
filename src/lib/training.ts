@@ -62,21 +62,21 @@ export type ConsecutiveCounts = {
   consecutiveAbsent: number;
 };
 
-export function getConsecutiveCounts(playerId: string, sessions: AttendanceSession[]): ConsecutiveCounts {
+export function getConsecutiveCounts(player_id: string, sessions: AttendanceSession[]): ConsecutiveCounts {
   const recorded = sessions
-    .filter((session) => session.records[playerId])
+    .filter((session) => session.records[player_id])
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   let consecutivePresent = 0;
   for (const session of recorded) {
-    const status = session.records[playerId];
+    const status = session.records[player_id];
     if (status === "present" || status === "late") consecutivePresent += 1;
     else break;
   }
 
   let consecutiveAbsent = 0;
   for (const session of recorded) {
-    const status = session.records[playerId];
+    const status = session.records[player_id];
     if (status === "absent") consecutiveAbsent += 1;
     else break;
   }
@@ -202,14 +202,14 @@ export function getTeamTrainingStats(players: Player[], sessions: AttendanceSess
 // ---------------------------------------------------------------------------
 
 export type TrainingHistoryFilters = {
-  playerId: string | "All";
+  player_id: string | "All";
   status: AttendanceStatus | "All";
   dateFrom: string;
   dateTo: string;
 };
 
 export const defaultTrainingHistoryFilters: TrainingHistoryFilters = {
-  playerId: "All",
+  player_id: "All",
   status: "All",
   dateFrom: "",
   dateTo: "",
@@ -223,8 +223,8 @@ export function filterTrainingHistory(
     if (filters.dateFrom && session.date < filters.dateFrom) return false;
     if (filters.dateTo && session.date > filters.dateTo) return false;
 
-    if (filters.playerId !== "All") {
-      const status = session.records[filters.playerId];
+    if (filters.player_id !== "All") {
+      const status = session.records[filters.player_id];
       if (!status) return false;
       if (filters.status !== "All" && status !== filters.status) return false;
       return true;
@@ -259,7 +259,7 @@ export function buildTrainingReminderMessage(session: AttendanceSession, teamNam
     "",
     teamName,
     "",
-    `${dateLabel}, ${formatTimeLabel(session.startTime)}`,
+    `${dateLabel}, ${formatTimeLabel(session.start_time)}`,
     "",
     `Venue: ${session.venue}`,
     "",
@@ -274,7 +274,7 @@ export function buildTrainingShareMessage(session: AttendanceSession, teamName: 
     teamName,
     "",
     session.title,
-    `${format(new Date(session.date), "EEEE, d MMM yyyy")}, ${formatTimeLabel(session.startTime)}–${formatTimeLabel(session.endTime)}`,
+    `${format(new Date(session.date), "EEEE, d MMM yyyy")}, ${formatTimeLabel(session.start_time)}–${formatTimeLabel(session.end_time)}`,
     `Venue: ${session.venue}`,
     ...(session.focus ? [`Focus: ${session.focus}`] : []),
   ].join("\n");

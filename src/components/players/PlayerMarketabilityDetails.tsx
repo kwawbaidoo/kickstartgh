@@ -25,21 +25,21 @@ function PlayerMarketabilityDetails({ player }: PlayerMarketabilityDetailsProps)
   const profile = player.profile;
 
   const quickFacts = [
-    { label: "Age", value: `${getAge(player.dateOfBirth)} years old` },
+    { label: "Age", value: `${getAge(player.date_of_birth)} years old` },
     { label: "Nationality", value: profile?.nationality || "Not provided" },
     {
       label: "Position",
-      value: player.secondaryPosition ? `${player.position} / ${player.secondaryPosition}` : player.position,
+      value: player.secondary_position ? `${player.position} / ${player.secondary_position}` : player.position,
     },
-    { label: "Preferred foot", value: player.preferredFoot },
+    { label: "Preferred foot", value: player.preferred_foot },
     ...(profile?.height ? [{ label: "Height", value: profile.height }] : []),
   ];
 
   const education = profile?.education ?? [];
-  const workExperience = profile?.workExperience ?? [];
+  const work_experience = profile?.work_experience ?? [];
   const achievements = profile?.achievements ?? [];
-  const otherSports = profile?.otherSports ?? [];
-  const socialLinks = Object.entries(profile?.socialLinks ?? {}).filter(
+  const other_sports = profile?.other_sports ?? [];
+  const social_links = Object.entries(profile?.social_links ?? {}).filter(
     (entry): entry is [string, string] => !!entry[1]
   );
 
@@ -59,7 +59,7 @@ function PlayerMarketabilityDetails({ player }: PlayerMarketabilityDetailsProps)
           <Cake className="size-4 shrink-0 text-muted-foreground" />
           <span className="w-32 shrink-0 text-muted-foreground">Date of birth</span>
           <span className="font-medium text-foreground">
-            {format(new Date(player.dateOfBirth), "d MMM yyyy")}
+            {format(new Date(player.date_of_birth), "d MMM yyyy")}
           </span>
         </div>
         {player.village && (
@@ -69,11 +69,11 @@ function PlayerMarketabilityDetails({ player }: PlayerMarketabilityDetailsProps)
             <span className="font-medium text-foreground">{player.village}</span>
           </div>
         )}
-        {player.previousClub && (
+        {player.previous_club && (
           <div className="flex items-center gap-3 text-sm">
             <Shirt className="size-4 shrink-0 text-muted-foreground" />
             <span className="w-32 shrink-0 text-muted-foreground">Previous club</span>
-            <span className="font-medium text-foreground">{player.previousClub}</span>
+            <span className="font-medium text-foreground">{player.previous_club}</span>
           </div>
         )}
       </div>
@@ -94,13 +94,13 @@ function PlayerMarketabilityDetails({ player }: PlayerMarketabilityDetailsProps)
         </div>
       )}
 
-      {workExperience.length > 0 && (
+      {work_experience.length > 0 && (
         <div className="flex flex-col gap-2">
           <span className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             <Briefcase className="size-3.5" /> Work Experience
           </span>
           <ul className="flex flex-col gap-1 text-sm text-foreground">
-            {workExperience.map((item, index) => (
+            {work_experience.map((item, index) => (
               <li key={index} className="ml-4 list-disc marker:text-muted-foreground">
                 {item}
               </li>
@@ -124,13 +124,13 @@ function PlayerMarketabilityDetails({ player }: PlayerMarketabilityDetailsProps)
         </div>
       )}
 
-      {otherSports.length > 0 && (
+      {other_sports.length > 0 && (
         <div className="flex flex-col gap-2">
           <span className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             <Dumbbell className="size-3.5" /> Other Sports
           </span>
           <div className="flex flex-wrap gap-2">
-            {otherSports.map((sport) => (
+            {other_sports.map((sport) => (
               <span key={sport} className="rounded-full bg-muted px-2.5 py-1 text-xs text-foreground">
                 {sport}
               </span>
@@ -139,13 +139,13 @@ function PlayerMarketabilityDetails({ player }: PlayerMarketabilityDetailsProps)
         </div>
       )}
 
-      {socialLinks.length > 0 && (
+      {social_links.length > 0 && (
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             Social Links
           </span>
           <div className="flex flex-wrap gap-2">
-            {socialLinks.map(([platform, url]) => (
+            {social_links.map(([platform, url]) => (
               <a
                 key={platform}
                 href={url}

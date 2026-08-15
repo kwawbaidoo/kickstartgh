@@ -40,8 +40,8 @@ type SeasonFormProps = {
 const stepLabels = ["Basics", "Details"];
 
 const stepFields: (keyof SeasonFormInput)[][] = [
-  ["name", "startDate", "endDate"],
-  ["description", "objectives", "competitionCategory", "budget", "colorPrimary", "colorSecondary"],
+  ["name", "start_date", "end_date"],
+  ["description", "objectives", "competition_category", "budget", "color_primary", "color_secondary"],
 ];
 
 function SeasonForm({ defaultValues, onSubmit, submitLabel = "Create Season" }: SeasonFormProps) {
@@ -51,18 +51,18 @@ function SeasonForm({ defaultValues, onSubmit, submitLabel = "Create Season" }: 
     resolver: zodResolver(seasonFormSchema),
     defaultValues: {
       name: "",
-      startDate: "",
-      endDate: "",
+      start_date: "",
+      end_date: "",
       description: "",
       objectives: "",
-      competitionCategory: "",
-      colorPrimary: "#1e3a8a",
-      colorSecondary: "#2563eb",
+      competition_category: "",
+      color_primary: "#1e3a8a",
+      color_secondary: "#2563eb",
       ...defaultValues,
     },
   });
 
-  const competitionCategory = useWatch({ control: form.control, name: "competitionCategory" });
+  const competition_category = useWatch({ control: form.control, name: "competition_category" });
 
   async function handleNext() {
     const valid = await form.trigger(stepFields[step]);
@@ -95,19 +95,19 @@ function SeasonForm({ defaultValues, onSubmit, submitLabel = "Create Season" }: 
           </FieldGroup>
 
           <FieldGroup className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Field data-invalid={!!form.formState.errors.startDate}>
-              <FieldLabel htmlFor="startDate">Start date</FieldLabel>
+            <Field data-invalid={!!form.formState.errors.start_date}>
+              <FieldLabel htmlFor="start_date">Start date</FieldLabel>
               <FieldContent>
-                <Input id="startDate" type="date" {...form.register("startDate")} />
-                <FieldError errors={[form.formState.errors.startDate]} />
+                <Input id="start_date" type="date" {...form.register("start_date")} />
+                <FieldError errors={[form.formState.errors.start_date]} />
               </FieldContent>
             </Field>
 
-            <Field data-invalid={!!form.formState.errors.endDate}>
-              <FieldLabel htmlFor="endDate">End date</FieldLabel>
+            <Field data-invalid={!!form.formState.errors.end_date}>
+              <FieldLabel htmlFor="end_date">End date</FieldLabel>
               <FieldContent>
-                <Input id="endDate" type="date" {...form.register("endDate")} />
-                <FieldError errors={[form.formState.errors.endDate]} />
+                <Input id="end_date" type="date" {...form.register("end_date")} />
+                <FieldError errors={[form.formState.errors.end_date]} />
               </FieldContent>
             </Field>
           </FieldGroup>
@@ -146,14 +146,14 @@ function SeasonForm({ defaultValues, onSubmit, submitLabel = "Create Season" }: 
 
           <FieldGroup className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Field>
-              <FieldLabel htmlFor="competitionCategory">Competition category</FieldLabel>
+              <FieldLabel htmlFor="competition_category">Competition category</FieldLabel>
               <FieldContent>
                 <Select
                   items={Object.fromEntries(competitionCategoryOptions.map((option) => [option, option]))}
-                  value={competitionCategory || null}
-                  onValueChange={(value) => form.setValue("competitionCategory", value ?? "")}
+                  value={competition_category || null}
+                  onValueChange={(value) => form.setValue("competition_category", value ?? "")}
                 >
-                  <SelectTrigger id="competitionCategory" className="w-full">
+                  <SelectTrigger id="competition_category" className="w-full">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -185,20 +185,20 @@ function SeasonForm({ defaultValues, onSubmit, submitLabel = "Create Season" }: 
           </FieldGroup>
 
           <Field orientation="responsive">
-            <FieldLabel htmlFor="colorPrimary">Season colors</FieldLabel>
+            <FieldLabel htmlFor="color_primary">Season colors</FieldLabel>
             <FieldContent>
               <div className="flex items-center gap-3">
                 <input
-                  id="colorPrimary"
+                  id="color_primary"
                   type="color"
                   className="size-9 rounded-lg border border-input"
-                  {...form.register("colorPrimary")}
+                  {...form.register("color_primary")}
                 />
                 <input
                   type="color"
                   aria-label="Secondary color"
                   className="size-9 rounded-lg border border-input"
-                  {...form.register("colorSecondary")}
+                  {...form.register("color_secondary")}
                 />
                 <FieldDescription>Optional</FieldDescription>
               </div>

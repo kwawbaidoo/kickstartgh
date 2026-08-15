@@ -23,7 +23,7 @@ export default function SeasonsPage() {
   const sessions = useAttendanceStore((state) => state.sessions);
 
   const sortedSeasons = [...seasons].sort(
-    (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+    (a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
   );
 
   if (!hasHydrated) {

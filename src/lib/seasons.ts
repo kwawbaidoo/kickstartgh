@@ -11,12 +11,12 @@ export function getActiveSeason(seasons: Season[]): Season | undefined {
   return seasons.find((season) => season.status === "active");
 }
 
-export function getSeasonMatches(matches: Match[], seasonId: string): Match[] {
-  return matches.filter((match) => match.seasonId === seasonId);
+export function getSeasonMatches(matches: Match[], season_id: string): Match[] {
+  return matches.filter((match) => match.season_id === season_id);
 }
 
-export function getSeasonSessions(sessions: AttendanceSession[], seasonId: string): AttendanceSession[] {
-  return sessions.filter((session) => session.seasonId === seasonId);
+export function getSeasonSessions(sessions: AttendanceSession[], season_id: string): AttendanceSession[] {
+  return sessions.filter((session) => session.season_id === season_id);
 }
 
 export type SeasonStats = TeamStats & {
@@ -67,7 +67,7 @@ export function getSeasonStats(
 
 export type SeasonPlayerStats = {
   player: Player;
-  jerseyNumber: number;
+  jersey_number: number;
   status: PlayerStatus;
   matchesPlayed: number;
   goals: number;
@@ -81,19 +81,19 @@ export function getSeasonPlayerStats(
   players: Player[],
   matches: Match[],
   sessions: AttendanceSession[],
-  seasonId: string
+  season_id: string
 ): SeasonPlayerStats[] {
-  const roster = getSeasonRoster(players, seasonId);
-  const seasonMatches = getSeasonMatches(matches, seasonId);
-  const seasonSessions = getSeasonSessions(sessions, seasonId);
+  const roster = getSeasonRoster(players, season_id);
+  const seasonMatches = getSeasonMatches(matches, season_id);
+  const seasonSessions = getSeasonSessions(sessions, season_id);
 
   return roster.map((player) => {
-    const record = getSeasonRecord(player, seasonId);
+    const record = getSeasonRecord(player, season_id);
     const matchStats = getPlayerMatchStats(player.id, seasonMatches);
     const attendanceStats = getPlayerAttendanceStats(player.id, seasonSessions, seasonMatches);
     return {
       player,
-      jerseyNumber: record?.jerseyNumber ?? player.jerseyNumber,
+      jersey_number: record?.jersey_number ?? player.jersey_number,
       status: record?.status ?? player.status,
       matchesPlayed: matchStats.matchesPlayed,
       goals: matchStats.goals,
@@ -106,7 +106,7 @@ export function getSeasonPlayerStats(
 }
 
 export type SeasonPlayerStatsSort =
-  | "jerseyNumber"
+  | "jersey_number"
   | "name"
   | "goals"
   | "assists"
@@ -121,7 +121,7 @@ export function sortSeasonPlayerStats(
   const sorted = [...stats];
   switch (sort) {
     case "name":
-      return sorted.sort((a, b) => a.player.fullName.localeCompare(b.player.fullName));
+      return sorted.sort((a, b) => a.player.full_name.localeCompare(b.player.full_name));
     case "goals":
       return sorted.sort((a, b) => b.goals - a.goals);
     case "assists":
@@ -132,9 +132,9 @@ export function sortSeasonPlayerStats(
       return sorted.sort((a, b) => b.redCards - a.redCards);
     case "attendance":
       return sorted.sort((a, b) => b.attendancePercentage - a.attendancePercentage);
-    case "jerseyNumber":
+    case "jersey_number":
     default:
-      return sorted.sort((a, b) => a.jerseyNumber - b.jerseyNumber);
+      return sorted.sort((a, b) => a.jersey_number - b.jersey_number);
   }
 }
 
@@ -156,11 +156,11 @@ export type SquadAvailability = {
   released: number;
 };
 
-export function getSquadAvailability(players: Player[], seasonId: string): SquadAvailability {
-  const roster = getSeasonRoster(players, seasonId);
+export function getSquadAvailability(players: Player[], season_id: string): SquadAvailability {
+  const roster = getSeasonRoster(players, season_id);
   const availability: SquadAvailability = { active: 0, injured: 0, suspended: 0, loaned: 0, released: 0 };
   for (const player of roster) {
-    const record = player.seasonRecords.find((entry) => entry.seasonId === seasonId);
+    const record = player.season_records.find((entry) => entry.season_id === season_id);
     switch (record?.status) {
       case "Active":
         availability.active += 1;
@@ -214,8 +214,8 @@ export function getReportDateRange(
   customRange?: { start: string; end: string },
   referenceDate = new Date()
 ): DateRange {
-  const seasonStart = new Date(season.startDate);
-  const seasonEnd = new Date(season.endDate);
+  const seasonStart = new Date(season.start_date);
+  const seasonEnd = new Date(season.end_date);
 
   if (period === "fullSeason") return { start: seasonStart, end: seasonEnd };
   if (period === "custom" && customRange) {

@@ -11,7 +11,7 @@ import { useOnboardingStore } from "@/store/onboarding-store";
 
 function TeamProfileCard() {
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
-  const location = [activeTeam.homeGround, activeTeam.region].filter(Boolean).join(", ");
+  const location = [activeTeam.home_ground, activeTeam.region].filter(Boolean).join(", ");
 
   return (
     <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
@@ -39,7 +39,7 @@ function TeamProfileCard() {
                 )}
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Shield className="size-3.5" />
-                  Est. {activeTeam.yearEstablished}
+                  Est. {activeTeam.year_established}
                 </span>
               </div>
             </div>

@@ -20,9 +20,9 @@ type PlayersState = {
   updatePlayer: (id: string, input: PlayerFormInput) => void;
   setPlayerStatus: (id: string, status: PlayerStatus) => void;
   deletePlayer: (id: string) => void;
-  registerPlayerForSeason: (playerId: string, seasonId: string, jerseyNumber: number) => void;
-  bulkRegisterForSeason: (seasonId: string, playerIds: string[], sourceSeasonId: string) => void;
-  removePlayerFromSeason: (playerId: string, seasonId: string) => void;
+  registerPlayerForSeason: (player_id: string, season_id: string, jersey_number: number) => void;
+  bulkRegisterForSeason: (season_id: string, playerIds: string[], sourceSeasonId: string) => void;
+  removePlayerFromSeason: (player_id: string, season_id: string) => void;
   migrateSeasonRecords: () => void;
 };
 
@@ -31,36 +31,36 @@ const emptyStats = {
 };
 
 /** Appends a status-history entry only when the status actually changes. */
-function withStatus(player: Player, status: PlayerStatus): Pick<Player, "status" | "statusHistory"> {
+function withStatus(player: Player, status: PlayerStatus): Pick<Player, "status" | "status_history"> {
   if (player.status === status) {
-    return { status: player.status, statusHistory: player.statusHistory };
+    return { status: player.status, status_history: player.status_history };
   }
   return {
     status,
-    statusHistory: [...player.statusHistory, { status, date: new Date().toISOString() }],
+    status_history: [...player.status_history, { status, date: new Date().toISOString() }],
   };
 }
 
 /**
  * Global pages only ever show the active season, so the top-level
- * jerseyNumber/status mirror is always kept pointed at whichever
- * `seasonRecords` entry matches the currently active season — this is what
+ * jersey_number/status mirror is always kept pointed at whichever
+ * `season_records` entry matches the currently active season — this is what
  * lets PlayerCard, PDF exports, the lineup builder, etc. keep reading those
  * two fields directly without ever needing a season parameter threaded in.
  */
 function upsertSeasonRecord(
   records: PlayerSeasonRecord[],
-  seasonId: string,
-  jerseyNumber: number,
+  season_id: string,
+  jersey_number: number,
   status: PlayerStatus
 ): PlayerSeasonRecord[] {
-  const existing = records.find((record) => record.seasonId === seasonId);
+  const existing = records.find((record) => record.season_id === season_id);
   if (existing) {
     return records.map((record) =>
-      record.seasonId === seasonId ? { ...record, jerseyNumber, status } : record
+      record.season_id === season_id ? { ...record, jersey_number, status } : record
     );
   }
-  return [...records, { seasonId, jerseyNumber, status, registeredAt: new Date().toISOString() }];
+  return [...records, { season_id, jersey_number, status, registered_at: new Date().toISOString() }];
 }
 
 export const usePlayersStore = create<PlayersState>()(
@@ -71,21 +71,21 @@ export const usePlayersStore = create<PlayersState>()(
       setHasHydrated: (value) => set({ hasHydrated: value }),
 
       addPlayer: (input) => {
-        const createdAt = new Date().toISOString();
+        const created_at = new Date().toISOString();
         const activeSeasonId = useSeasonStore.getState().activeSeasonId;
         const newPlayer: Player = {
           id: crypto.randomUUID(),
-          teamId: currentTeam.id,
-          createdAt,
+          team_id: currentTeam.id,
+          created_at,
           stats: emptyStats,
           ...input,
-          statusHistory: [{ status: input.status, date: createdAt }],
-          seasonRecords: [
+          status_history: [{ status: input.status, date: created_at }],
+          season_records: [
             {
-              seasonId: activeSeasonId,
-              jerseyNumber: input.jerseyNumber,
+              season_id: activeSeasonId,
+              jersey_number: input.jersey_number,
               status: input.status,
-              registeredAt: createdAt,
+              registered_at: created_at,
             },
           ],
         };
@@ -102,10 +102,10 @@ export const usePlayersStore = create<PlayersState>()(
                   ...player,
                   ...input,
                   ...withStatus(player, input.status),
-                  seasonRecords: upsertSeasonRecord(
-                    player.seasonRecords,
+                  season_records: upsertSeasonRecord(
+                    player.season_records,
                     activeSeasonId,
-                    input.jerseyNumber,
+                    input.jersey_number,
                     input.status
                   ),
                 }
@@ -122,10 +122,10 @@ export const usePlayersStore = create<PlayersState>()(
               ? {
                   ...player,
                   ...withStatus(player, status),
-                  seasonRecords: upsertSeasonRecord(
-                    player.seasonRecords,
+                  season_records: upsertSeasonRecord(
+                    player.season_records,
                     activeSeasonId,
-                    player.jerseyNumber,
+                    player.jersey_number,
                     status
                   ),
                 }
@@ -134,40 +134,40 @@ export const usePlayersStore = create<PlayersState>()(
         });
       },
 
-      registerPlayerForSeason: (playerId, seasonId, jerseyNumber) => {
+      registerPlayerForSeason: (player_id, season_id, jersey_number) => {
         set({
           players: get().players.map((player) =>
-            player.id === playerId
+            player.id === player_id
               ? {
                   ...player,
-                  seasonRecords: upsertSeasonRecord(player.seasonRecords, seasonId, jerseyNumber, "Active"),
+                  season_records: upsertSeasonRecord(player.season_records, season_id, jersey_number, "Active"),
                 }
               : player
           ),
         });
       },
 
-      bulkRegisterForSeason: (seasonId, playerIds, sourceSeasonId) => {
+      bulkRegisterForSeason: (season_id, playerIds, sourceSeasonId) => {
         set({
           players: get().players.map((player) => {
             if (!playerIds.includes(player.id)) return player;
-            const sourceRecord = player.seasonRecords.find((record) => record.seasonId === sourceSeasonId);
-            const jerseyNumber = sourceRecord?.jerseyNumber ?? player.jerseyNumber;
+            const sourceRecord = player.season_records.find((record) => record.season_id === sourceSeasonId);
+            const jersey_number = sourceRecord?.jersey_number ?? player.jersey_number;
             return {
               ...player,
-              seasonRecords: upsertSeasonRecord(player.seasonRecords, seasonId, jerseyNumber, "Active"),
+              season_records: upsertSeasonRecord(player.season_records, season_id, jersey_number, "Active"),
             };
           }),
         });
       },
 
-      removePlayerFromSeason: (playerId, seasonId) => {
+      removePlayerFromSeason: (player_id, season_id) => {
         set({
           players: get().players.map((player) =>
-            player.id === playerId
+            player.id === player_id
               ? {
                   ...player,
-                  seasonRecords: player.seasonRecords.filter((record) => record.seasonId !== seasonId),
+                  season_records: player.season_records.filter((record) => record.season_id !== season_id),
                 }
               : player
           ),
@@ -187,16 +187,16 @@ export const usePlayersStore = create<PlayersState>()(
       migrateSeasonRecords: () => {
         set({
           players: get().players.map((player) =>
-            player.seasonRecords && player.seasonRecords.length > 0
+            player.season_records && player.season_records.length > 0
               ? player
               : {
                   ...player,
-                  seasonRecords: [
+                  season_records: [
                     {
-                      seasonId: DEFAULT_SEASON_ID,
-                      jerseyNumber: player.jerseyNumber,
+                      season_id: DEFAULT_SEASON_ID,
+                      jersey_number: player.jersey_number,
                       status: player.status,
-                      registeredAt: player.createdAt,
+                      registered_at: player.created_at,
                     },
                   ],
                 }
@@ -205,7 +205,7 @@ export const usePlayersStore = create<PlayersState>()(
       },
     }),
     {
-      name: "kickstartgh-players",
+      name: "kickstartgh-players-v3",
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       partialize: (state) => ({ players: state.players }),

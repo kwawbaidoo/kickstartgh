@@ -12,20 +12,20 @@ import type {
 import type { ProfileFormInput } from "@/schemas/settings";
 
 export type Profile = {
-  fullName: string;
+  full_name: string;
   phone: string;
   email: string;
   photo?: string;
-  preferredRole: RoleId;
-  dateJoined: string;
+  preferred_role: RoleId;
+  date_joined: string;
 };
 
 export type Preferences = {
   theme: ThemeOption;
   language: LanguageOption;
-  dateFormat: DateFormatOption;
-  defaultHomeScreen: string;
-  favoriteShortcuts: string[];
+  date_format: DateFormatOption;
+  default_home_screen: string;
+  favorite_shortcuts: string[];
 };
 
 export type NotificationSettings = Record<NotificationType, Record<NotificationChannel, boolean>>;
@@ -34,13 +34,13 @@ export type Session = {
   id: string;
   device: string;
   location: string;
-  lastActive: string;
+  last_active: string;
   current?: boolean;
 };
 
 export type SecuritySettings = {
-  lastLogin: string;
-  twoFactorEnabled: boolean;
+  last_login: string;
+  two_factor_enabled: boolean;
   sessions: Session[];
 };
 
@@ -68,31 +68,31 @@ const defaultNotifications: NotificationSettings = {
 };
 
 const defaultSessions: Session[] = [
-  { id: "session_1", device: "iPhone 13 · Safari", location: "Accra, Ghana", lastActive: "Active now", current: true },
-  { id: "session_2", device: "Samsung A14 · Chrome", location: "Takoradi, Ghana", lastActive: "2 days ago" },
+  { id: "session_1", device: "iPhone 13 · Safari", location: "Accra, Ghana", last_active: "Active now", current: true },
+  { id: "session_2", device: "Samsung A14 · Chrome", location: "Takoradi, Ghana", last_active: "2 days ago" },
 ];
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
       profile: {
-        fullName: "Kojo Boateng",
+        full_name: "Kojo Boateng",
         phone: "+233 24 000 0000",
         email: "kojo.boateng@example.com",
-        preferredRole: "headCoach",
-        dateJoined: "2024-02-01T00:00:00.000Z",
+        preferred_role: "headCoach",
+        date_joined: "2024-02-01T00:00:00.000Z",
       },
       preferences: {
         theme: "system",
         language: "en",
-        dateFormat: "DD/MM/YYYY",
-        defaultHomeScreen: "/dashboard",
-        favoriteShortcuts: ["/players/new", "/matches/new"],
+        date_format: "DD/MM/YYYY",
+        default_home_screen: "/dashboard",
+        favorite_shortcuts: ["/players/new", "/matches/new"],
       },
       notifications: defaultNotifications,
       security: {
-        lastLogin: "2026-07-13T14:32:00.000Z",
-        twoFactorEnabled: false,
+        last_login: "2026-07-13T14:32:00.000Z",
+        two_factor_enabled: false,
         sessions: defaultSessions,
       },
       hasHydrated: false,
@@ -106,13 +106,13 @@ export const useSettingsStore = create<SettingsState>()(
 
       toggleFavoriteShortcut: (href) =>
         set((state) => {
-          const has = state.preferences.favoriteShortcuts.includes(href);
+          const has = state.preferences.favorite_shortcuts.includes(href);
           return {
             preferences: {
               ...state.preferences,
-              favoriteShortcuts: has
-                ? state.preferences.favoriteShortcuts.filter((item) => item !== href)
-                : [...state.preferences.favoriteShortcuts, href],
+              favorite_shortcuts: has
+                ? state.preferences.favorite_shortcuts.filter((item) => item !== href)
+                : [...state.preferences.favorite_shortcuts, href],
             },
           };
         }),
@@ -127,7 +127,7 @@ export const useSettingsStore = create<SettingsState>()(
 
       toggleTwoFactor: () =>
         set((state) => ({
-          security: { ...state.security, twoFactorEnabled: !state.security.twoFactorEnabled },
+          security: { ...state.security, two_factor_enabled: !state.security.two_factor_enabled },
         })),
 
       logOutSession: (id) =>
@@ -147,7 +147,7 @@ export const useSettingsStore = create<SettingsState>()(
         })),
     }),
     {
-      name: "kickstartgh-settings",
+      name: "kickstartgh-settings-v2",
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       onRehydrateStorage: () => (state) => state?.setHasHydrated(true),

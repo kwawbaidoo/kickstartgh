@@ -4,10 +4,11 @@ import { useRef, useState } from "react";
 import { Camera } from "lucide-react";
 
 import { compressImage } from "@/lib/image";
+import { apiUpload } from "@/lib/api-client";
 
 type CoverImageUploadProps = {
   value?: string;
-  onChange: (dataUrl: string) => void;
+  onChange: (url: string) => void;
   label?: string;
   alt?: string;
 };
@@ -20,6 +21,7 @@ function CoverImageUpload({
 }: CoverImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -27,9 +29,16 @@ function CoverImageUpload({
     if (!file) return;
 
     setIsProcessing(true);
-    const dataUrl = await compressImage(file, 1600, 0.75);
-    onChange(dataUrl);
-    setIsProcessing(false);
+    setError(null);
+    try {
+      const dataUrl = await compressImage(file, 1600, 0.75);
+      const { url } = await apiUpload(dataUrl, file.name);
+      onChange(url);
+    } catch {
+      setError("Upload failed. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
   }
 
   return (
@@ -47,13 +56,13 @@ function CoverImageUpload({
           <div className="flex flex-col items-center gap-1.5">
             <Camera className="size-6" />
             <span className="text-xs font-medium">
-              {isProcessing ? "Processing..." : "Upload cover photo"}
+              {isProcessing ? "Uploading..." : "Upload cover photo"}
             </span>
           </div>
         )}
         {value && (
           <div className="absolute inset-x-0 bottom-0 bg-black/50 py-1.5 text-center text-xs font-medium text-white">
-            {isProcessing ? "Processing..." : "Change photo"}
+            {isProcessing ? "Uploading..." : "Change photo"}
           </div>
         )}
       </button>
@@ -65,6 +74,7 @@ function CoverImageUpload({
         onChange={handleChange}
       />
       <span className="text-xs text-muted-foreground">{label}</span>
+      {error && <span className="text-xs text-destructive">{error}</span>}
     </div>
   );
 }

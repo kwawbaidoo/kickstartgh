@@ -27,7 +27,7 @@ import { getSeasonRoster } from "@/lib/players";
 import { fadeInUp } from "@/lib/motion";
 import { getInitials } from "@/lib/utils";
 
-const socialLinks = [
+const social_links = [
   { key: "facebook", label: "Facebook", icon: Link2 },
   { key: "instagram", label: "Instagram", icon: AtSign },
   { key: "tiktok", label: "TikTok", icon: Music2 },
@@ -36,19 +36,19 @@ const socialLinks = [
 
 export default function TeamPage() {
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
-  const addActiveStaffMember = useOnboardingStore((state) => state.addActiveStaffMember);
-  const removeActiveStaffMember = useOnboardingStore((state) => state.removeActiveStaffMember);
-  const updateActiveStaffMemberRole = useOnboardingStore((state) => state.updateActiveStaffMemberRole);
+  const addStaffMember = useOnboardingStore((state) => state.addStaffMember);
+  const removeStaffMember = useOnboardingStore((state) => state.removeStaffMember);
+  const updateStaffMemberRole = useOnboardingStore((state) => state.updateStaffMemberRole);
   const addTeamPhoto = useOnboardingStore((state) => state.addTeamPhoto);
   const removeTeamPhoto = useOnboardingStore((state) => state.removeTeamPhoto);
   const allPlayers = usePlayersStore((state) => state.players);
   const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
   const players = getSeasonRoster(allPlayers, activeSeasonId);
 
-  const location = [activeTeam.homeGround, activeTeam.district, activeTeam.region]
+  const location = [activeTeam.home_ground, activeTeam.district, activeTeam.region]
     .filter(Boolean)
     .join(", ");
-  const activeSocialLinks = socialLinks.filter((link) => activeTeam[link.key]);
+  const activeSocialLinks = social_links.filter((link) => activeTeam[link.key]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -69,16 +69,16 @@ export default function TeamPage() {
         variants={fadeInUp}
         className="relative aspect-2/1 w-full overflow-hidden rounded-2xl sm:aspect-3/1"
         style={
-          !activeTeam.coverImage
+          !activeTeam.cover_image
             ? {
-                background: `linear-gradient(135deg, ${activeTeam.colorPrimary ?? "#1e3a8a"}, ${activeTeam.colorSecondary ?? "#2563eb"})`,
+                background: `linear-gradient(135deg, ${activeTeam.color_primary ?? "#1e3a8a"}, ${activeTeam.color_secondary ?? "#2563eb"})`,
               }
             : undefined
         }
       >
-        {activeTeam.coverImage ? (
+        {activeTeam.cover_image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={activeTeam.coverImage} alt="" className="size-full object-cover" />
+          <img src={activeTeam.cover_image} alt="" className="size-full object-cover" />
         ) : (
           <div className="flex size-full items-center justify-center px-4">
             <span className="font-heading text-lg font-semibold text-white/90 sm:text-2xl">
@@ -106,18 +106,18 @@ export default function TeamPage() {
                   <span className="text-sm text-muted-foreground">&ldquo;{activeTeam.nickname}&rdquo;</span>
                 )}
               </div>
-              {(activeTeam.colorPrimary || activeTeam.colorSecondary) && (
+              {(activeTeam.color_primary || activeTeam.color_secondary) && (
                 <div className="ml-auto flex shrink-0 items-center gap-1.5">
-                  {activeTeam.colorPrimary && (
+                  {activeTeam.color_primary && (
                     <span
                       className="size-5 rounded-full ring-1 ring-foreground/10"
-                      style={{ backgroundColor: activeTeam.colorPrimary }}
+                      style={{ backgroundColor: activeTeam.color_primary }}
                     />
                   )}
-                  {activeTeam.colorSecondary && (
+                  {activeTeam.color_secondary && (
                     <span
                       className="size-5 rounded-full ring-1 ring-foreground/10"
-                      style={{ backgroundColor: activeTeam.colorSecondary }}
+                      style={{ backgroundColor: activeTeam.color_secondary }}
                     />
                   )}
                 </div>
@@ -137,7 +137,7 @@ export default function TeamPage() {
               )}
               <span className="flex items-center gap-1.5">
                 <CalendarDays className="size-4" />
-                Established {activeTeam.yearEstablished}
+                Established {activeTeam.year_established}
               </span>
             </div>
 
@@ -176,9 +176,9 @@ export default function TeamPage() {
           <StaffManager
             staff={activeTeam.staff}
             teamName={activeTeam.name}
-            onAdd={addActiveStaffMember}
-            onRemove={removeActiveStaffMember}
-            onChangeRole={updateActiveStaffMemberRole}
+            onAdd={addStaffMember}
+            onRemove={removeStaffMember}
+            onChangeRole={updateStaffMemberRole}
           />
         </TabsContent>
 

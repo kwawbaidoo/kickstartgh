@@ -34,8 +34,8 @@ export default function TrainingAttendancePage({ params }: { params: Promise<{ i
     );
   }
 
-  const activePlayers = getSeasonRoster(players, session.seasonId).filter(
-    (player) => getSeasonRecord(player, session.seasonId)?.status === "Active"
+  const activePlayers = getSeasonRoster(players, session.season_id).filter(
+    (player) => getSeasonRecord(player, session.season_id)?.status === "Active"
   );
 
   function handleFinish() {
@@ -57,7 +57,7 @@ export default function TrainingAttendancePage({ params }: { params: Promise<{ i
       <AttendanceBoard
         players={activePlayers}
         records={session.records}
-        onSetAttendance={(playerId, status) => setAttendance(id, playerId, status)}
+        onSetAttendance={(player_id, status) => setAttendance(id, player_id, status)}
         onSetBulkAttendance={(playerIds, status) => setBulkAttendance(id, playerIds, status)}
       />
 

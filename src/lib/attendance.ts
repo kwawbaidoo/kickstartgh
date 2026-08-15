@@ -39,7 +39,7 @@ export function getSessionsInPeriod(
 }
 
 export function getPlayerAttendanceStats(
-  playerId: string,
+  player_id: string,
   sessions: AttendanceSession[],
   matches: Match[]
 ): PlayerAttendanceStats {
@@ -51,7 +51,7 @@ export function getPlayerAttendanceStats(
   let totalSessions = 0;
 
   for (const session of sessions) {
-    const status = session.records[playerId];
+    const status = session.records[player_id];
     if (!status) continue;
     totalSessions += 1;
     if (status === "present") presentCount += 1;
@@ -64,7 +64,7 @@ export function getPlayerAttendanceStats(
   for (const match of matches) {
     if (match.status !== "completed" || !match.lineup) continue;
     const inSquad =
-      getStartingPlayerIds(match.lineup).includes(playerId) || match.lineup.substitutes.includes(playerId);
+      getStartingPlayerIds(match.lineup).includes(player_id) || match.lineup.substitutes.includes(player_id);
     totalSessions += 1;
     if (inSquad) presentCount += 1;
     else absentCount += 1;

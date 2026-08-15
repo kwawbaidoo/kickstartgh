@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { staffRoleOptions } from "@/config/roles";
 import { staffFormSchema, type StaffFormInput, type StaffMember } from "@/schemas/onboarding";
 import { buildStaffCredentialsMessage, generateTempPassword } from "@/lib/staff";
+import { applyApiErrors } from "@/lib/api-client";
 import { fadeInUp } from "@/lib/motion";
 import { getInitials, toSelectItems } from "@/lib/utils";
 
@@ -24,9 +25,9 @@ const staffRoleItems = toSelectItems(staffRoleOptions);
 type StaffManagerProps = {
   staff: StaffMember[];
   teamName: string;
-  onAdd: (member: StaffMember) => void;
-  onRemove: (id: string) => void;
-  onChangeRole: (id: string, role: StaffFormInput["role"]) => void;
+  onAdd: (input: StaffFormInput) => Promise<StaffMember>;
+  onRemove: (id: string) => Promise<void>;
+  onChangeRole: (id: string, role: StaffFormInput["role"]) => Promise<void>;
 };
 
 type CredentialState = {
@@ -42,23 +43,26 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
 
   const form = useForm<StaffFormInput>({
     resolver: zodResolver(staffFormSchema),
-    defaultValues: { fullName: "", phone: "", email: "" },
+    defaultValues: { full_name: "", phone: "", email: "" },
   });
 
-  function handleAdd(data: StaffFormInput) {
-    const member: StaffMember = { id: crypto.randomUUID(), ...data };
-    onAdd(member);
-    form.reset({ fullName: "", phone: "", email: "" });
-    setFormKey((current) => current + 1);
+  async function handleAdd(data: StaffFormInput) {
+    try {
+      const member = await onAdd(data);
+      form.reset({ full_name: "", phone: "", email: "" });
+      setFormKey((current) => current + 1);
 
-    const tempPassword = generateTempPassword();
-    setCredentialState({ member, tempPassword, status: "sending" });
-    setCopied(false);
-    setTimeout(() => {
-      setCredentialState((current) =>
-        current && current.member.id === member.id ? { ...current, status: "sent" } : current
-      );
-    }, 900);
+      const tempPassword = generateTempPassword();
+      setCredentialState({ member, tempPassword, status: "sending" });
+      setCopied(false);
+      setTimeout(() => {
+        setCredentialState((current) =>
+          current && current.member.id === member.id ? { ...current, status: "sent" } : current
+        );
+      }, 900);
+    } catch (error) {
+      applyApiErrors(error, (field, err) => form.setError(field as keyof StaffFormInput, err));
+    }
   }
 
   async function handleCopyPassword() {
@@ -107,11 +111,11 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
         </FieldGroup>
 
         <FieldGroup className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <Field data-invalid={!!form.formState.errors.fullName}>
-            <FieldLabel htmlFor="fullName">Full name</FieldLabel>
+          <Field data-invalid={!!form.formState.errors.full_name}>
+            <FieldLabel htmlFor="full_name">Full name</FieldLabel>
             <FieldContent>
-              <Input id="fullName" placeholder="e.g. Kojo Boateng" {...form.register("fullName")} />
-              <FieldError errors={[form.formState.errors.fullName]} />
+              <Input id="full_name" placeholder="e.g. Kojo Boateng" {...form.register("full_name")} />
+              <FieldError errors={[form.formState.errors.full_name]} />
             </FieldContent>
           </Field>
 
@@ -138,9 +142,9 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
           </FieldContent>
         </Field>
 
-        <Button type="submit" variant="outline" className="w-full">
+        <Button type="submit" variant="outline" className="w-full" disabled={form.formState.isSubmitting}>
           <UserPlus />
-          Add staff member
+          {form.formState.isSubmitting ? "Adding..." : "Add staff member"}
         </Button>
       </form>
 
@@ -154,10 +158,10 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
             >
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-                  {getInitials(member.fullName)}
+                  {getInitials(member.full_name)}
                 </div>
                 <div className="flex min-w-0 flex-col">
-                  <span className="truncate text-sm font-medium text-foreground">{member.fullName}</span>
+                  <span className="truncate text-sm font-medium text-foreground">{member.full_name}</span>
                   <span className="truncate text-xs text-muted-foreground">{member.phone}</span>
                 </div>
               </div>
@@ -166,7 +170,9 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
                 <Select
                   items={staffRoleItems}
                   value={member.role}
-                  onValueChange={(value) => onChangeRole(member.id, value as StaffFormInput["role"])}
+                  onValueChange={(value) => {
+                    onChangeRole(member.id, value as StaffFormInput["role"]).catch(() => {});
+                  }}
                 >
                   <SelectTrigger size="sm" className="w-full sm:w-auto">
                     <SelectValue />
@@ -183,8 +189,10 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  aria-label={`Remove ${member.fullName}`}
-                  onClick={() => onRemove(member.id)}
+                  aria-label={`Remove ${member.full_name}`}
+                  onClick={() => {
+                    onRemove(member.id).catch(() => {});
+                  }}
                 >
                   <X className="size-4" />
                 </Button>
@@ -201,7 +209,7 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
         onOpenChange={(open) => !open && setCredentialState(null)}
         title="Staff account created"
         description={
-          credentialState ? `${credentialState.member.fullName} has been added to your team.` : undefined
+          credentialState ? `${credentialState.member.full_name} has been added to your team.` : undefined
         }
       >
         {credentialState && (

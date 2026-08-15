@@ -30,8 +30,8 @@ function SeasonCard({ season, stats }: SeasonCardProps) {
             </span>
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <CalendarDays className="size-3.5 shrink-0" />
-              {format(new Date(season.startDate), "d MMM yyyy")} –{" "}
-              {format(new Date(season.endDate), "d MMM yyyy")}
+              {format(new Date(season.start_date), "d MMM yyyy")} –{" "}
+              {format(new Date(season.end_date), "d MMM yyyy")}
             </span>
           </div>
           <span
@@ -44,8 +44,8 @@ function SeasonCard({ season, stats }: SeasonCardProps) {
           </span>
         </div>
 
-        {season.competitionCategory && (
-          <span className="text-xs text-muted-foreground">{season.competitionCategory}</span>
+        {season.competition_category && (
+          <span className="text-xs text-muted-foreground">{season.competition_category}</span>
         )}
 
         <div className="grid grid-cols-3 gap-2 border-t border-border pt-3">

@@ -25,7 +25,7 @@ export function buildStaffCredentialsMessage(
   return [
     "⚽ KickStartGH Staff Account",
     "",
-    `Hi ${member.fullName},`,
+    `Hi ${member.full_name},`,
     "",
     `You've been added as ${roleLabel} for ${teamName} on KickStartGH.`,
     "",

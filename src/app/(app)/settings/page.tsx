@@ -12,8 +12,8 @@ import { getInitials } from "@/lib/utils";
 
 export default function SettingsPage() {
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
-  const preferredRole = useSettingsStore((state) => state.profile.preferredRole);
-  const roleLabel = roleOptions.find((option) => option.id === preferredRole)?.label ?? "Team Member";
+  const preferred_role = useSettingsStore((state) => state.profile.preferred_role);
+  const roleLabel = roleOptions.find((option) => option.id === preferred_role)?.label ?? "Team Member";
 
   return (
     <div className="flex flex-col gap-6">

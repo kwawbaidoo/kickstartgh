@@ -31,20 +31,21 @@ import { CoverImageUpload } from "@/components/common/CoverImageUpload";
 import { ProgressStepper } from "@/components/onboarding/ProgressStepper";
 import { ghanaRegions } from "@/config/regions";
 import { teamDetailsSchema, type TeamDetailsInput } from "@/schemas/onboarding";
+import { applyApiErrors } from "@/lib/api-client";
 import { getInitials } from "@/lib/utils";
 
 type TeamFormValues = z.input<typeof teamDetailsSchema>;
 
 type TeamSettingsFormProps = {
   defaultValues: TeamDetailsInput;
-  onSubmit: (data: TeamDetailsInput) => void;
+  onSubmit: (data: TeamDetailsInput) => Promise<void>;
 };
 
 const stepLabels = ["Identity", "Location & History", "Social Links"];
 
 const stepFields: (keyof TeamDetailsInput)[][] = [
-  ["name", "nickname", "slogan", "colorPrimary", "colorSecondary", "logo", "coverImage"],
-  ["region", "district", "homeGround", "yearEstablished"],
+  ["name", "nickname", "slogan", "color_primary", "color_secondary", "logo", "cover_image"],
+  ["region", "district", "home_ground", "year_established"],
   ["facebook", "instagram", "tiktok", "website"],
 ];
 
@@ -58,7 +59,7 @@ function TeamSettingsForm({ defaultValues, onSubmit }: TeamSettingsFormProps) {
 
   const teamName = useWatch({ control: form.control, name: "name" });
   const logo = useWatch({ control: form.control, name: "logo" });
-  const coverImage = useWatch({ control: form.control, name: "coverImage" });
+  const cover_image = useWatch({ control: form.control, name: "cover_image" });
   const socials = useWatch({
     control: form.control,
     name: ["facebook", "instagram", "tiktok", "website"],
@@ -74,15 +75,23 @@ function TeamSettingsForm({ defaultValues, onSubmit }: TeamSettingsFormProps) {
     setStep((current) => Math.max(0, current - 1));
   }
 
+  async function handleSubmit(data: TeamDetailsInput) {
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      applyApiErrors(error, (field, err) => form.setError(field as keyof TeamDetailsInput, err));
+    }
+  }
+
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-8">
+    <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col gap-8">
       <ProgressStepper steps={stepLabels} currentStep={step} />
 
       {step === 0 && (
         <>
           <CoverImageUpload
-            value={coverImage}
-            onChange={(dataUrl) => form.setValue("coverImage", dataUrl)}
+            value={cover_image}
+            onChange={(dataUrl) => form.setValue("cover_image", dataUrl)}
           />
 
           <AvatarUpload
@@ -121,20 +130,20 @@ function TeamSettingsForm({ defaultValues, onSubmit }: TeamSettingsFormProps) {
               </Field>
 
               <Field orientation="responsive">
-                <FieldLabel htmlFor="colorPrimary">Team colors</FieldLabel>
+                <FieldLabel htmlFor="color_primary">Team colors</FieldLabel>
                 <FieldContent>
                   <div className="flex items-center gap-3">
                     <input
-                      id="colorPrimary"
+                      id="color_primary"
                       type="color"
                       className="size-9 rounded-lg border border-input"
-                      {...form.register("colorPrimary")}
+                      {...form.register("color_primary")}
                     />
                     <input
                       type="color"
                       aria-label="Secondary color"
                       className="size-9 rounded-lg border border-input"
-                      {...form.register("colorSecondary")}
+                      {...form.register("color_secondary")}
                     />
                     <FieldDescription>Optional</FieldDescription>
                   </div>
@@ -187,25 +196,25 @@ function TeamSettingsForm({ defaultValues, onSubmit }: TeamSettingsFormProps) {
               </FieldContent>
             </Field>
 
-            <Field data-invalid={!!form.formState.errors.homeGround}>
-              <FieldLabel htmlFor="homeGround">Home ground</FieldLabel>
+            <Field data-invalid={!!form.formState.errors.home_ground}>
+              <FieldLabel htmlFor="home_ground">Home ground</FieldLabel>
               <FieldContent>
-                <Input id="homeGround" placeholder="e.g. Community Park" {...form.register("homeGround")} />
-                <FieldError errors={[form.formState.errors.homeGround]} />
+                <Input id="home_ground" placeholder="e.g. Community Park" {...form.register("home_ground")} />
+                <FieldError errors={[form.formState.errors.home_ground]} />
               </FieldContent>
             </Field>
 
-            <Field data-invalid={!!form.formState.errors.yearEstablished}>
-              <FieldLabel htmlFor="yearEstablished">Year established</FieldLabel>
+            <Field data-invalid={!!form.formState.errors.year_established}>
+              <FieldLabel htmlFor="year_established">Year established</FieldLabel>
               <FieldContent>
                 <Input
-                  id="yearEstablished"
+                  id="year_established"
                   type="number"
                   inputMode="numeric"
                   placeholder="e.g. 2018"
-                  {...form.register("yearEstablished")}
+                  {...form.register("year_established")}
                 />
-                <FieldError errors={[form.formState.errors.yearEstablished]} />
+                <FieldError errors={[form.formState.errors.year_established]} />
               </FieldContent>
             </Field>
           </FieldGroup>
@@ -251,6 +260,8 @@ function TeamSettingsForm({ defaultValues, onSubmit }: TeamSettingsFormProps) {
         </FieldSet>
       )}
 
+      <FieldError errors={[form.formState.errors.root]} />
+
       <div className="flex items-center justify-between gap-3">
         <Button type="button" variant="outline" onClick={handleBack} disabled={step === 0}>
           Back
@@ -260,8 +271,8 @@ function TeamSettingsForm({ defaultValues, onSubmit }: TeamSettingsFormProps) {
             Next
           </Button>
         ) : (
-          <Button key="submit" type="submit">
-            Save Changes
+          <Button key="submit" type="submit" disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
           </Button>
         )}
       </div>

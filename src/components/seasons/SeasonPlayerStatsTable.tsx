@@ -57,14 +57,14 @@ function SeasonPlayerStatsTable({ stats }: SeasonPlayerStatsTableProps) {
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={entry.player.photo} alt="" className="size-full object-cover" />
                       ) : (
-                        getInitials(entry.player.fullName)
+                        getInitials(entry.player.full_name)
                       )}
                     </span>
                     <span className="flex min-w-0 flex-col">
                       <span className="truncate text-sm font-medium text-foreground">
-                        {entry.player.fullName}
+                        {entry.player.full_name}
                       </span>
-                      <span className="text-xs text-muted-foreground">#{entry.jerseyNumber}</span>
+                      <span className="text-xs text-muted-foreground">#{entry.jersey_number}</span>
                     </span>
                   </Link>
                 </TableCell>
@@ -104,15 +104,15 @@ function SeasonPlayerStatsTable({ stats }: SeasonPlayerStatsTableProps) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={entry.player.photo} alt="" className="size-full object-cover" />
                   ) : (
-                    getInitials(entry.player.fullName)
+                    getInitials(entry.player.full_name)
                   )}
                 </span>
                 <span className="flex min-w-0 flex-col">
                   <span className="truncate text-sm font-medium text-foreground">
-                    {entry.player.fullName}
+                    {entry.player.full_name}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {entry.player.position} · #{entry.jerseyNumber}
+                    {entry.player.position} · #{entry.jersey_number}
                   </span>
                 </span>
               </span>

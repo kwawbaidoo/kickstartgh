@@ -111,9 +111,9 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
   }
 
   const shareMessage = [
-    `⚽ ${player.fullName} — Player Profile`,
+    `⚽ ${player.full_name} — Player Profile`,
     "",
-    `${player.position}${player.secondaryPosition ? ` / ${player.secondaryPosition}` : ""} · ${activeTeam.name}`,
+    `${player.position}${player.secondary_position ? ` / ${player.secondary_position}` : ""} · ${activeTeam.name}`,
     "",
     "View full profile:",
     publicProfileUrl,
@@ -142,9 +142,9 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
     setPeriod(getTimelinePeriodOptions(timeline, next)[0]?.value ?? null);
   }
 
-  function handleDownloadMatchReport(matchId: string) {
+  function handleDownloadMatchReport(match_id: string) {
     if (!player) return;
-    const match = matches.find((candidate) => candidate.id === matchId);
+    const match = matches.find((candidate) => candidate.id === match_id);
     if (!match) return;
     exportPlayerMatchReportPdf(player, match, activeTeam);
   }
@@ -165,7 +165,7 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
       <div className="flex min-w-0 flex-1 flex-col gap-6">
         <PlayerProfileHeader player={player} />
 
-        <PlayerStatusControl playerId={player.id} status={player.status} />
+        <PlayerStatusControl player_id={player.id} status={player.status} />
 
         <div className="flex flex-wrap gap-2">
           <Link href={`/players/${id}/edit`} className={buttonVariants({ variant: "outline" })}>
@@ -191,7 +191,7 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
               </Button>
             }
             title="Remove this player?"
-            description={`${player.fullName} will be removed from your squad. This can't be undone.`}
+            description={`${player.full_name} will be removed from your squad. This can't be undone.`}
             footer={
               <>
                 <Button variant="outline" onClick={() => setDeleteOpen(false)}>
@@ -292,9 +292,9 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
                           </div>
                           <div className="flex flex-1 items-center justify-between gap-2 pt-1.5">
                             <div className="flex flex-col">
-                              {item.type === "match" && item.matchId ? (
+                              {item.type === "match" && item.match_id ? (
                                 <Link
-                                  href={`/matches/${item.matchId}`}
+                                  href={`/matches/${item.match_id}`}
                                   className="text-sm font-medium text-foreground hover:text-primary hover:underline"
                                 >
                                   {item.label}
@@ -306,13 +306,13 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
                                 {format(new Date(item.date), "d MMM yyyy")}
                               </span>
                             </div>
-                            {item.type === "match" && item.matchId && (
+                            {item.type === "match" && item.match_id && (
                               <Button
                                 type="button"
                                 variant="ghost"
                                 size="icon"
                                 aria-label={`Download match report — ${item.label}`}
-                                onClick={() => handleDownloadMatchReport(item.matchId!)}
+                                onClick={() => handleDownloadMatchReport(item.match_id!)}
                               >
                                 <Download className="size-4" />
                               </Button>

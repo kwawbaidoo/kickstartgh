@@ -11,18 +11,18 @@ import { cn, getInitials } from "@/lib/utils";
 
 type SeasonPlayerCardProps = {
   player: Player;
-  jerseyNumber: number;
+  jersey_number: number;
   status: PlayerStatus;
   onRemove?: () => void;
 };
 
 /**
  * Shows this player's jersey number/status *for this season* — never the
- * top-level Player.jerseyNumber/status mirror, which only ever reflects the
+ * top-level Player.jersey_number/status mirror, which only ever reflects the
  * active season (see lib/players.ts's getSeasonRecord). That's why this is
  * a separate component from the shared PlayerCard rather than reusing it.
  */
-function SeasonPlayerCard({ player, jerseyNumber, status, onRemove }: SeasonPlayerCardProps) {
+function SeasonPlayerCard({ player, jersey_number, status, onRemove }: SeasonPlayerCardProps) {
   return (
     <motion.div
       variants={fadeInUp}
@@ -32,7 +32,7 @@ function SeasonPlayerCard({ player, jerseyNumber, status, onRemove }: SeasonPlay
         <button
           type="button"
           onClick={onRemove}
-          aria-label={`Remove ${player.fullName} from season`}
+          aria-label={`Remove ${player.full_name} from season`}
           className="absolute top-1.5 right-1.5 text-muted-foreground hover:text-destructive"
         >
           <X className="size-3.5" />
@@ -45,16 +45,16 @@ function SeasonPlayerCard({ player, jerseyNumber, status, onRemove }: SeasonPlay
               // eslint-disable-next-line @next/next/no-img-element
               <img src={player.photo} alt="" className="size-full object-cover" />
             ) : (
-              getInitials(player.fullName)
+              getInitials(player.full_name)
             )}
           </div>
           <span className="absolute -right-1 -bottom-1 flex size-4 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-accent-foreground ring-2 ring-card">
-            {jerseyNumber}
+            {jersey_number}
           </span>
         </div>
 
         <div className="flex flex-col gap-0.5">
-          <span className="truncate text-xs font-medium text-foreground">{player.fullName}</span>
+          <span className="truncate text-xs font-medium text-foreground">{player.full_name}</span>
           <span className="truncate text-[10px] text-muted-foreground">{player.position}</span>
         </div>
 

@@ -19,7 +19,7 @@ function LineupView({ lineup, players, staff }: LineupViewProps) {
   const substitutePlayers = lineup.substitutes
     .map((id) => playerMap.get(id))
     .filter((player): player is Player => !!player);
-  const benchOfficials = resolveBenchOfficials(lineup.benchOfficials, staff);
+  const bench_officials = resolveBenchOfficials(lineup.bench_officials, staff);
 
   return (
     <div className="flex flex-col gap-4">
@@ -31,8 +31,8 @@ function LineupView({ lineup, players, staff }: LineupViewProps) {
       <div className="relative aspect-[17/25] w-full overflow-hidden rounded-2xl lg:aspect-[25/17]">
         <PitchBackground />
         {slots.map((slot) => {
-          const playerId = lineup.startingXI[slot.slot];
-          const player = playerId ? playerMap.get(playerId) : undefined;
+          const player_id = lineup.starting_xi[slot.slot];
+          const player = player_id ? playerMap.get(player_id) : undefined;
           if (!player) return null;
           return (
             <Link
@@ -42,11 +42,11 @@ function LineupView({ lineup, players, staff }: LineupViewProps) {
               className="absolute left-[var(--slot-left)] top-[var(--slot-top)] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 lg:left-[var(--slot-left-lg)] lg:top-[var(--slot-top-lg)]"
             >
               <div className="flex size-11 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground ring-2 ring-white/70">
-                {getInitials(player.fullName)}
+                {getInitials(player.full_name)}
               </div>
               <span className="max-w-16 truncate rounded bg-black/40 px-1 text-[10px] font-medium text-white">
-                {player.fullName.split(" ")[0]}
-                {lineup.captainId === player.id ? " (C)" : ""}
+                {player.full_name.split(" ")[0]}
+                {lineup.captain_id === player.id ? " (C)" : ""}
               </span>
             </Link>
           );
@@ -66,10 +66,10 @@ function LineupView({ lineup, players, staff }: LineupViewProps) {
                 className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2 transition-colors hover:bg-muted"
               >
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
-                  {getInitials(player.fullName)}
+                  {getInitials(player.full_name)}
                 </span>
-                <span className="min-w-0 flex-1 truncate text-sm text-foreground">{player.fullName}</span>
-                <span className="text-xs text-muted-foreground">#{player.jerseyNumber}</span>
+                <span className="min-w-0 flex-1 truncate text-sm text-foreground">{player.full_name}</span>
+                <span className="text-xs text-muted-foreground">#{player.jersey_number}</span>
               </Link>
             ))}
           </div>
@@ -78,16 +78,16 @@ function LineupView({ lineup, players, staff }: LineupViewProps) {
 
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium text-foreground">Bench Officials</span>
-        {benchOfficials.length === 0 ? (
+        {bench_officials.length === 0 ? (
           <p className="text-sm text-muted-foreground">No bench officials named.</p>
         ) : (
           <div className="flex flex-col gap-1.5">
-            {benchOfficials.map((official) => (
+            {bench_officials.map((official) => (
               <div key={official.id} className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2">
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
-                  {getInitials(official.fullName)}
+                  {getInitials(official.full_name)}
                 </span>
-                <span className="min-w-0 flex-1 truncate text-sm text-foreground">{official.fullName}</span>
+                <span className="min-w-0 flex-1 truncate text-sm text-foreground">{official.full_name}</span>
                 <span className="text-xs text-muted-foreground">{official.role}</span>
               </div>
             ))}

@@ -91,7 +91,7 @@ export default function AttendanceReportPage() {
       />
 
       <SavedTemplates
-        reportType="attendance"
+        report_type="attendance"
         currentColumns={columns}
         onApply={(template) => setColumns(template.columns)}
       />

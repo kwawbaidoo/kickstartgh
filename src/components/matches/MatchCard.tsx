@@ -56,7 +56,7 @@ function MatchCard({ match }: { match: Match }) {
           <span className="truncate text-xs font-medium text-foreground">vs {match.opponent}</span>
           {match.status === "completed" && (
             <span className="shrink-0 font-heading text-base font-semibold text-foreground">
-              {match.teamScore}–{match.opponentScore}
+              {match.team_score}–{match.opponent_score}
             </span>
           )}
         </div>

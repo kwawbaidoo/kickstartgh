@@ -62,7 +62,7 @@ export default function SeasonDashboardPage({ params }: { params: Promise<{ id: 
     <div className="flex flex-col gap-8">
       <SectionHeader
         title={season.name}
-        description={season.competitionCategory ?? "Season overview"}
+        description={season.competition_category ?? "Season overview"}
         action={
           <Link
             href={`/seasons/${id}/settings`}
@@ -101,8 +101,8 @@ export default function SeasonDashboardPage({ params }: { params: Promise<{ id: 
               </div>
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 <CalendarDays className="size-3.5" />
-                {format(new Date(season.startDate), "d MMM yyyy")} –{" "}
-                {format(new Date(season.endDate), "d MMM yyyy")}
+                {format(new Date(season.start_date), "d MMM yyyy")} –{" "}
+                {format(new Date(season.end_date), "d MMM yyyy")}
               </span>
             </div>
           </div>
@@ -111,13 +111,13 @@ export default function SeasonDashboardPage({ params }: { params: Promise<{ id: 
             {manager && (
               <span className="flex items-center gap-1 sm:justify-end">
                 <Shield className="size-3.5" />
-                Manager: <span className="font-medium text-foreground">{manager.fullName}</span>
+                Manager: <span className="font-medium text-foreground">{manager.full_name}</span>
               </span>
             )}
             {headCoach && (
               <span className="flex items-center gap-1 sm:justify-end">
                 <Shield className="size-3.5" />
-                Head Coach: <span className="font-medium text-foreground">{headCoach.fullName}</span>
+                Head Coach: <span className="font-medium text-foreground">{headCoach.full_name}</span>
               </span>
             )}
             {!manager && !headCoach && <span>No manager or head coach assigned yet.</span>}

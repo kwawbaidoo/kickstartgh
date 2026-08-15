@@ -16,8 +16,8 @@ import { changePasswordSchema, type ChangePasswordInput } from "@/schemas/settin
 import type { Session } from "@/store/settings-store";
 
 type SecurityCardProps = {
-  lastLogin: string;
-  twoFactorEnabled: boolean;
+  last_login: string;
+  two_factor_enabled: boolean;
   sessions: Session[];
   onToggleTwoFactor: () => void;
   onLogOutSession: (id: string) => void;
@@ -26,8 +26,8 @@ type SecurityCardProps = {
 };
 
 function SecurityCard({
-  lastLogin,
-  twoFactorEnabled,
+  last_login,
+  two_factor_enabled,
   sessions,
   onToggleTwoFactor,
   onLogOutSession,
@@ -39,7 +39,7 @@ function SecurityCard({
 
   const form = useForm<ChangePasswordInput>({
     resolver: zodResolver(changePasswordSchema),
-    defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
+    defaultValues: { current_password: "", new_password: "", confirm_password: "" },
   });
 
   function handleChangePassword(data: ChangePasswordInput) {
@@ -66,25 +66,25 @@ function SecurityCard({
           {showPasswordForm ? (
             <form onSubmit={form.handleSubmit(handleChangePassword)} className="flex flex-col gap-4">
               <FieldGroup>
-                <Field data-invalid={!!form.formState.errors.currentPassword}>
-                  <FieldLabel htmlFor="currentPassword">Current password</FieldLabel>
+                <Field data-invalid={!!form.formState.errors.current_password}>
+                  <FieldLabel htmlFor="current_password">Current password</FieldLabel>
                   <FieldContent>
-                    <Input id="currentPassword" type="password" {...form.register("currentPassword")} />
-                    <FieldError errors={[form.formState.errors.currentPassword]} />
+                    <Input id="current_password" type="password" {...form.register("current_password")} />
+                    <FieldError errors={[form.formState.errors.current_password]} />
                   </FieldContent>
                 </Field>
-                <Field data-invalid={!!form.formState.errors.newPassword}>
-                  <FieldLabel htmlFor="newPassword">New password</FieldLabel>
+                <Field data-invalid={!!form.formState.errors.new_password}>
+                  <FieldLabel htmlFor="new_password">New password</FieldLabel>
                   <FieldContent>
-                    <Input id="newPassword" type="password" {...form.register("newPassword")} />
-                    <FieldError errors={[form.formState.errors.newPassword]} />
+                    <Input id="new_password" type="password" {...form.register("new_password")} />
+                    <FieldError errors={[form.formState.errors.new_password]} />
                   </FieldContent>
                 </Field>
-                <Field data-invalid={!!form.formState.errors.confirmPassword}>
-                  <FieldLabel htmlFor="confirmPassword">Confirm new password</FieldLabel>
+                <Field data-invalid={!!form.formState.errors.confirm_password}>
+                  <FieldLabel htmlFor="confirm_password">Confirm new password</FieldLabel>
                   <FieldContent>
-                    <Input id="confirmPassword" type="password" {...form.register("confirmPassword")} />
-                    <FieldError errors={[form.formState.errors.confirmPassword]} />
+                    <Input id="confirm_password" type="password" {...form.register("confirm_password")} />
+                    <FieldError errors={[form.formState.errors.confirm_password]} />
                   </FieldContent>
                 </Field>
               </FieldGroup>
@@ -123,10 +123,10 @@ function SecurityCard({
             <div className="flex items-center gap-2">
               <ShieldCheck className="size-4.5 text-muted-foreground" />
               <span className="text-sm text-foreground">
-                {twoFactorEnabled ? "Enabled" : "Disabled"}
+                {two_factor_enabled ? "Enabled" : "Disabled"}
               </span>
             </div>
-            <Switch checked={twoFactorEnabled} onCheckedChange={onToggleTwoFactor} aria-label="Two-factor authentication" />
+            <Switch checked={two_factor_enabled} onCheckedChange={onToggleTwoFactor} aria-label="Two-factor authentication" />
           </div>
         </CardContent>
       </Card>
@@ -137,7 +137,7 @@ function SecurityCard({
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <p className="text-xs text-muted-foreground">
-            Last login: {format(new Date(lastLogin), "d MMM yyyy, HH:mm")}
+            Last login: {format(new Date(last_login), "d MMM yyyy, HH:mm")}
           </p>
           <Separator />
           {sessions.map((session) => (
@@ -149,7 +149,7 @@ function SecurityCard({
                     {session.device} {session.current && "· This device"}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {session.location} · {session.lastActive}
+                    {session.location} · {session.last_active}
                   </span>
                 </div>
               </div>

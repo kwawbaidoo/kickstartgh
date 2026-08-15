@@ -2,38 +2,28 @@ export type SeasonStatus = "upcoming" | "active" | "completed" | "archived";
 
 export type Season = {
   id: string;
-  teamId: string;
+  team_id: string;
   name: string;
-  startDate: string;
-  endDate: string;
+  start_date: string;
+  end_date: string;
   status: SeasonStatus;
   description?: string;
   objectives?: string;
-  competitionCategory?: string;
+  competition_category?: string;
   budget?: number;
-  colorPrimary?: string;
-  colorSecondary?: string;
-  createdAt: string;
+  color_primary?: string;
+  color_secondary?: string;
+  created_at: string;
 };
 
 /**
- * All pre-season mock data (players, matches, training) predates the Season
- * feature, so it's backfilled onto this one season rather than left orphaned.
+ * Stamp value used by players/matches/sessions created before a real season exists,
+ * so their season_id has somewhere to point rather than being left orphaned. Not a
+ * lookup key — nothing assumes a Season with this id actually exists in `seasons`.
  */
 export const DEFAULT_SEASON_ID = "season_2026";
 
-export const seasons: Season[] = [
-  {
-    id: DEFAULT_SEASON_ID,
-    teamId: "team_001",
-    name: "2026 Season",
-    startDate: "2026-01-01",
-    endDate: "2026-12-31",
-    status: "active",
-    competitionCategory: "Ellembelle District League",
-    createdAt: "2026-01-01T00:00:00Z",
-  },
-];
+export const seasons: Season[] = [];
 
 export function getSeasonById(seasons: Season[], id: string): Season | undefined {
   return seasons.find((season) => season.id === id);

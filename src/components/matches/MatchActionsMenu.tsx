@@ -53,9 +53,9 @@ function MatchActionsMenu({ match }: { match: Match }) {
   const [teamScoreInput, setTeamScoreInput] = useState("");
   const [opponentScoreInput, setOpponentScoreInput] = useState("");
 
-  const playerNames = Object.fromEntries(players.map((player) => [player.id, player.fullName]));
+  const playerNames = Object.fromEntries(players.map((player) => [player.id, player.full_name]));
   const resolvedBenchOfficials = match.lineup
-    ? resolveBenchOfficials(match.lineup.benchOfficials, activeTeam.staff)
+    ? resolveBenchOfficials(match.lineup.bench_officials, activeTeam.staff)
     : [];
   const fixtureMessage = buildFixtureShareMessage(match, activeTeam.name);
   const resultMessage = buildResultShareMessage(match, activeTeam.name, playerNames);
@@ -77,10 +77,10 @@ function MatchActionsMenu({ match }: { match: Match }) {
   }
 
   function handleFinish() {
-    const teamScore = Number(teamScoreInput);
-    const opponentScore = Number(opponentScoreInput);
-    if (Number.isNaN(teamScore) || Number.isNaN(opponentScore)) return;
-    completeMatch(match.id, teamScore, opponentScore);
+    const team_score = Number(teamScoreInput);
+    const opponent_score = Number(opponentScoreInput);
+    if (Number.isNaN(team_score) || Number.isNaN(opponent_score)) return;
+    completeMatch(match.id, team_score, opponent_score);
     setFinishOpen(false);
     setTeamScoreInput("");
     setOpponentScoreInput("");
@@ -245,10 +245,10 @@ function MatchActionsMenu({ match }: { match: Match }) {
       >
         <div className="flex items-center gap-3">
           <Field>
-            <FieldLabel htmlFor={`teamScore-${match.id}`}>{activeTeam.name}</FieldLabel>
+            <FieldLabel htmlFor={`team_score-${match.id}`}>{activeTeam.name}</FieldLabel>
             <FieldContent>
               <Input
-                id={`teamScore-${match.id}`}
+                id={`team_score-${match.id}`}
                 type="number"
                 inputMode="numeric"
                 value={teamScoreInput}
@@ -258,10 +258,10 @@ function MatchActionsMenu({ match }: { match: Match }) {
           </Field>
           <span className="pt-6 text-muted-foreground">–</span>
           <Field>
-            <FieldLabel htmlFor={`opponentScore-${match.id}`}>{match.opponent}</FieldLabel>
+            <FieldLabel htmlFor={`opponent_score-${match.id}`}>{match.opponent}</FieldLabel>
             <FieldContent>
               <Input
-                id={`opponentScore-${match.id}`}
+                id={`opponent_score-${match.id}`}
                 type="number"
                 inputMode="numeric"
                 value={opponentScoreInput}

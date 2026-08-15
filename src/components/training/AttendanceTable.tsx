@@ -10,9 +10,9 @@ type AttendanceTableProps = {
   players: Player[];
   records: Record<string, AttendanceStatus>;
   selected: Set<string>;
-  onToggleSelect: (playerId: string) => void;
+  onToggleSelect: (player_id: string) => void;
   onToggleSelectAll: () => void;
-  onStatusChange: (playerId: string, status: AttendanceStatus) => void;
+  onStatusChange: (player_id: string, status: AttendanceStatus) => void;
 };
 
 function AttendanceTable({

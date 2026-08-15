@@ -112,7 +112,7 @@ export default function SeasonAnalyticsPage({ params }: { params: Promise<{ id: 
       )}
 
       <SeasonAnalytics
-        seasonId={id}
+        season_id={id}
         players={seasonPlayers}
         matches={seasonMatches}
         sessions={seasonSessions}

@@ -79,7 +79,7 @@ export default function SeasonReportsPage({ params }: { params: Promise<{ id: st
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
   const addHistoryEntry = useReportsStore((state) => state.addHistoryEntry);
 
-  const [reportType, setReportType] = useState<ReportType>("player");
+  const [report_type, setReportType] = useState<ReportType>("player");
   const [period, setPeriod] = useState<ReportPeriod>("fullSeason");
   const [customRange, setCustomRange] = useState({ start: "", end: "" });
   const [columns, setColumns] = useState<string[]>(playerReportDefaultColumns);
@@ -114,14 +114,14 @@ export default function SeasonReportsPage({ params }: { params: Promise<{ id: st
     setColumns(columnsByType[next].defaults);
   }
 
-  const playerNames = Object.fromEntries(seasonPlayers.map((player) => [player.id, player.fullName]));
+  const playerNames = Object.fromEntries(seasonPlayers.map((player) => [player.id, player.full_name]));
 
   const table =
-    reportType === "player"
+    report_type === "player"
       ? buildPlayerReportTable(seasonPlayers, periodMatches, periodSessions, defaultPlayerReportFilters, columns)
-      : reportType === "team"
+      : report_type === "team"
         ? buildTeamReportTable(activeTeam, seasonPlayers, periodMatches, columns)
-        : reportType === "match"
+        : report_type === "match"
           ? buildMatchReportTable(periodMatches, playerNames, defaultMatchReportFilters, columns)
           : buildAttendanceReportTable(seasonPlayers, seasonSessions, seasonMatches, "seasonal", columns);
 
@@ -137,7 +137,7 @@ export default function SeasonReportsPage({ params }: { params: Promise<{ id: st
 
       <SectionHeader title={`${season.name} — Reports`} description="Build a report for this season." />
 
-      <Tabs value={reportType} onValueChange={(value) => handleTypeChange(value as ReportType)}>
+      <Tabs value={report_type} onValueChange={(value) => handleTypeChange(value as ReportType)}>
         <TabsList>
           {reportTypeTabs.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
@@ -148,13 +148,13 @@ export default function SeasonReportsPage({ params }: { params: Promise<{ id: st
       </Tabs>
 
       <ReportWizard
-        filename={`${season.name.toLowerCase().replace(/\s+/g, "-")}-${reportType}-report`}
-        title={`${teamName} — ${reportTypeTabs.find((tab) => tab.value === reportType)?.label} Report`}
+        filename={`${season.name.toLowerCase().replace(/\s+/g, "-")}-${report_type}-report`}
+        title={`${teamName} — ${reportTypeTabs.find((tab) => tab.value === report_type)?.label} Report`}
         table={table}
-        onExport={(format) => addHistoryEntry(reportType, format)}
+        onExport={(format) => addHistoryEntry(report_type, format)}
         filtersSlot={
           <FilterPanel>
-            {reportType === "attendance" ? (
+            {report_type === "attendance" ? (
               <p className="text-sm text-muted-foreground">
                 Attendance reports always cover the full season, so every session counts.
               </p>
@@ -197,14 +197,14 @@ export default function SeasonReportsPage({ params }: { params: Promise<{ id: st
         }
         columnsSlot={
           <ColumnSelector
-            allColumns={columnsByType[reportType].all}
+            allColumns={columnsByType[report_type].all}
             selected={columns}
             onChange={setColumns}
           />
         }
       />
 
-      <SavedTemplates reportType={reportType} currentColumns={columns} onApply={(template) => setColumns(template.columns)} />
+      <SavedTemplates report_type={report_type} currentColumns={columns} onApply={(template) => setColumns(template.columns)} />
     </div>
   );
 }

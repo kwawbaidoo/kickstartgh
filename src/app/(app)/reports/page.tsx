@@ -30,7 +30,7 @@ export default function ReportsHomePage() {
 
   const recentHistory = history.slice(0, 3);
   const recentTemplates = [...templates]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 3);
 
   return (
@@ -76,11 +76,11 @@ export default function ReportsHomePage() {
           <div className="flex flex-col gap-2">
             {recentTemplates.map((template) => {
               const href =
-                template.reportType === "player"
+                template.report_type === "player"
                   ? "/reports/player"
-                  : template.reportType === "team"
+                  : template.report_type === "team"
                     ? "/reports/team"
-                    : template.reportType === "match"
+                    : template.report_type === "match"
                       ? "/reports/match"
                       : "/reports/attendance";
               return (

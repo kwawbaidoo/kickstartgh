@@ -22,24 +22,29 @@ import {
 import { staffRoleOptions } from "@/config/roles";
 import { staffFormSchema, type StaffFormInput } from "@/schemas/onboarding";
 import { useOnboardingStore } from "@/store/onboarding-store";
+import { applyApiErrors } from "@/lib/api-client";
 import { toSelectItems } from "@/lib/utils";
 
 const staffRoleItems = toSelectItems(staffRoleOptions);
 
 export default function StaffSetupPage() {
   const router = useRouter();
-  const staff = useOnboardingStore((state) => state.draft.staff);
+  const staff = useOnboardingStore((state) => state.activeTeam.staff);
   const addStaffMember = useOnboardingStore((state) => state.addStaffMember);
   const removeStaffMember = useOnboardingStore((state) => state.removeStaffMember);
 
   const form = useForm<StaffFormInput>({
     resolver: zodResolver(staffFormSchema),
-    defaultValues: { fullName: "", phone: "" },
+    defaultValues: { full_name: "", phone: "" },
   });
 
-  function handleAdd(data: StaffFormInput) {
-    addStaffMember({ id: crypto.randomUUID(), ...data });
-    form.reset({ fullName: "", phone: "" });
+  async function handleAdd(data: StaffFormInput) {
+    try {
+      await addStaffMember(data);
+      form.reset({ full_name: "", phone: "" });
+    } catch (error) {
+      applyApiErrors(error, (field, err) => form.setError(field as keyof StaffFormInput, err));
+    }
   }
 
   function handleContinue() {
@@ -84,15 +89,15 @@ export default function StaffSetupPage() {
             </FieldContent>
           </Field>
 
-          <Field  data-invalid={!!form.formState.errors.fullName}>
-            <FieldLabel htmlFor="fullName" required>Full name</FieldLabel>
+          <Field  data-invalid={!!form.formState.errors.full_name}>
+            <FieldLabel htmlFor="full_name" required>Full name</FieldLabel>
             <FieldContent>
               <Controller
                 control={form.control}
-                name="fullName"
+                name="full_name"
                 render={({ field }) => (
                   <Input
-                    id="fullName"
+                    id="full_name"
                     placeholder="e.g. Kojo Boateng"
                     value={field.value}
                     onChange={field.onChange}
@@ -100,7 +105,7 @@ export default function StaffSetupPage() {
                   />
                 )}
               />
-              <FieldError errors={[form.formState.errors.fullName]} />
+              <FieldError errors={[form.formState.errors.full_name]} />
             </FieldContent>
           </Field>
 
@@ -125,9 +130,16 @@ export default function StaffSetupPage() {
           </Field>
         </FieldGroup>
 
-        <Button type="submit" variant="outline" className="w-full">
+        <FieldError errors={[form.formState.errors.root]} />
+
+        <Button
+          type="submit"
+          variant="outline"
+          className="w-full"
+          disabled={form.formState.isSubmitting}
+        >
           <UserPlus />
-          Add staff member
+          {form.formState.isSubmitting ? "Adding..." : "Add staff member"}
         </Button>
       </form>
 
@@ -137,7 +149,9 @@ export default function StaffSetupPage() {
             <StaffCard
               key={member.id}
               member={member}
-              onRemove={() => removeStaffMember(member.id)}
+              onRemove={() => {
+                removeStaffMember(member.id).catch(() => {});
+              }}
             />
           ))}
         </Stagger>

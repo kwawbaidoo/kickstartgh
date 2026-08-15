@@ -17,7 +17,7 @@ type ReportCardProps = {
 };
 
 function ReportCard({ entry }: ReportCardProps) {
-  const Icon = reportTypeIcon[entry.reportType];
+  const Icon = reportTypeIcon[entry.report_type];
 
   return (
     <Card>
@@ -27,10 +27,10 @@ function ReportCard({ entry }: ReportCardProps) {
         </div>
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="truncate text-sm font-medium text-foreground">
-            {entry.templateName ?? reportTypeLabels[entry.reportType]}
+            {entry.template_name ?? reportTypeLabels[entry.report_type]}
           </span>
           <span className="text-xs text-muted-foreground">
-            {entry.format} · {format(new Date(entry.createdAt), "d MMM yyyy, HH:mm")}
+            {entry.format} · {format(new Date(entry.created_at), "d MMM yyyy, HH:mm")}
           </span>
         </div>
       </CardContent>

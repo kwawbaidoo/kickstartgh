@@ -13,7 +13,7 @@ import { useOnboardingStore } from "@/store/onboarding-store";
 
 export default function OnboardingSuccessPage() {
   const router = useRouter();
-  const draft = useOnboardingStore((state) => state.draft);
+  const activeTeam = useOnboardingStore((state) => state.activeTeam);
   const completeOnboarding = useOnboardingStore((state) => state.completeOnboarding);
 
   function handleFinish(destination: "/dashboard" | "/players") {
@@ -42,11 +42,11 @@ export default function OnboardingSuccessPage() {
                 Your team is now ready.
               </h1>
               <p className="text-sm text-muted-foreground">
-                {draft.team.name ?? "Your team"} is set up and ready to go.
+                {activeTeam.name || "Your team"} is set up and ready to go.
               </p>
             </div>
 
-            <SuccessCard team={draft.team} staff={draft.staff} />
+            <SuccessCard team={activeTeam} staff={activeTeam.staff} />
 
             <div className="flex w-full flex-col gap-2">
               <Button size="lg" className="w-full" onClick={() => handleFinish("/dashboard")}>

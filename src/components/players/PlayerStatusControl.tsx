@@ -15,11 +15,11 @@ import { toSelectItems } from "@/lib/utils";
 const statusItems = toSelectItems(statusOptions);
 
 type PlayerStatusControlProps = {
-  playerId: string;
+  player_id: string;
   status: PlayerStatus;
 };
 
-function PlayerStatusControl({ playerId, status }: PlayerStatusControlProps) {
+function PlayerStatusControl({ player_id, status }: PlayerStatusControlProps) {
   const setPlayerStatus = usePlayersStore((state) => state.setPlayerStatus);
 
   return (
@@ -28,7 +28,7 @@ function PlayerStatusControl({ playerId, status }: PlayerStatusControlProps) {
       <Select
         items={statusItems}
         value={status}
-        onValueChange={(value) => setPlayerStatus(playerId, value as PlayerStatus)}
+        onValueChange={(value) => setPlayerStatus(player_id, value as PlayerStatus)}
       >
         <SelectTrigger className="w-36">
           <SelectValue />
