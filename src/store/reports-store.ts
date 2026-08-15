@@ -87,7 +87,7 @@ export const useReportsStore = create<ReportsState>()(
       },
     }),
     {
-      name: "kickstartgh-reports",
+      name: "kickstartgh-reports-v2",
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       partialize: (state) => ({ templates: state.templates, history: state.history }),

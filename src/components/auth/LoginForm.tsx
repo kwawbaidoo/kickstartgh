@@ -9,47 +9,58 @@ import { Field, FieldContent, FieldError, FieldGroup, FieldLabel } from "@/compo
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PasswordField } from "@/components/auth/PasswordField";
-import { signInSchema, type SignInInput } from "@/schemas/auth";
+import { loginSchema, type LoginInput } from "@/schemas/auth";
+import { applyApiErrors } from "@/lib/api-client";
 import { useAuthStore } from "@/store/auth-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
 
-function SignInForm() {
-  const router = useRouter();
-  const signIn = useAuthStore((state) => state.signIn);
+type LoginFormProps = {
+  defaultPhone?: string;
+};
 
-  const form = useForm<SignInInput>({
-    resolver: zodResolver(signInSchema),
-    defaultValues: { identifier: "", password: "" },
+function LoginForm({ defaultPhone = "" }: LoginFormProps) {
+  const router = useRouter();
+  const login = useAuthStore((state) => state.login);
+
+  const form = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { phone: defaultPhone, password: "" },
   });
 
-  async function handleSignIn(data: SignInInput) {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    signIn(data.identifier);
-    const hasOnboarded = useOnboardingStore.getState().hasOnboarded;
-    router.push(hasOnboarded ? "/dashboard" : "/onboarding");
+  async function handleLogin(data: LoginInput) {
+    try {
+      await login(data);
+      const hasOnboarded = useOnboardingStore.getState().hasOnboarded;
+      router.push(hasOnboarded ? "/dashboard" : "/onboarding");
+    } catch (error) {
+      applyApiErrors(error, (field, err) => form.setError(field as keyof LoginInput, err));
+    }
   }
 
   return (
-    <form onSubmit={form.handleSubmit(handleSignIn)} className="flex flex-col gap-5">
+    <form onSubmit={form.handleSubmit(handleLogin)} className="flex flex-col gap-5">
       <FieldGroup>
-        <Field data-invalid={!!form.formState.errors.identifier}>
-          <FieldLabel htmlFor="identifier" required>Email or full name</FieldLabel>
+        <Field data-invalid={!!form.formState.errors.phone}>
+          <FieldLabel htmlFor="phone" required>Phone number</FieldLabel>
           <FieldContent>
             <Input
-              id="identifier"
-              placeholder="e.g. you@example.com"
+              id="phone"
+              placeholder="e.g. 024 000 0000"
               autoComplete="username"
-              {...form.register("identifier")}
+              {...form.register("phone")}
             />
-            <FieldError errors={[form.formState.errors.identifier]} />
+            <FieldError errors={[form.formState.errors.phone]} />
           </FieldContent>
         </Field>
 
         <PasswordField
           label="Password"
+          autoComplete="current-password"
           error={form.formState.errors.password}
           {...form.register("password")}
         />
+
+        <FieldError errors={[form.formState.errors.root]} />
       </FieldGroup>
 
       <Button type="submit" size="lg" className="w-full" disabled={form.formState.isSubmitting}>
@@ -69,4 +80,4 @@ function SignInForm() {
   );
 }
 
-export { SignInForm };
+export { LoginForm };

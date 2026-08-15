@@ -147,7 +147,7 @@ export const useSettingsStore = create<SettingsState>()(
         })),
     }),
     {
-      name: "kickstartgh-settings",
+      name: "kickstartgh-settings-v2",
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       onRehydrateStorage: () => (state) => state?.setHasHydrated(true),

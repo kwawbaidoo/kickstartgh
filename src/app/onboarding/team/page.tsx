@@ -9,13 +9,33 @@ import type { TeamDetailsInput } from "@/schemas/onboarding";
 
 export default function TeamDetailsPage() {
   const router = useRouter();
-  const draftTeam = useOnboardingStore((state) => state.draft.team);
-  const setTeamDetails = useOnboardingStore((state) => state.setTeamDetails);
+  const activeTeam = useOnboardingStore((state) => state.activeTeam);
+  const teamId = useOnboardingStore((state) => state.team_id);
+  const saveTeam = useOnboardingStore((state) => state.saveTeam);
 
-  function handleSubmit(data: TeamDetailsInput) {
-    setTeamDetails(data);
+  async function handleSubmit(data: TeamDetailsInput) {
+    await saveTeam(data);
     router.push("/onboarding/staff");
   }
+
+  const defaultValues: Partial<TeamDetailsInput> | undefined = teamId
+    ? {
+        name: activeTeam.name,
+        nickname: activeTeam.nickname,
+        region: activeTeam.region,
+        district: activeTeam.district,
+        home_ground: activeTeam.home_ground,
+        year_established: activeTeam.year_established,
+        logo: activeTeam.logo,
+        color_primary: activeTeam.color_primary,
+        color_secondary: activeTeam.color_secondary,
+        slogan: activeTeam.slogan,
+        facebook: activeTeam.facebook,
+        instagram: activeTeam.instagram,
+        tiktok: activeTeam.tiktok,
+        website: activeTeam.website,
+      }
+    : undefined;
 
   return (
     <OnboardingLayout
@@ -24,7 +44,7 @@ export default function TeamDetailsPage() {
       title="Create your team"
       description="Tell us a bit about your team. You can always edit this later."
     >
-      <TeamForm defaultValues={draftTeam} onSubmit={handleSubmit} />
+      <TeamForm defaultValues={defaultValues} onSubmit={handleSubmit} />
     </OnboardingLayout>
   );
 }

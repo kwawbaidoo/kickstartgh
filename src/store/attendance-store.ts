@@ -105,7 +105,7 @@ export const useAttendanceStore = create<AttendanceState>()(
       },
     }),
     {
-      name: "kickstartgh-attendance",
+      name: "kickstartgh-attendance-v3",
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       partialize: (state) => ({ sessions: state.sessions }),

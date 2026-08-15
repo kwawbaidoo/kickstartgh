@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { staffRoleOptions } from "@/config/roles";
 import { staffFormSchema, type StaffFormInput, type StaffMember } from "@/schemas/onboarding";
 import { buildStaffCredentialsMessage, generateTempPassword } from "@/lib/staff";
+import { applyApiErrors } from "@/lib/api-client";
 import { fadeInUp } from "@/lib/motion";
 import { getInitials, toSelectItems } from "@/lib/utils";
 
@@ -24,9 +25,9 @@ const staffRoleItems = toSelectItems(staffRoleOptions);
 type StaffManagerProps = {
   staff: StaffMember[];
   teamName: string;
-  onAdd: (member: StaffMember) => void;
-  onRemove: (id: string) => void;
-  onChangeRole: (id: string, role: StaffFormInput["role"]) => void;
+  onAdd: (input: StaffFormInput) => Promise<StaffMember>;
+  onRemove: (id: string) => Promise<void>;
+  onChangeRole: (id: string, role: StaffFormInput["role"]) => Promise<void>;
 };
 
 type CredentialState = {
@@ -45,20 +46,23 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
     defaultValues: { full_name: "", phone: "", email: "" },
   });
 
-  function handleAdd(data: StaffFormInput) {
-    const member: StaffMember = { id: crypto.randomUUID(), ...data };
-    onAdd(member);
-    form.reset({ full_name: "", phone: "", email: "" });
-    setFormKey((current) => current + 1);
+  async function handleAdd(data: StaffFormInput) {
+    try {
+      const member = await onAdd(data);
+      form.reset({ full_name: "", phone: "", email: "" });
+      setFormKey((current) => current + 1);
 
-    const tempPassword = generateTempPassword();
-    setCredentialState({ member, tempPassword, status: "sending" });
-    setCopied(false);
-    setTimeout(() => {
-      setCredentialState((current) =>
-        current && current.member.id === member.id ? { ...current, status: "sent" } : current
-      );
-    }, 900);
+      const tempPassword = generateTempPassword();
+      setCredentialState({ member, tempPassword, status: "sending" });
+      setCopied(false);
+      setTimeout(() => {
+        setCredentialState((current) =>
+          current && current.member.id === member.id ? { ...current, status: "sent" } : current
+        );
+      }, 900);
+    } catch (error) {
+      applyApiErrors(error, (field, err) => form.setError(field as keyof StaffFormInput, err));
+    }
   }
 
   async function handleCopyPassword() {
@@ -138,9 +142,9 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
           </FieldContent>
         </Field>
 
-        <Button type="submit" variant="outline" className="w-full">
+        <Button type="submit" variant="outline" className="w-full" disabled={form.formState.isSubmitting}>
           <UserPlus />
-          Add staff member
+          {form.formState.isSubmitting ? "Adding..." : "Add staff member"}
         </Button>
       </form>
 
@@ -166,7 +170,9 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
                 <Select
                   items={staffRoleItems}
                   value={member.role}
-                  onValueChange={(value) => onChangeRole(member.id, value as StaffFormInput["role"])}
+                  onValueChange={(value) => {
+                    onChangeRole(member.id, value as StaffFormInput["role"]).catch(() => {});
+                  }}
                 >
                   <SelectTrigger size="sm" className="w-full sm:w-auto">
                     <SelectValue />
@@ -184,7 +190,9 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
                   variant="ghost"
                   size="icon-sm"
                   aria-label={`Remove ${member.full_name}`}
-                  onClick={() => onRemove(member.id)}
+                  onClick={() => {
+                    onRemove(member.id).catch(() => {});
+                  }}
                 >
                   <X className="size-4" />
                 </Button>

@@ -127,7 +127,7 @@ export const useMatchesStore = create<MatchesState>()(
       },
     }),
     {
-      name: "kickstartgh-matches",
+      name: "kickstartgh-matches-v3",
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       partialize: (state) => ({ matches: state.matches }),

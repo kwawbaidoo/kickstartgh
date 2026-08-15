@@ -24,6 +24,7 @@ import {
 import { AvatarUpload } from "@/components/common/AvatarUpload";
 import { ghanaRegions } from "@/config/regions";
 import { teamDetailsSchema, type TeamDetailsInput } from "@/schemas/onboarding";
+import { applyApiErrors } from "@/lib/api-client";
 import { getInitials } from "@/lib/utils";
 import type { z } from "zod";
 
@@ -31,10 +32,11 @@ type TeamFormValues = z.input<typeof teamDetailsSchema>;
 
 type TeamFormProps = {
   defaultValues?: Partial<TeamDetailsInput>;
-  onSubmit: (data: TeamDetailsInput) => void;
+  onSubmit: (data: TeamDetailsInput) => Promise<void>;
+  submitLabel?: string;
 };
 
-function TeamForm({ defaultValues, onSubmit }: TeamFormProps) {
+function TeamForm({ defaultValues, onSubmit, submitLabel = "Continue" }: TeamFormProps) {
   const form = useForm<TeamFormValues, unknown, TeamDetailsInput>({
     resolver: zodResolver(teamDetailsSchema),
     defaultValues: {
@@ -53,11 +55,19 @@ function TeamForm({ defaultValues, onSubmit }: TeamFormProps) {
   const teamName = useWatch({ control: form.control, name: "name" });
   const logo = useWatch({ control: form.control, name: "logo" });
 
+  async function handleSubmit(data: TeamDetailsInput) {
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      applyApiErrors(error, (field, err) => form.setError(field as keyof TeamDetailsInput, err));
+    }
+  }
+
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
+    <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col gap-6">
       <AvatarUpload
         value={logo}
-        onChange={(dataUrl) => form.setValue("logo", dataUrl)}
+        onChange={(url) => form.setValue("logo", url)}
         fallbackText={teamName ? getInitials(teamName) : undefined}
         label="Team logo (optional)"
         alt="Team logo preview"
@@ -172,8 +182,10 @@ function TeamForm({ defaultValues, onSubmit }: TeamFormProps) {
         </Field>
       </FieldGroup>
 
-      <Button type="submit" size="lg" className="w-full">
-        Continue
+      <FieldError errors={[form.formState.errors.root]} />
+
+      <Button type="submit" size="lg" className="w-full" disabled={form.formState.isSubmitting}>
+        {form.formState.isSubmitting ? "Saving..." : submitLabel}
       </Button>
     </form>
   );
