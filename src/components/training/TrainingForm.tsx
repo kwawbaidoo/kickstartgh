@@ -28,6 +28,7 @@ import {
 import { ProgressStepper } from "@/components/onboarding/ProgressStepper";
 import { trainingFocusOptions } from "@/config/training";
 import { trainingFormSchema, type TrainingFormInput } from "@/schemas/training";
+import { applyApiErrors } from "@/lib/api-client";
 import { toSelectItems } from "@/lib/utils";
 
 const focusItems = toSelectItems(trainingFocusOptions);
@@ -41,7 +42,7 @@ const stepFields: (keyof TrainingFormInput)[][] = [
 
 type TrainingFormProps = {
   defaultValues?: Partial<TrainingFormInput>;
-  onSubmit: (data: TrainingFormInput) => void;
+  onSubmit: (data: TrainingFormInput) => Promise<void>;
   submitLabel?: string;
 };
 
@@ -80,6 +81,14 @@ function TrainingForm({ defaultValues, onSubmit, submitLabel = "Schedule Session
     );
   }
 
+  async function handleFormSubmit(data: TrainingFormInput) {
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      applyApiErrors(error, (field, err) => form.setError(field as keyof TrainingFormInput, err));
+    }
+  }
+
   async function handleNext() {
     const valid = await form.trigger(stepFields[step]);
     if (valid) setStep((current) => Math.min(stepLabels.length - 1, current + 1));
@@ -90,7 +99,7 @@ function TrainingForm({ defaultValues, onSubmit, submitLabel = "Schedule Session
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-8">
+    <form onSubmit={form.handleSubmit(handleFormSubmit)} className="flex flex-col gap-8">
       <ProgressStepper steps={stepLabels} currentStep={step} />
 
       {step === 0 && (
@@ -242,6 +251,8 @@ function TrainingForm({ defaultValues, onSubmit, submitLabel = "Schedule Session
         </FieldSet>
       )}
 
+      <FieldError errors={[form.formState.errors.root]} />
+
       <div className="flex items-center justify-between gap-3">
         <Button type="button" variant="outline" onClick={handleBack} disabled={step === 0}>
           Back
@@ -251,8 +262,8 @@ function TrainingForm({ defaultValues, onSubmit, submitLabel = "Schedule Session
             Next
           </Button>
         ) : (
-          <Button key="submit" type="submit">
-            {submitLabel}
+          <Button key="submit" type="submit" disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting ? "Saving..." : submitLabel}
           </Button>
         )}
       </div>

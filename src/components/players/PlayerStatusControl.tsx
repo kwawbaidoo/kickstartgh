@@ -28,7 +28,7 @@ function PlayerStatusControl({ player_id, status }: PlayerStatusControlProps) {
       <Select
         items={statusItems}
         value={status}
-        onValueChange={(value) => setPlayerStatus(player_id, value as PlayerStatus)}
+        onValueChange={(value) => setPlayerStatus(player_id, value as PlayerStatus).catch(() => {})}
       >
         <SelectTrigger className="w-36">
           <SelectValue />

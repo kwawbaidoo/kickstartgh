@@ -1,34 +1,98 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-import {
-  players as seedPlayers,
-  type Player,
-  type PlayerSeasonRecord,
-  type PlayerStatus,
-} from "@/mock/players";
-import { currentTeam } from "@/mock/teams";
-import { DEFAULT_SEASON_ID } from "@/mock/seasons";
+import type { Player, PlayerSeasonRecord, PlayerStatus } from "@/mock/players";
 import type { PlayerFormInput } from "@/schemas/player";
+import { apiFetch } from "@/lib/api-client";
+import { useOnboardingStore } from "@/store/onboarding-store";
 import { useSeasonStore } from "@/store/season-store";
 
 type PlayersState = {
   players: Player[];
   hasHydrated: boolean;
   setHasHydrated: (value: boolean) => void;
-  addPlayer: (input: PlayerFormInput) => Player;
-  updatePlayer: (id: string, input: PlayerFormInput) => void;
-  setPlayerStatus: (id: string, status: PlayerStatus) => void;
-  deletePlayer: (id: string) => void;
-  registerPlayerForSeason: (player_id: string, season_id: string, jersey_number: number) => void;
-  bulkRegisterForSeason: (season_id: string, playerIds: string[], sourceSeasonId: string) => void;
-  removePlayerFromSeason: (player_id: string, season_id: string) => void;
-  migrateSeasonRecords: () => void;
+  fetchPlayers: () => Promise<void>;
+  fetchSeasonRoster: (season_id: string) => Promise<void>;
+  addPlayer: (input: PlayerFormInput) => Promise<Player>;
+  updatePlayer: (id: string, input: PlayerFormInput) => Promise<void>;
+  setPlayerStatus: (id: string, status: PlayerStatus) => Promise<void>;
+  deletePlayer: (id: string) => Promise<void>;
+  registerPlayerForSeason: (player_id: string, season_id: string, jersey_number: number) => Promise<void>;
+  bulkRegisterForSeason: (season_id: string, playerIds: string[], sourceSeasonId: string) => Promise<void>;
+  removePlayerFromSeason: (player_id: string, season_id: string) => Promise<void>;
 };
 
-const emptyStats = {
-  rating: 0,
+/**
+ * Confirmed live 2026-08-15 (Create/Get/Update Player, Update Status, Register/Carry
+ * Forward/Remove-from-Season all called directly against the real server) — response
+ * `data` payloads are camelCase, same as every other domain. Two confirmed mismatches
+ * vs. the original mock model: `emergencyContact` is a plain string (not a structured
+ * {name,phone,email} object), and there is no `email` or marketability-profile field on
+ * the real Player entity at all — dropped from the frontend per product decision.
+ */
+type PlayerResponse = {
+  id: string;
+  teamId: string;
+  fullName: string;
+  nickname: string | null;
+  photo: string | null;
+  position: Player["position"];
+  secondaryPosition: Player["position"] | null;
+  jerseyNumber: number;
+  preferredFoot: Player["preferred_foot"];
+  dateOfBirth: string;
+  phone: string | null;
+  emergencyContact: string | null;
+  village: string | null;
+  previousClub: string | null;
+  status: PlayerStatus;
+  statusHistory: { status: PlayerStatus; date: string }[];
+  createdAt: string;
 };
+
+/**
+ * A season "roster" entry is its own resource on the real backend (not embedded on
+ * Player) — confirmed via `GET /seasons/:id/players`, `POST /seasons/:id/players`,
+ * `POST /seasons/:id/players/carry-forward`. Only the list/roster variant embeds the
+ * full nested `player`; register/carry-forward responses don't.
+ */
+type SeasonRegistrationResponse = {
+  id: string;
+  playerId: string;
+  seasonId: string;
+  jerseyNumber: number;
+  status: PlayerStatus;
+  registeredAt: string;
+  player?: PlayerResponse;
+};
+
+type PaginatedResponse<T> = {
+  items: T[];
+  meta: { current_page: number; per_page: number; total: number; last_page: number };
+};
+
+function mapPlayer(response: PlayerResponse, season_records: PlayerSeasonRecord[] = []): Player {
+  return {
+    id: response.id,
+    team_id: response.teamId,
+    full_name: response.fullName,
+    nickname: response.nickname ?? undefined,
+    photo: response.photo ?? undefined,
+    position: response.position,
+    secondary_position: response.secondaryPosition ?? undefined,
+    jersey_number: response.jerseyNumber,
+    preferred_foot: response.preferredFoot,
+    date_of_birth: response.dateOfBirth,
+    phone: response.phone ?? undefined,
+    emergency_contact: response.emergencyContact ?? undefined,
+    village: response.village ?? undefined,
+    previous_club: response.previousClub ?? undefined,
+    status: response.status,
+    status_history: response.statusHistory,
+    created_at: response.createdAt,
+    season_records,
+  };
+}
 
 /** Appends a status-history entry only when the status actually changes. */
 function withStatus(player: Player, status: PlayerStatus): Pick<Player, "status" | "status_history"> {
@@ -41,18 +105,12 @@ function withStatus(player: Player, status: PlayerStatus): Pick<Player, "status"
   };
 }
 
-/**
- * Global pages only ever show the active season, so the top-level
- * jersey_number/status mirror is always kept pointed at whichever
- * `season_records` entry matches the currently active season — this is what
- * lets PlayerCard, PDF exports, the lineup builder, etc. keep reading those
- * two fields directly without ever needing a season parameter threaded in.
- */
 function upsertSeasonRecord(
   records: PlayerSeasonRecord[],
   season_id: string,
   jersey_number: number,
-  status: PlayerStatus
+  status: PlayerStatus,
+  registered_at?: string
 ): PlayerSeasonRecord[] {
   const existing = records.find((record) => record.season_id === season_id);
   if (existing) {
@@ -60,110 +118,188 @@ function upsertSeasonRecord(
       record.season_id === season_id ? { ...record, jersey_number, status } : record
     );
   }
-  return [...records, { season_id, jersey_number, status, registered_at: new Date().toISOString() }];
+  return [
+    ...records,
+    { season_id, jersey_number, status, registered_at: registered_at ?? new Date().toISOString() },
+  ];
 }
 
 export const usePlayersStore = create<PlayersState>()(
   persist(
     (set, get) => ({
-      players: seedPlayers,
+      players: [],
       hasHydrated: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
 
-      addPlayer: (input) => {
-        const created_at = new Date().toISOString();
-        const activeSeasonId = useSeasonStore.getState().activeSeasonId;
-        const newPlayer: Player = {
-          id: crypto.randomUUID(),
-          team_id: currentTeam.id,
-          created_at,
-          stats: emptyStats,
-          ...input,
-          status_history: [{ status: input.status, date: created_at }],
-          season_records: [
-            {
-              season_id: activeSeasonId,
-              jersey_number: input.jersey_number,
-              status: input.status,
-              registered_at: created_at,
-            },
-          ],
-        };
-        set({ players: [...get().players, newPlayer] });
-        return newPlayer;
+      fetchPlayers: async () => {
+        const team_id = useOnboardingStore.getState().team_id;
+        if (!team_id) return;
+        const existingRecords = new Map(get().players.map((player) => [player.id, player.season_records]));
+        const response = await apiFetch<PaginatedResponse<PlayerResponse>>(`/teams/${team_id}/players`);
+        const players = response.items.map((item) => mapPlayer(item, existingRecords.get(item.id) ?? []));
+        set({ players });
       },
 
-      updatePlayer: (id, input) => {
-        const activeSeasonId = useSeasonStore.getState().activeSeasonId;
-        set({
-          players: get().players.map((player) =>
-            player.id === id
-              ? {
-                  ...player,
-                  ...input,
-                  ...withStatus(player, input.status),
-                  season_records: upsertSeasonRecord(
-                    player.season_records,
-                    activeSeasonId,
-                    input.jersey_number,
-                    input.status
-                  ),
-                }
-              : player
-          ),
+      fetchSeasonRoster: async (season_id) => {
+        const response = await apiFetch<PaginatedResponse<SeasonRegistrationResponse>>(
+          `/seasons/${season_id}/players`
+        );
+        set((state) => {
+          const players = [...state.players];
+          for (const registration of response.items) {
+            const index = players.findIndex((player) => player.id === registration.playerId);
+            if (index === -1) {
+              if (!registration.player) continue;
+              players.push(
+                mapPlayer(registration.player, [
+                  {
+                    season_id,
+                    jersey_number: registration.jerseyNumber,
+                    status: registration.status,
+                    registered_at: registration.registeredAt,
+                  },
+                ])
+              );
+              continue;
+            }
+            players[index] = {
+              ...players[index],
+              season_records: upsertSeasonRecord(
+                players[index].season_records,
+                season_id,
+                registration.jerseyNumber,
+                registration.status,
+                registration.registeredAt
+              ),
+            };
+          }
+          return { players };
         });
       },
 
-      setPlayerStatus: (id, status) => {
+      addPlayer: async (input) => {
+        const team_id = useOnboardingStore.getState().team_id;
+        if (!team_id) throw new Error("Create a team before adding a player.");
         const activeSeasonId = useSeasonStore.getState().activeSeasonId;
-        set({
-          players: get().players.map((player) =>
+        const response = await apiFetch<PlayerResponse>(`/teams/${team_id}/players`, {
+          method: "POST",
+          body: input,
+        });
+        const player = mapPlayer(
+          response,
+          activeSeasonId
+            ? [
+                {
+                  season_id: activeSeasonId,
+                  jersey_number: response.jerseyNumber,
+                  status: response.status,
+                  registered_at: response.createdAt,
+                },
+              ]
+            : []
+        );
+        set((state) => ({ players: [...state.players, player] }));
+        return player;
+      },
+
+      updatePlayer: async (id, input) => {
+        const activeSeasonId = useSeasonStore.getState().activeSeasonId;
+        const response = await apiFetch<PlayerResponse>(`/players/${id}`, {
+          method: "PATCH",
+          body: input,
+        });
+        set((state) => ({
+          players: state.players.map((player) =>
+            player.id === id
+              ? mapPlayer(
+                  response,
+                  activeSeasonId
+                    ? upsertSeasonRecord(player.season_records, activeSeasonId, response.jerseyNumber, response.status)
+                    : player.season_records
+                )
+              : player
+          ),
+        }));
+      },
+
+      setPlayerStatus: async (id, status) => {
+        const activeSeasonId = useSeasonStore.getState().activeSeasonId;
+        await apiFetch<PlayerResponse>(`/players/${id}/status`, {
+          method: "PATCH",
+          body: { status },
+        });
+        set((state) => ({
+          players: state.players.map((player) =>
             player.id === id
               ? {
                   ...player,
                   ...withStatus(player, status),
+                  season_records: activeSeasonId
+                    ? upsertSeasonRecord(player.season_records, activeSeasonId, player.jersey_number, status)
+                    : player.season_records,
+                }
+              : player
+          ),
+        }));
+      },
+
+      deletePlayer: async (id) => {
+        await apiFetch<void>(`/players/${id}`, { method: "DELETE" });
+        set((state) => ({ players: state.players.filter((player) => player.id !== id) }));
+      },
+
+      registerPlayerForSeason: async (player_id, season_id, jersey_number) => {
+        const response = await apiFetch<SeasonRegistrationResponse>(`/seasons/${season_id}/players`, {
+          method: "POST",
+          body: { player_id, jersey_number },
+        });
+        set((state) => ({
+          players: state.players.map((player) =>
+            player.id === player_id
+              ? {
+                  ...player,
                   season_records: upsertSeasonRecord(
                     player.season_records,
-                    activeSeasonId,
-                    player.jersey_number,
-                    status
+                    season_id,
+                    response.jerseyNumber,
+                    response.status,
+                    response.registeredAt
                   ),
                 }
               : player
           ),
-        });
+        }));
       },
 
-      registerPlayerForSeason: (player_id, season_id, jersey_number) => {
-        set({
-          players: get().players.map((player) =>
-            player.id === player_id
-              ? {
-                  ...player,
-                  season_records: upsertSeasonRecord(player.season_records, season_id, jersey_number, "Active"),
-                }
-              : player
-          ),
-        });
-      },
-
-      bulkRegisterForSeason: (season_id, playerIds, sourceSeasonId) => {
-        set({
-          players: get().players.map((player) => {
-            if (!playerIds.includes(player.id)) return player;
-            const sourceRecord = player.season_records.find((record) => record.season_id === sourceSeasonId);
-            const jersey_number = sourceRecord?.jersey_number ?? player.jersey_number;
-            return {
-              ...player,
-              season_records: upsertSeasonRecord(player.season_records, season_id, jersey_number, "Active"),
+      bulkRegisterForSeason: async (season_id, playerIds, sourceSeasonId) => {
+        const response = await apiFetch<SeasonRegistrationResponse[]>(
+          `/seasons/${season_id}/players/carry-forward`,
+          { method: "POST", body: { source_season_id: sourceSeasonId, source_player_ids: playerIds } }
+        );
+        set((state) => {
+          const players = [...state.players];
+          for (const registration of response) {
+            const index = players.findIndex((player) => player.id === registration.playerId);
+            if (index === -1) continue;
+            players[index] = {
+              ...players[index],
+              season_records: upsertSeasonRecord(
+                players[index].season_records,
+                season_id,
+                registration.jerseyNumber,
+                registration.status,
+                registration.registeredAt
+              ),
             };
-          }),
+          }
+          return { players };
         });
       },
 
-      removePlayerFromSeason: (player_id, season_id) => {
-        set({
-          players: get().players.map((player) =>
+      removePlayerFromSeason: async (player_id, season_id) => {
+        await apiFetch<void>(`/seasons/${season_id}/players/${player_id}`, { method: "DELETE" });
+        set((state) => ({
+          players: state.players.map((player) =>
             player.id === player_id
               ? {
                   ...player,
@@ -171,47 +307,16 @@ export const usePlayersStore = create<PlayersState>()(
                 }
               : player
           ),
-        });
-      },
-
-      deletePlayer: (id) => {
-        set({ players: get().players.filter((player) => player.id !== id) });
-      },
-
-      /**
-       * Backfills players persisted before the Season feature existed —
-       * a no-op once every player has records. Uses the static default
-       * season, not whatever's active now: this data predates seasons
-       * entirely, so it belongs to the original season, not the current one.
-       */
-      migrateSeasonRecords: () => {
-        set({
-          players: get().players.map((player) =>
-            player.season_records && player.season_records.length > 0
-              ? player
-              : {
-                  ...player,
-                  season_records: [
-                    {
-                      season_id: DEFAULT_SEASON_ID,
-                      jersey_number: player.jersey_number,
-                      status: player.status,
-                      registered_at: player.created_at,
-                    },
-                  ],
-                }
-          ),
-        });
+        }));
       },
     }),
     {
-      name: "kickstartgh-players-v3",
+      name: "kickstartgh-players-v4",
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       partialize: (state) => ({ players: state.players }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
-        state?.migrateSeasonRecords();
       },
     }
   )

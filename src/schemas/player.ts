@@ -13,34 +13,6 @@ const statusEnum = z.enum(statusOptions as [PlayerStatus, ...PlayerStatus[]], {
   error: "Please select a status.",
 });
 
-const emergencyContactFormSchema = z.object({
-  name: z.string().trim().optional(),
-  phone: z.string().trim().optional(),
-  email: z.email("Please enter a valid email.").optional().or(z.literal("")),
-});
-
-const educationEntryFormSchema = z.object({
-  institution: z.string().trim().min(1, "Please enter an institution name."),
-  period: z.string().trim().min(1, "Please enter a period, e.g. 2019-2022."),
-});
-
-const socialLinksFormSchema = z.object({
-  instagram: z.url("Please enter a valid URL.").optional().or(z.literal("")),
-  twitter: z.url("Please enter a valid URL.").optional().or(z.literal("")),
-  facebook: z.url("Please enter a valid URL.").optional().or(z.literal("")),
-  tiktok: z.url("Please enter a valid URL.").optional().or(z.literal("")),
-});
-
-const marketabilityProfileFormSchema = z.object({
-  nationality: z.string().trim().optional(),
-  height: z.string().trim().optional(),
-  education: z.array(educationEntryFormSchema).optional(),
-  work_experience: z.array(z.string()).optional(),
-  achievements: z.array(z.string()).optional(),
-  other_sports: z.array(z.string()).optional(),
-  social_links: socialLinksFormSchema.optional(),
-});
-
 const basePlayerFormSchema = z.object({
   full_name: z.string().min(2, "Please enter the player's full name."),
   nickname: z.string().trim().optional(),
@@ -50,8 +22,7 @@ const basePlayerFormSchema = z.object({
     .refine((value) => new Date(value) <= new Date(), "Date of birth can't be in the future."),
   photo: z.string().optional(),
   phone: z.string().trim().optional(),
-  email: z.email("Please enter a valid email.").optional().or(z.literal("")),
-  emergency_contact: emergencyContactFormSchema.optional(),
+  emergency_contact: z.string().trim().optional(),
   jersey_number: z.coerce
     .number({ error: "Please enter a jersey number." })
     .int("Jersey number must be a whole number.")
@@ -63,7 +34,6 @@ const basePlayerFormSchema = z.object({
   village: z.string().trim().optional(),
   previous_club: z.string().trim().optional(),
   status: statusEnum,
-  profile: marketabilityProfileFormSchema.optional(),
 });
 
 export function createPlayerFormSchema(existingPlayers: Player[] = [], excludeId?: string) {

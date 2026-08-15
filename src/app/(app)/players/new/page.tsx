@@ -18,8 +18,8 @@ export default function NewPlayerPage() {
   const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
   const players = getSeasonRoster(allPlayers, activeSeasonId);
 
-  function handleSubmit(data: PlayerFormInput) {
-    const player = addPlayer(data);
+  async function handleSubmit(data: PlayerFormInput) {
+    const player = await addPlayer(data);
     router.push(`/players/${player.id}`);
   }
 

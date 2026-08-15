@@ -10,7 +10,6 @@ import { LineupView } from "@/components/matches/LineupView";
 import type { Match } from "@/mock/matches";
 import { usePlayersStore } from "@/store/players-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
-import { resolveBenchOfficials } from "@/lib/matches";
 import { exportLineupPdf } from "@/lib/export";
 
 function MatchLineupModal({ match }: { match: Match }) {
@@ -20,8 +19,7 @@ function MatchLineupModal({ match }: { match: Match }) {
 
   function handleDownload() {
     if (!match.lineup) return;
-    const bench_officials = resolveBenchOfficials(match.lineup.bench_officials, activeTeam.staff);
-    exportLineupPdf(match, activeTeam, players, bench_officials);
+    exportLineupPdf(match, activeTeam, players);
   }
 
   return (
@@ -39,7 +37,7 @@ function MatchLineupModal({ match }: { match: Match }) {
       {match.lineup ? (
         <div className="flex flex-col gap-4">
           <div className="max-h-[60vh] overflow-y-auto pr-1">
-            <LineupView lineup={match.lineup} players={players} staff={activeTeam.staff} />
+            <LineupView lineup={match.lineup} players={players} />
           </div>
           <Button type="button" variant="outline" onClick={handleDownload}>
             <Download />

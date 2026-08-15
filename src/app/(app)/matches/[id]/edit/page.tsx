@@ -30,8 +30,8 @@ export default function EditMatchPage({ params }: { params: Promise<{ id: string
     );
   }
 
-  function handleSubmit(data: MatchFormInput) {
-    updateMatch(id, data);
+  async function handleSubmit(data: MatchFormInput) {
+    await updateMatch(id, data);
     router.push(`/matches/${id}`);
   }
 

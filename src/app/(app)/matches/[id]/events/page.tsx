@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -19,6 +19,7 @@ export default function MatchEventsPage({ params }: { params: Promise<{ id: stri
   const removeEvent = useMatchesStore((state) => state.removeEvent);
   const players = usePlayersStore((state) => state.players);
   const match = matches.find((candidate) => candidate.id === id);
+  const [error, setError] = useState<string | null>(null);
 
   if (!match) {
     return (
@@ -55,11 +56,16 @@ export default function MatchEventsPage({ params }: { params: Promise<{ id: stri
       </Link>
       <SectionHeader title="Record Events" description={`vs ${match.opponent}`} />
 
+      {error && <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
+
       <EventRecorder
         lineup={match.lineup}
         squad={players}
         events={match.events}
-        onRecord={(event) => addEvent(id, event)}
+        onRecord={(event) => {
+          setError(null);
+          addEvent(id, event).catch(() => setError("Couldn't record this event. Please try again."));
+        }}
       />
 
       <Card>
@@ -70,7 +76,12 @@ export default function MatchEventsPage({ params }: { params: Promise<{ id: stri
           <MatchTimeline
             events={match.events}
             playerNames={playerNames}
-            onRemove={(event_id) => removeEvent(id, event_id)}
+            onRemove={(event_id) => {
+              setError(null);
+              removeEvent(id, event_id).catch(() =>
+                setError("Couldn't remove this event. Please try again.")
+              );
+            }}
           />
         </CardContent>
       </Card>

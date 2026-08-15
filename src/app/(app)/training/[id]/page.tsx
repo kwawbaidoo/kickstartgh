@@ -44,6 +44,7 @@ export default function TrainingDetailsPage({ params }: { params: Promise<{ id: 
   const session = sessions.find((candidate) => candidate.id === id);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!session) {
     return (
@@ -65,8 +66,15 @@ export default function TrainingDetailsPage({ params }: { params: Promise<{ id: 
   const reminderMessage = buildTrainingReminderMessage(session, activeTeam.name);
 
   function handleDelete() {
-    deleteSession(id);
-    router.push("/training");
+    setError(null);
+    deleteSession(id)
+      .then(() => router.push("/training"))
+      .catch(() => setError("Couldn't delete this session. Please try again."));
+  }
+
+  function handleCancel() {
+    setError(null);
+    cancelSession(id).catch(() => setError("Couldn't cancel this session. Please try again."));
   }
 
   return (
@@ -79,6 +87,8 @@ export default function TrainingDetailsPage({ params }: { params: Promise<{ id: 
         Back to Training
       </Link>
       <SectionHeader title="Training Session" />
+
+      {error && <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
 
       <Card>
         <CardContent className="flex flex-col gap-4">
@@ -176,7 +186,7 @@ export default function TrainingDetailsPage({ params }: { params: Promise<{ id: 
       </div>
 
       {session.status === "upcoming" && (
-        <Button variant="ghost" className="self-start" onClick={() => cancelSession(id)}>
+        <Button variant="ghost" className="self-start" onClick={handleCancel}>
           Cancel Session
         </Button>
       )}

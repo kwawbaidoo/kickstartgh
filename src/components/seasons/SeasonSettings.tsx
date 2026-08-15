@@ -18,10 +18,10 @@ type SeasonSettingsProps = {
   season: Season;
   isActive: boolean;
   exportTable: ReportTable;
-  onRename: (name: string) => void;
-  onActivate: () => void;
-  onArchive: () => void;
-  onDuplicate: (name: string, carryForwardRoster: boolean) => void;
+  onRename: (name: string) => Promise<void>;
+  onActivate: () => Promise<void>;
+  onArchive: () => Promise<void>;
+  onDuplicate: (name: string, carryForwardRoster: boolean) => Promise<void>;
 };
 
 function SeasonSettings({
@@ -39,9 +39,70 @@ function SeasonSettings({
   const [duplicateOpen, setDuplicateOpen] = useState(false);
   const [duplicateName, setDuplicateName] = useState(`${season.name} (Copy)`);
   const [carryForward, setCarryForward] = useState(true);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  async function handleRename() {
+    setIsRenaming(true);
+    setActionError(null);
+    try {
+      await onRename(name.trim());
+    } catch {
+      setActionError("Couldn't rename this season. Please try again.");
+    } finally {
+      setIsRenaming(false);
+    }
+  }
+
+  async function handleActivate() {
+    setIsSubmitting(true);
+    setActionError(null);
+    try {
+      await onActivate();
+      setActivateOpen(false);
+    } catch {
+      setActionError("Couldn't activate this season. Please try again.");
+      setActivateOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleArchive() {
+    setIsSubmitting(true);
+    setActionError(null);
+    try {
+      await onArchive();
+      setArchiveOpen(false);
+    } catch {
+      setActionError("Couldn't archive this season. Please try again.");
+      setArchiveOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleDuplicate() {
+    setIsSubmitting(true);
+    setActionError(null);
+    try {
+      await onDuplicate(duplicateName.trim(), carryForward);
+      setDuplicateOpen(false);
+    } catch {
+      setActionError("Couldn't duplicate this season. Please try again.");
+      setDuplicateOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
+      {actionError && (
+        <p className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{actionError}</p>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Rename Season</CardTitle>
@@ -53,9 +114,12 @@ function SeasonSettings({
               <Input id="seasonName" value={name} onChange={(event) => setName(event.target.value)} />
             </FieldContent>
           </Field>
-          <Button disabled={!name.trim() || name === season.name} onClick={() => onRename(name.trim())}>
+          <Button
+            disabled={!name.trim() || name === season.name || isRenaming}
+            onClick={handleRename}
+          >
             <Pencil />
-            Save
+            {isRenaming ? "Saving..." : "Save"}
           </Button>
         </CardContent>
       </Card>
@@ -142,16 +206,11 @@ function SeasonSettings({
         description="Every new player, match, and training session will belong to this season from now on. The current active season will move to Completed."
         footer={
           <>
-            <Button variant="outline" onClick={() => setActivateOpen(false)}>
+            <Button variant="outline" onClick={() => setActivateOpen(false)} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button
-              onClick={() => {
-                onActivate();
-                setActivateOpen(false);
-              }}
-            >
-              Activate
+            <Button onClick={handleActivate} disabled={isSubmitting}>
+              {isSubmitting ? "Activating..." : "Activate"}
             </Button>
           </>
         }
@@ -164,17 +223,11 @@ function SeasonSettings({
         description="Archived seasons stay visible for reference but are clearly marked as read-only."
         footer={
           <>
-            <Button variant="outline" onClick={() => setArchiveOpen(false)}>
+            <Button variant="outline" onClick={() => setArchiveOpen(false)} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                onArchive();
-                setArchiveOpen(false);
-              }}
-            >
-              Archive
+            <Button variant="destructive" onClick={handleArchive} disabled={isSubmitting}>
+              {isSubmitting ? "Archiving..." : "Archive"}
             </Button>
           </>
         }
@@ -187,17 +240,11 @@ function SeasonSettings({
         description="Creates a new upcoming season with the same details."
         footer={
           <>
-            <Button variant="outline" onClick={() => setDuplicateOpen(false)}>
+            <Button variant="outline" onClick={() => setDuplicateOpen(false)} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button
-              disabled={!duplicateName.trim()}
-              onClick={() => {
-                onDuplicate(duplicateName.trim(), carryForward);
-                setDuplicateOpen(false);
-              }}
-            >
-              Duplicate
+            <Button disabled={!duplicateName.trim() || isSubmitting} onClick={handleDuplicate}>
+              {isSubmitting ? "Duplicating..." : "Duplicate"}
             </Button>
           </>
         }

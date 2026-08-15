@@ -11,8 +11,8 @@ export default function NewTrainingPage() {
   const router = useRouter();
   const addSession = useAttendanceStore((state) => state.addSession);
 
-  function handleSubmit(data: TrainingFormInput) {
-    const session = addSession(data);
+  async function handleSubmit(data: TrainingFormInput) {
+    const session = await addSession(data);
     router.push(`/training/${session.id}`);
   }
 

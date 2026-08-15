@@ -4,7 +4,7 @@ import { use, useEffect } from "react";
 import { MessageCircle } from "lucide-react";
 
 import { PlayerPhotoPanel } from "@/components/players/PlayerPhotoPanel";
-import { PlayerMarketabilityDetails } from "@/components/players/PlayerMarketabilityDetails";
+import { PlayerFacts } from "@/components/players/PlayerFacts";
 import { LoadingSkeleton } from "@/components/common/LoadingSkeleton";
 import { buttonVariants } from "@/components/ui/button";
 import { statusBadgeClasses } from "@/config/players";
@@ -14,10 +14,12 @@ import { useOrigin } from "@/hooks/useOrigin";
 import { cn, getInitials } from "@/lib/utils";
 
 /**
- * Public, unauthenticated shareable profile — no app chrome, no CV download,
- * only the details that make a player marketable (see
- * PlayerMarketabilityDetails). This is what a "Share Player Profile" link
- * opens for anyone outside the team, e.g. a scout following a WhatsApp link.
+ * Public-looking shareable profile — no app chrome, no CV download, just the
+ * player's basic facts (see PlayerFacts). Still reads from this browser's
+ * local store, not a real unauthenticated API call (the backend requires
+ * auth on every player endpoint), so it only actually works for whoever's
+ * signed-in browser created the player — see BACKEND_INTEGRATION_TRACKER.md
+ * Gap G10 for the full explanation.
  */
 export default function PublicPlayerProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -112,7 +114,7 @@ export default function PublicPlayerProfilePage({ params }: { params: Promise<{ 
           </p>
         </div>
 
-        <PlayerMarketabilityDetails player={player} />
+        <PlayerFacts player={player} />
 
         <a
           href={whatsappHref}

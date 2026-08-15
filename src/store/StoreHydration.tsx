@@ -22,7 +22,25 @@ function StoreHydration() {
     useMatchesStore.persist.rehydrate();
     useAttendanceStore.persist.rehydrate();
     useReportsStore.persist.rehydrate();
-    useOnboardingStore.persist.rehydrate();
+    Promise.resolve(useOnboardingStore.persist.rehydrate()).then(async () => {
+      if (!useOnboardingStore.getState().team_id) {
+        useSeasonStore.setState({ isLoading: false });
+        useMatchesStore.setState({ isLoading: false });
+        useAttendanceStore.setState({ isLoading: false });
+        return;
+      }
+      await useSeasonStore.getState().fetchSeasons();
+      usePlayersStore
+        .getState()
+        .fetchPlayers()
+        .then(() => {
+          const activeSeasonId = useSeasonStore.getState().activeSeasonId;
+          if (activeSeasonId) usePlayersStore.getState().fetchSeasonRoster(activeSeasonId).catch(() => {});
+        })
+        .catch(() => {});
+      useMatchesStore.getState().fetchMatches();
+      useAttendanceStore.getState().fetchSessions();
+    });
     useSettingsStore.persist.rehydrate();
   }, []);
 

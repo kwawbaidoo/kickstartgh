@@ -10,11 +10,12 @@ import { Button, buttonVariants } from "@/components/ui/button";
 type InviteCardProps = {
   teamName: string;
   invite_code: string;
+  invite_url?: string | null;
 };
 
-function InviteCard({ teamName, invite_code }: InviteCardProps) {
+function InviteCard({ teamName, invite_code, invite_url }: InviteCardProps) {
   const [copied, setCopied] = useState(false);
-  const inviteUrl = `kickstartgh.com/join/${invite_code}`;
+  const inviteUrl = invite_url || `kickstartgh.com/join/${invite_code}`;
   const message = `Join ${teamName} on KickStartGH.\n${inviteUrl}`;
   const whatsappHref = `https://wa.me/?text=${encodeURIComponent(message)}`;
 

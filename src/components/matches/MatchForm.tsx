@@ -1,9 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ImagePlus } from "lucide-react";
 
 import {
   Field,
@@ -26,9 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CoverImageUpload } from "@/components/common/CoverImageUpload";
 import { ProgressStepper } from "@/components/onboarding/ProgressStepper";
 import { matchTypeOptions } from "@/config/matches";
 import { matchFormSchema, type MatchFormInput } from "@/schemas/match";
+import { applyApiErrors } from "@/lib/api-client";
 import { toSelectItems } from "@/lib/utils";
 
 const matchTypeItems = toSelectItems(matchTypeOptions);
@@ -43,13 +44,12 @@ const stepFields: (keyof MatchFormInput)[][] = [
 type MatchFormProps = {
   defaultValues?: Partial<MatchFormInput>;
   competitions: string[];
-  onSubmit: (data: MatchFormInput) => void;
+  onSubmit: (data: MatchFormInput) => Promise<void>;
   submitLabel?: string;
 };
 
 function MatchForm({ defaultValues, competitions, onSubmit, submitLabel = "Create Match" }: MatchFormProps) {
   const [step, setStep] = useState(0);
-  const posterInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<MatchFormInput>({
     resolver: zodResolver(matchFormSchema),
@@ -68,13 +68,12 @@ function MatchForm({ defaultValues, competitions, onSubmit, submitLabel = "Creat
 
   const poster = useWatch({ control: form.control, name: "poster" });
 
-  function handlePosterChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => form.setValue("poster", reader.result as string);
-    reader.readAsDataURL(file);
+  async function handleFormSubmit(data: MatchFormInput) {
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      applyApiErrors(error, (field, err) => form.setError(field as keyof MatchFormInput, err));
+    }
   }
 
   async function handleNext() {
@@ -87,7 +86,7 @@ function MatchForm({ defaultValues, competitions, onSubmit, submitLabel = "Creat
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-8">
+    <form onSubmit={form.handleSubmit(handleFormSubmit)} className="flex flex-col gap-8">
       <ProgressStepper steps={stepLabels} currentStep={step} />
 
       {step === 0 && (
@@ -222,34 +221,19 @@ function MatchForm({ defaultValues, competitions, onSubmit, submitLabel = "Creat
             <Field>
               <FieldLabel>Match poster</FieldLabel>
               <FieldContent>
-                <button
-                  type="button"
-                  onClick={() => posterInputRef.current?.click()}
-                  className="relative flex h-28 w-full items-center justify-center overflow-hidden rounded-lg border border-dashed border-input bg-muted text-muted-foreground"
-                >
-                  {poster ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={poster} alt="Match poster preview" className="size-full object-cover" />
-                  ) : (
-                    <span className="flex flex-col items-center gap-1 text-xs">
-                      <ImagePlus className="size-5" />
-                      Upload poster
-                    </span>
-                  )}
-                </button>
-                <input
-                  ref={posterInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handlePosterChange}
+                <CoverImageUpload
+                  value={poster}
+                  onChange={(url) => form.setValue("poster", url)}
+                  label="Optional"
+                  alt="Match poster preview"
                 />
-                <FieldDescription>Optional</FieldDescription>
               </FieldContent>
             </Field>
           </FieldGroup>
         </FieldSet>
       )}
+
+      <FieldError errors={[form.formState.errors.root]} />
 
       <div className="flex items-center justify-between gap-3">
         <Button type="button" variant="outline" onClick={handleBack} disabled={step === 0}>
@@ -260,8 +244,8 @@ function MatchForm({ defaultValues, competitions, onSubmit, submitLabel = "Creat
             Next
           </Button>
         ) : (
-          <Button key="submit" type="submit">
-            {submitLabel}
+          <Button key="submit" type="submit" disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting ? "Saving..." : submitLabel}
           </Button>
         )}
       </div>

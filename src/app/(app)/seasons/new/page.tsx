@@ -13,8 +13,8 @@ export default function NewSeasonPage() {
   const router = useRouter();
   const addSeason = useSeasonStore((state) => state.addSeason);
 
-  function handleSubmit(data: SeasonFormInput) {
-    const season = addSeason(data);
+  async function handleSubmit(data: SeasonFormInput) {
+    const season = await addSeason(data);
     router.push(`/seasons/${season.id}`);
   }
 
