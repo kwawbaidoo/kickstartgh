@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { UserPlus, Users } from "lucide-react";
 
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
@@ -32,6 +33,7 @@ export default function StaffSetupPage() {
   const staff = useOnboardingStore((state) => state.activeTeam.staff);
   const addStaffMember = useOnboardingStore((state) => state.addStaffMember);
   const removeStaffMember = useOnboardingStore((state) => state.removeStaffMember);
+  const [removeError, setRemoveError] = useState<string | null>(null);
 
   const form = useForm<StaffFormInput>({
     resolver: zodResolver(staffFormSchema),
@@ -150,13 +152,20 @@ export default function StaffSetupPage() {
               key={member.id}
               member={member}
               onRemove={() => {
-                removeStaffMember(member.id).catch(() => {});
+                setRemoveError(null);
+                removeStaffMember(member.id).catch(() =>
+                  setRemoveError("Couldn't remove this staff member. Please try again later.")
+                );
               }}
             />
           ))}
         </Stagger>
       ) : (
         <EmptyState icon={Users} title="No staff members added yet." />
+      )}
+
+      {removeError && (
+        <p className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{removeError}</p>
       )}
 
       <div className="flex flex-col gap-2">

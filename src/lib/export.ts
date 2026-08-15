@@ -7,7 +7,6 @@ import type { Match } from "@/mock/matches";
 import { getMatchResult } from "@/mock/matches";
 import type { Player } from "@/mock/players";
 import type { ActiveTeam } from "@/store/onboarding-store";
-import type { ResolvedBenchOfficial } from "@/lib/matches";
 import { getFormationSlots, getStartingPlayerIds } from "@/lib/matches";
 import { getInitials } from "@/lib/utils";
 
@@ -123,12 +122,7 @@ function drawBadge(doc: jsPDF, x: number, y: number, size: number, initials: str
   doc.text(initials, x + size / 2 - textWidth / 2, y + size / 2 + size / 6);
 }
 
-export function exportLineupPdf(
-  match: Match,
-  team: ActiveTeam,
-  players: Player[],
-  bench_officials: ResolvedBenchOfficial[]
-) {
+export function exportLineupPdf(match: Match, team: ActiveTeam, players: Player[]) {
   if (!match.lineup) return;
   const lineup = match.lineup;
   const playerMap = new Map(players.map((player) => [player.id, player]));
@@ -233,25 +227,6 @@ export function exportLineupPdf(
   } else {
     for (const player of substitutePlayers) {
       doc.text(`${player.full_name} — ${player.position} #${player.jersey_number}`, margin, y);
-      y += 5.5;
-    }
-  }
-
-  y += 4;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(0);
-  doc.text("Bench Officials", margin, y);
-  y += 6;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(60);
-  if (bench_officials.length === 0) {
-    doc.text("No bench officials named.", margin, y);
-    y += 6;
-  } else {
-    for (const official of bench_officials) {
-      doc.text(`${official.full_name} — ${official.role}`, margin, y);
       y += 5.5;
     }
   }

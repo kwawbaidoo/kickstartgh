@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -10,7 +10,6 @@ import { EmptyState } from "@/components/dashboard/EmptyState";
 import { LineupBuilder } from "@/components/matches/LineupBuilder";
 import { usePlayersStore } from "@/store/players-store";
 import { useMatchesStore } from "@/store/matches-store";
-import { useOnboardingStore } from "@/store/onboarding-store";
 import { getSeasonRecord, getSeasonRoster } from "@/lib/players";
 import type { Lineup } from "@/mock/matches";
 
@@ -20,8 +19,8 @@ export default function MatchLineupPage({ params }: { params: Promise<{ id: stri
   const matches = useMatchesStore((state) => state.matches);
   const setLineup = useMatchesStore((state) => state.setLineup);
   const players = usePlayersStore((state) => state.players);
-  const activeTeam = useOnboardingStore((state) => state.activeTeam);
   const match = matches.find((candidate) => candidate.id === id);
+  const [error, setError] = useState<string | null>(null);
 
   if (!match) {
     return (
@@ -39,8 +38,10 @@ export default function MatchLineupPage({ params }: { params: Promise<{ id: stri
   );
 
   function handleSave(lineup: Lineup) {
-    setLineup(id, lineup);
-    router.push(`/matches/${id}`);
+    setError(null);
+    setLineup(id, lineup)
+      .then(() => router.push(`/matches/${id}`))
+      .catch(() => setError("Couldn't save the lineup. Please try again."));
   }
 
   return (
@@ -53,12 +54,8 @@ export default function MatchLineupPage({ params }: { params: Promise<{ id: stri
         Back to Match
       </Link>
       <SectionHeader title="Build Lineup" description={`vs ${match.opponent} · ${match.venue}`} />
-      <LineupBuilder
-        squad={squad}
-        staff={activeTeam.staff}
-        initialLineup={match.lineup}
-        onSave={handleSave}
-      />
+      {error && <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
+      <LineupBuilder squad={squad} initialLineup={match.lineup} onSave={handleSave} />
     </div>
   );
 }

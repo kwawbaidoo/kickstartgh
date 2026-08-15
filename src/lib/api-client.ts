@@ -1,9 +1,8 @@
 import { useAuthStore } from "@/store/auth-store";
 
 /**
- * Per postman_collection.json's `base_url` variable. SRS.md/API_CONTRACT.md say
- * `/api/v1` — unconfirmed against the real server (INTEGRATION_PLAN.md §4, open
- * question 2). Override with NEXT_PUBLIC_API_BASE_URL once that's settled.
+ * Confirmed live 2026-08-15 against the real server (register/login/me/teams all
+ * tested directly) — see BACKEND_INTEGRATION_TRACKER.md's Sprint I1 section.
  */
 const DEFAULT_BASE_URL = "https://api.kickstartgh.com/api";
 function getBaseUrl(): string {
@@ -49,10 +48,30 @@ type ApiFetchOptions = Omit<RequestInit, "body"> & {
 };
 
 /**
- * Shared fetch wrapper: base URL, JSON body/headers, bearer token, and error-envelope
- * parsing. No request/response casing conversion needed — entity fields are
- * snake_case on both sides since Sprint I0 (SPRINT_I0_PROMPT.md).
+ * Every success response is wrapped as `{status, message, data}` — confirmed live
+ * 2026-08-15 across register/login/me/teams, not just documented, so this unwrap is
+ * safe to do unconditionally. Falls back to the raw payload for the rare endpoint that
+ * doesn't use the envelope (e.g. logout's `data` is `null`, which is fine — callers of
+ * a `void`-returning apiFetch don't look at the return value anyway).
+ *
+ * Casing is NOT symmetric, and apiFetch does NOT auto-convert it: request bodies are
+ * snake_case (confirmed accepted as-is — matches Sprint I0's frontend types with zero
+ * translation), but response `data` payloads are camelCase (confirmed, contradicting
+ * Sprint I0's original assumption that this API was snake_case both ways — it isn't).
+ * Each store maps its own response fields explicitly at the call site instead of a
+ * blanket converter here, because two confirmed domains (report rows/columns,
+ * `/me/notifications`) are deliberately camelCase in the frontend too, matching real
+ * backend behavior — a generic converter would need to special-case those anyway, so
+ * explicit per-domain mapping is more robust than a "convert everything except..." rule.
  */
+function unwrapEnvelope(payload: unknown): unknown {
+  if (payload && typeof payload === "object" && "data" in payload) {
+    return (payload as { data: unknown }).data;
+  }
+  return payload;
+}
+
+/** Shared fetch wrapper: base URL, JSON body/headers, bearer token, error parsing, envelope unwrap. */
 export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
   const { body, auth = true, headers, ...rest } = options;
 
@@ -82,15 +101,16 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     );
   }
 
-  return payload as T;
+  return unwrapEnvelope(payload) as T;
 }
 
 type UploadResponse = { url: string };
 
 /**
- * POST /uploads (multipart/form-data) — SRS.md §8.9's suggested `{ url }` response is
- * assumed, unconfirmed against the real server. `dataUrl` is the output of
- * `compressImage` (lib/image.ts); this converts it back to a Blob for the multipart body.
+ * POST /uploads (multipart/form-data) — SRS.md §8.9's suggested `{ url }` response
+ * shape is still unconfirmed against the real server (not covered by the live test
+ * that confirmed register/login/me/teams). `dataUrl` is the output of `compressImage`
+ * (lib/image.ts); this converts it back to a Blob for the multipart body.
  */
 export async function apiUpload(dataUrl: string, filename = "upload.jpg"): Promise<UploadResponse> {
   const blob = await (await fetch(dataUrl)).blob();
@@ -115,5 +135,5 @@ export async function apiUpload(dataUrl: string, filename = "upload.jpg"): Promi
     throw new ApiError(response.status, payload?.message ?? "Upload failed.", payload?.errors);
   }
 
-  return payload as UploadResponse;
+  return unwrapEnvelope(payload) as UploadResponse;
 }

@@ -13,8 +13,8 @@ export default function NewMatchPage() {
   const matches = useMatchesStore((state) => state.matches);
   const addMatch = useMatchesStore((state) => state.addMatch);
 
-  function handleSubmit(data: MatchFormInput) {
-    const match = addMatch(data);
+  async function handleSubmit(data: MatchFormInput) {
+    const match = await addMatch(data);
     router.push(`/matches/${match.id}`);
   }
 

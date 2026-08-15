@@ -28,12 +28,13 @@ import {
 import { ProgressStepper } from "@/components/onboarding/ProgressStepper";
 import { competitionCategoryOptions } from "@/config/seasons";
 import { seasonFormSchema, type SeasonFormInput } from "@/schemas/season";
+import { applyApiErrors } from "@/lib/api-client";
 
 type SeasonFormValues = z.input<typeof seasonFormSchema>;
 
 type SeasonFormProps = {
   defaultValues?: Partial<SeasonFormInput>;
-  onSubmit: (data: SeasonFormInput) => void;
+  onSubmit: (data: SeasonFormInput) => Promise<void>;
   submitLabel?: string;
 };
 
@@ -73,8 +74,16 @@ function SeasonForm({ defaultValues, onSubmit, submitLabel = "Create Season" }: 
     setStep((current) => Math.max(0, current - 1));
   }
 
+  async function handleFormSubmit(data: SeasonFormInput) {
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      applyApiErrors(error, (field, err) => form.setError(field as keyof SeasonFormInput, err));
+    }
+  }
+
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-8">
+    <form onSubmit={form.handleSubmit(handleFormSubmit)} className="flex flex-col gap-8">
       <ProgressStepper steps={stepLabels} currentStep={step} />
 
       {step === 0 && (
@@ -207,6 +216,8 @@ function SeasonForm({ defaultValues, onSubmit, submitLabel = "Create Season" }: 
         </FieldSet>
       )}
 
+      <FieldError errors={[form.formState.errors.root]} />
+
       <div className="flex items-center justify-between gap-3">
         <Button type="button" variant="outline" onClick={handleBack} disabled={step === 0}>
           Back
@@ -216,8 +227,8 @@ function SeasonForm({ defaultValues, onSubmit, submitLabel = "Create Season" }: 
             Next
           </Button>
         ) : (
-          <Button key="submit" type="submit">
-            {submitLabel}
+          <Button key="submit" type="submit" disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting ? "Saving..." : submitLabel}
           </Button>
         )}
       </div>

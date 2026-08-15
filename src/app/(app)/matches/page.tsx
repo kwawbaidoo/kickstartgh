@@ -8,6 +8,7 @@ import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import { Stagger } from "@/components/common/Stagger";
 import { SearchBar } from "@/components/common/SearchBar";
 import { Pagination } from "@/components/common/Pagination";
+import { ListRowSkeleton } from "@/components/common/LoadingSkeleton";
 import { MatchCard } from "@/components/matches/MatchCard";
 import { MatchesTable } from "@/components/matches/MatchesTable";
 import { ViewToggle, type CardListView } from "@/components/common/ViewToggle";
@@ -60,6 +61,8 @@ export default function MatchesPage() {
     state.seasons.find((season) => season.id === state.activeSeasonId)
   );
   const matches = getSeasonMatches(useMatchesStore((state) => state.matches), activeSeasonId);
+  const hasHydrated = useMatchesStore((state) => state.hasHydrated);
+  const isLoading = useMatchesStore((state) => state.isLoading);
   const [status, setStatus] = useState<MatchStatus>("upcoming");
   const [view, setView] = useState<CardListView>("card");
   const [filters, setFilters] = useState(defaultMatchFilters);
@@ -73,6 +76,16 @@ export default function MatchesPage() {
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(Math.max(page, 1), pageCount);
   const paginatedMatches = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  if (!hasHydrated || isLoading) {
+    return (
+      <div className="flex flex-col gap-3">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <ListRowSkeleton key={index} />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">

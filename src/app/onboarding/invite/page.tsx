@@ -13,6 +13,7 @@ export default function InvitePage() {
   const router = useRouter();
   const teamName = useOnboardingStore((state) => state.activeTeam.name) || "your team";
   const invite_code = useOnboardingStore((state) => state.draft.invite_code);
+  const invite_url = useOnboardingStore((state) => state.draft.invite_url);
   const createInvite = useOnboardingStore((state) => state.createInvite);
   const [isGenerating, setIsGenerating] = useState(() => !invite_code);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +41,7 @@ export default function InvitePage() {
       ) : error ? (
         <p className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">{error}</p>
       ) : invite_code ? (
-        <InviteCard teamName={teamName} invite_code={invite_code} />
+        <InviteCard teamName={teamName} invite_code={invite_code} invite_url={invite_url} />
       ) : null}
 
       <Button size="lg" className="w-full" onClick={() => router.push("/onboarding/success")}>

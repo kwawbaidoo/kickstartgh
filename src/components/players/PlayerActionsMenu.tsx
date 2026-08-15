@@ -26,6 +26,7 @@ function PlayerActionsMenu({ player }: { player: Player }) {
   const setPlayerStatus = usePlayersStore((state) => state.setPlayerStatus);
   const teamName = useOnboardingStore((state) => state.activeTeam.name);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const shareMessage = [
     "⚽ Player Profile",
@@ -41,8 +42,10 @@ function PlayerActionsMenu({ player }: { player: Player }) {
   ].join("\n");
 
   function handleDelete() {
-    deletePlayer(player.id);
-    setDeleteOpen(false);
+    setError(null);
+    deletePlayer(player.id)
+      .then(() => setDeleteOpen(false))
+      .catch(() => setError("Couldn't remove this player. Please try again."));
   }
 
   return (
@@ -69,7 +72,7 @@ function PlayerActionsMenu({ player }: { player: Player }) {
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
               {statusOptions.map((status) => (
-                <DropdownMenuItem key={status} onClick={() => setPlayerStatus(player.id, status)}>
+                <DropdownMenuItem key={status} onClick={() => setPlayerStatus(player.id, status).catch(() => {})}>
                   {status}
                 </DropdownMenuItem>
               ))}
@@ -113,7 +116,9 @@ function PlayerActionsMenu({ player }: { player: Player }) {
             </Button>
           </>
         }
-      />
+      >
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </Modal>
     </>
   );
 }

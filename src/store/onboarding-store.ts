@@ -27,19 +27,87 @@ export type ActiveTeam = {
 };
 
 /**
- * Assumed response shapes — postman_collection.json has no saved response examples.
- * Confirm against the real server:
- * - POST /teams, PATCH /teams/:id -> the Team object directly, with `id`
- * - POST /teams/:id/staff -> the created StaffMember, with a server `id`
- * - PATCH /teams/:id/staff/:id -> assumed to need no response body (applied optimistically)
- * - POST /teams/:id/invites -> { code }
+ * Confirmed live 2026-08-15 (POST /teams, POST /teams/:id/staff, POST /teams/:id/invites
+ * all called directly against the real server) — response `data` payloads are camelCase,
+ * same as auth-store.ts's finding. Mapped explicitly for the same reason documented in
+ * lib/api-client.ts.
  */
-type TeamResponse = Omit<ActiveTeam, "staff" | "photos"> & { id: string };
-type InviteResponse = { code: string };
+type TeamResponse = {
+  id: string;
+  name: string;
+  nickname: string;
+  region: string;
+  district: string;
+  homeGround: string;
+  yearEstablished: number;
+  logo: string | null;
+  coverImage: string | null;
+  photos: string[];
+  colorPrimary: string | null;
+  colorSecondary: string | null;
+  slogan: string | null;
+  facebook: string | null;
+  instagram: string | null;
+  tiktok: string | null;
+  website: string | null;
+};
+
+/** `isActive` isn't modeled in the frontend's StaffMember type yet — nothing reads it today. */
+type StaffMemberResponse = {
+  id: string;
+  teamId: string;
+  role: RoleId;
+  fullName: string;
+  phone: string;
+  email?: string | null;
+  isActive: boolean;
+};
+
+type InviteResponse = {
+  id: string;
+  teamId: string;
+  code: string;
+  role: string;
+  joinUrl: string;
+  expiresAt: string | null;
+  redeemedAt: string | null;
+};
+
+function mapTeam(response: TeamResponse): Omit<ActiveTeam, "staff" | "photos"> & { photos: string[] } {
+  return {
+    name: response.name,
+    nickname: response.nickname,
+    region: response.region,
+    district: response.district,
+    home_ground: response.homeGround,
+    year_established: response.yearEstablished,
+    logo: response.logo ?? undefined,
+    cover_image: response.coverImage ?? undefined,
+    color_primary: response.colorPrimary ?? undefined,
+    color_secondary: response.colorSecondary ?? undefined,
+    slogan: response.slogan ?? undefined,
+    facebook: response.facebook ?? undefined,
+    instagram: response.instagram ?? undefined,
+    tiktok: response.tiktok ?? undefined,
+    website: response.website ?? undefined,
+    photos: response.photos,
+  };
+}
+
+function mapStaffMember(response: StaffMemberResponse): StaffMember {
+  return {
+    id: response.id,
+    role: response.role,
+    full_name: response.fullName,
+    phone: response.phone,
+    email: response.email ?? undefined,
+  };
+}
 
 type OnboardingDraft = {
   role: RoleId | null;
   invite_code: string | null;
+  invite_url: string | null;
 };
 
 type OnboardingState = {
@@ -64,6 +132,7 @@ type OnboardingState = {
 const initialDraft: OnboardingDraft = {
   role: null,
   invite_code: null,
+  invite_url: null,
 };
 
 export const useOnboardingStore = create<OnboardingState>()(
@@ -96,17 +165,18 @@ export const useOnboardingStore = create<OnboardingState>()(
         );
         set((state) => ({
           team_id: response.id,
-          activeTeam: { ...state.activeTeam, ...response },
+          activeTeam: { ...state.activeTeam, ...mapTeam(response) },
         }));
       },
 
       addStaffMember: async (input) => {
         const team_id = get().team_id;
         if (!team_id) throw new Error("Create the team before adding staff.");
-        const member = await apiFetch<StaffMember>(`/teams/${team_id}/staff`, {
+        const response = await apiFetch<StaffMemberResponse>(`/teams/${team_id}/staff`, {
           method: "POST",
           body: input,
         });
+        const member = mapStaffMember(response);
         set((state) => ({
           activeTeam: { ...state.activeTeam, staff: [...state.activeTeam.staff, member] },
         }));
@@ -149,7 +219,9 @@ export const useOnboardingStore = create<OnboardingState>()(
           method: "POST",
           body: { role, expires_at: null },
         });
-        set((state) => ({ draft: { ...state.draft, invite_code: response.code } }));
+        set((state) => ({
+          draft: { ...state.draft, invite_code: response.code, invite_url: response.joinUrl },
+        }));
         return response.code;
       },
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpDown, Plus, UserPlus, X } from "lucide-react";
 
@@ -62,6 +62,7 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
   const registerPlayerForSeason = usePlayersStore((state) => state.registerPlayerForSeason);
   const bulkRegisterForSeason = usePlayersStore((state) => state.bulkRegisterForSeason);
   const removePlayerFromSeason = usePlayersStore((state) => state.removePlayerFromSeason);
+  const fetchSeasonRoster = usePlayersStore((state) => state.fetchSeasonRoster);
 
   const [tab, setTab] = useState<RosterTab>("players");
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -75,6 +76,13 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
   const [statsSearch, setStatsSearch] = useState("");
   const [statsSort, setStatsSort] = useState<SeasonPlayerStatsSort>("jersey_number");
   const [statsPage, setStatsPage] = useState(1);
+  const [registerError, setRegisterError] = useState<string | null>(null);
+  const [carryError, setCarryError] = useState<string | null>(null);
+  const [removeError, setRemoveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchSeasonRoster(id).catch(() => {});
+  }, [id, fetchSeasonRoster]);
 
   const season = seasons.find((candidate) => candidate.id === id);
 
@@ -129,26 +137,43 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
     currentStatsPage * PAGE_SIZE
   );
 
-  function handleRegister() {
+  async function handleRegister() {
     if (!selectedPlayerId || !jersey_number) return;
-    registerPlayerForSeason(selectedPlayerId, id, Number(jersey_number));
-    setSelectedPlayerId(null);
-    setJerseyNumber("");
-    setPickerOpen(false);
+    setRegisterError(null);
+    try {
+      await registerPlayerForSeason(selectedPlayerId, id, Number(jersey_number));
+      setSelectedPlayerId(null);
+      setJerseyNumber("");
+      setPickerOpen(false);
+    } catch {
+      setRegisterError("Couldn't register this player. Please try again.");
+    }
   }
 
-  function handleCarryForward() {
+  async function handleCarryForward() {
     if (!sourceSeasonId) return;
+    setCarryError(null);
     const sourceRoster = getSeasonRoster(allPlayers, sourceSeasonId).filter(
       (player) => getSeasonRecord(player, sourceSeasonId)?.status === "Active"
     );
-    bulkRegisterForSeason(
-      id,
-      sourceRoster.map((player) => player.id),
-      sourceSeasonId
+    try {
+      await bulkRegisterForSeason(
+        id,
+        sourceRoster.map((player) => player.id),
+        sourceSeasonId
+      );
+      setCarryOpen(false);
+      setSourceSeasonId(null);
+    } catch {
+      setCarryError("Couldn't carry forward this roster. Please try again.");
+    }
+  }
+
+  function handleRemove(player_id: string) {
+    setRemoveError(null);
+    removePlayerFromSeason(player_id, id).catch(() =>
+      setRemoveError("Couldn't remove this player from the season. Please try again.")
     );
-    setCarryOpen(false);
-    setSourceSeasonId(null);
   }
 
   return (
@@ -200,6 +225,9 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
           </TabsList>
 
           <TabsContent value="players" className="flex flex-col gap-4 pt-4">
+            {removeError && (
+              <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{removeError}</p>
+            )}
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <SearchBar
                 value={search}
@@ -236,9 +264,7 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
                           player={player}
                           jersey_number={record.jersey_number}
                           status={record.status}
-                          onRemove={
-                            isActive ? () => removePlayerFromSeason(player.id, id) : undefined
-                          }
+                          onRemove={isActive ? () => handleRemove(player.id) : undefined}
                         />
                       );
                     })}
@@ -285,7 +311,7 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
                           {isActive && (
                             <button
                               type="button"
-                              onClick={() => removePlayerFromSeason(player.id, id)}
+                              onClick={() => handleRemove(player.id)}
                               aria-label={`Remove ${player.full_name} from season`}
                               className="text-muted-foreground hover:text-destructive"
                             >
@@ -401,6 +427,7 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
                   value={jersey_number}
                   onChange={(event) => setJerseyNumber(event.target.value)}
                 />
+                {registerError && <p className="text-sm text-destructive">{registerError}</p>}
                 <Button
                   className="w-full"
                   disabled={!selectedPlayerId || !jersey_number}
@@ -436,6 +463,7 @@ export default function SeasonPlayersPage({ params }: { params: Promise<{ id: st
           </>
         }
       >
+        {carryError && <p className="pb-2 text-sm text-destructive">{carryError}</p>}
         {otherSeasons.length === 0 ? (
           <p className="text-sm text-muted-foreground">No other seasons exist yet.</p>
         ) : (

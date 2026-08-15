@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { PlayerMatchStats } from "@/lib/matches";
 
 type PlayerStatsCardProps = {
-  stats: PlayerMatchStats & { attendancePercentage: number; rating: number };
+  stats: PlayerMatchStats & { attendancePercentage: number };
 };
 
 function PlayerStatsCard({ stats }: PlayerStatsCardProps) {
@@ -11,7 +11,6 @@ function PlayerStatsCard({ stats }: PlayerStatsCardProps) {
     { label: "Goals", value: stats.goals },
     { label: "Assists", value: stats.assists },
     { label: "Attendance", value: `${stats.attendancePercentage}%` },
-    { label: "Rating", value: stats.rating.toFixed(1) },
   ];
 
   return (
@@ -20,7 +19,7 @@ function PlayerStatsCard({ stats }: PlayerStatsCardProps) {
         <CardTitle>Statistics</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-3 gap-4 sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {items.map((item) => (
             <div key={item.label} className="flex flex-col items-center gap-1 text-center">
               <span className="font-heading text-xl font-semibold text-foreground">

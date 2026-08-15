@@ -9,20 +9,54 @@ export type AuthUser = {
   full_name: string;
   phone: string;
   email: string | null;
+  photo: string | null;
+  preferred_role: string | null;
+  current_team_id: string | null;
+  two_factor_enabled: boolean;
+  last_login_at: string | null;
+  date_joined: string;
 };
 
 /**
- * Response shapes are assumed (postman_collection.json has no saved response
- * examples) — confirm against the real server once reachable:
- * - POST /auth/register -> just creates the account. Deliberately does NOT sign the
- *   user in — Register and Login are separate steps by design (see AuthScreen), so a
- *   successful register() leaves isAuthenticated false until the user explicitly logs
- *   in with their new credentials.
- * - POST /auth/login -> { token, user }
- * - GET /me -> the user object directly
+ * Confirmed live 2026-08-15 (register/login/me all called directly against the real
+ * server) — response `data` payloads are camelCase, unlike request bodies (snake_case,
+ * unchanged). See the note in lib/api-client.ts for why this is mapped explicitly here
+ * rather than auto-converted generically.
+ * - POST /auth/register -> data: UserResponse (no token — register never signs you in)
+ * - POST /auth/login -> data: { user: UserResponse, token: string } — token is a Sanctum
+ *   personal access token, format "{id}|{plaintext}", sent back verbatim as-is
+ * - GET /me -> data: UserResponse & { teams: unknown[] } (team-membership shape not
+ *   exercised yet — empty array on a brand-new account)
  */
-type AuthResponse = { token: string; user: AuthUser };
-type MeResponse = AuthUser;
+type UserResponse = {
+  id: string;
+  fullName: string;
+  phone: string;
+  email: string | null;
+  photo: string | null;
+  preferredRole: string | null;
+  currentTeamId: string | null;
+  twoFactorEnabled: boolean;
+  lastLoginAt: string | null;
+  dateJoined: string;
+};
+type LoginResponse = { user: UserResponse; token: string };
+type MeResponse = UserResponse & { teams: unknown[] };
+
+function mapUser(response: UserResponse): AuthUser {
+  return {
+    id: response.id,
+    full_name: response.fullName,
+    phone: response.phone,
+    email: response.email,
+    photo: response.photo,
+    preferred_role: response.preferredRole,
+    current_team_id: response.currentTeamId,
+    two_factor_enabled: response.twoFactorEnabled,
+    last_login_at: response.lastLoginAt,
+    date_joined: response.dateJoined,
+  };
+}
 
 type AuthState = {
   user: AuthUser | null;
@@ -48,7 +82,7 @@ export const useAuthStore = create<AuthState>()(
       register: async (input) => {
         // Intentionally does not set token/user/isAuthenticated — creating an account
         // is not the same as signing in. The caller must send the user to sign in next.
-        await apiFetch<void>("/auth/register", {
+        await apiFetch<UserResponse>("/auth/register", {
           method: "POST",
           body: {
             full_name: input.full_name,
@@ -61,17 +95,17 @@ export const useAuthStore = create<AuthState>()(
       },
 
       login: async (input) => {
-        const response = await apiFetch<AuthResponse>("/auth/login", {
+        const response = await apiFetch<LoginResponse>("/auth/login", {
           method: "POST",
           body: input,
           auth: false,
         });
-        set({ token: response.token, user: response.user, isAuthenticated: true });
+        set({ token: response.token, user: mapUser(response.user), isAuthenticated: true });
       },
 
       fetchCurrentUser: async () => {
-        const user = await apiFetch<MeResponse>("/me", { method: "GET" });
-        set({ user, isAuthenticated: true });
+        const response = await apiFetch<MeResponse>("/me", { method: "GET" });
+        set({ user: mapUser(response), isAuthenticated: true });
       },
 
       signOut: async () => {

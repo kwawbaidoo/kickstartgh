@@ -18,6 +18,7 @@ import { getSeasonStats } from "@/lib/seasons";
 export default function SeasonsPage() {
   const seasons = useSeasonStore((state) => state.seasons);
   const hasHydrated = useSeasonStore((state) => state.hasHydrated);
+  const isLoading = useSeasonStore((state) => state.isLoading);
   const players = usePlayersStore((state) => state.players);
   const matches = useMatchesStore((state) => state.matches);
   const sessions = useAttendanceStore((state) => state.sessions);
@@ -26,7 +27,7 @@ export default function SeasonsPage() {
     (a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
   );
 
-  if (!hasHydrated) {
+  if (!hasHydrated || isLoading) {
     return (
       <div className="flex flex-col gap-3">
         {Array.from({ length: 3 }).map((_, index) => (

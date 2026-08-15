@@ -33,8 +33,8 @@ export default function EditPlayerPage({ params }: { params: Promise<{ id: strin
     );
   }
 
-  function handleSubmit(data: PlayerFormInput) {
-    updatePlayer(id, data);
+  async function handleSubmit(data: PlayerFormInput) {
+    await updatePlayer(id, data);
     router.push(`/players/${id}`);
   }
 
@@ -44,7 +44,6 @@ export default function EditPlayerPage({ params }: { params: Promise<{ id: strin
     date_of_birth: player.date_of_birth,
     photo: player.photo,
     phone: player.phone,
-    email: player.email,
     emergency_contact: player.emergency_contact,
     jersey_number: player.jersey_number,
     position: player.position,

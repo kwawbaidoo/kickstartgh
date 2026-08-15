@@ -71,14 +71,13 @@ export default function SeasonSettingsPage({ params }: { params: Promise<{ id: s
     ],
   };
 
-  function handleDuplicate(name: string, carryForwardRoster: boolean) {
-    const duplicate = duplicateSeason(id, name);
-    if (!duplicate) return;
+  async function handleDuplicate(name: string, carryForwardRoster: boolean) {
+    const duplicate = await duplicateSeason(id, name);
     if (carryForwardRoster) {
       const activeRoster = getSeasonRoster(allPlayers, id).filter(
         (player) => getSeasonRecord(player, id)?.status === "Active"
       );
-      bulkRegisterForSeason(duplicate.id, activeRoster.map((player) => player.id), id);
+      await bulkRegisterForSeason(duplicate.id, activeRoster.map((player) => player.id), id);
     }
     router.push(`/seasons/${duplicate.id}`);
   }

@@ -17,6 +17,7 @@ import { StatisticCard } from "@/components/dashboard/StatisticCard";
 import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { Stagger } from "@/components/common/Stagger";
+import { ListRowSkeleton } from "@/components/common/LoadingSkeleton";
 import { TrainingCard } from "@/components/training/TrainingCard";
 import { usePlayersStore } from "@/store/players-store";
 import { useAttendanceStore } from "@/store/attendance-store";
@@ -51,6 +52,18 @@ export default function TrainingDashboardPage() {
   const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
   const players = getSeasonRoster(usePlayersStore((state) => state.players), activeSeasonId);
   const sessions = getSeasonSessions(useAttendanceStore((state) => state.sessions), activeSeasonId);
+  const hasHydrated = useAttendanceStore((state) => state.hasHydrated);
+  const isLoading = useAttendanceStore((state) => state.isLoading);
+
+  if (!hasHydrated || isLoading) {
+    return (
+      <div className="flex flex-col gap-3">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <ListRowSkeleton key={index} />
+        ))}
+      </div>
+    );
+  }
 
   const activePlayers = players.filter((player) => player.status === "Active");
   const todaySession = getTodaySession(sessions);

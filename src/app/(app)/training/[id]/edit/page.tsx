@@ -29,8 +29,8 @@ export default function EditTrainingPage({ params }: { params: Promise<{ id: str
     );
   }
 
-  function handleSubmit(data: TrainingFormInput) {
-    updateSession(id, data);
+  async function handleSubmit(data: TrainingFormInput) {
+    await updateSession(id, data);
     router.push(`/training/${id}`);
   }
 
