@@ -2,24 +2,21 @@ import Link from "next/link";
 
 import type { Lineup } from "@/mock/matches";
 import type { Player } from "@/mock/players";
-import type { StaffMember } from "@/schemas/onboarding";
 import { PitchBackground } from "@/components/matches/PitchBackground";
-import { getFormationSlots, getPitchSlotStyle, resolveBenchOfficials } from "@/lib/matches";
+import { getFormationSlots, getPitchSlotStyle } from "@/lib/matches";
 import { getInitials } from "@/lib/utils";
 
 type LineupViewProps = {
   lineup: Lineup;
   players: Player[];
-  staff: StaffMember[];
 };
 
-function LineupView({ lineup, players, staff }: LineupViewProps) {
+function LineupView({ lineup, players }: LineupViewProps) {
   const playerMap = new Map(players.map((player) => [player.id, player]));
   const slots = getFormationSlots(lineup.formation);
   const substitutePlayers = lineup.substitutes
     .map((id) => playerMap.get(id))
     .filter((player): player is Player => !!player);
-  const bench_officials = resolveBenchOfficials(lineup.bench_officials, staff);
 
   return (
     <div className="flex flex-col gap-4">
@@ -71,25 +68,6 @@ function LineupView({ lineup, players, staff }: LineupViewProps) {
                 <span className="min-w-0 flex-1 truncate text-sm text-foreground">{player.full_name}</span>
                 <span className="text-xs text-muted-foreground">#{player.jersey_number}</span>
               </Link>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-foreground">Bench Officials</span>
-        {bench_officials.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No bench officials named.</p>
-        ) : (
-          <div className="flex flex-col gap-1.5">
-            {bench_officials.map((official) => (
-              <div key={official.id} className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2">
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
-                  {getInitials(official.full_name)}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-sm text-foreground">{official.full_name}</span>
-                <span className="text-xs text-muted-foreground">{official.role}</span>
-              </div>
             ))}
           </div>
         )}

@@ -13,7 +13,6 @@ import {
   MapPin,
   MessageCircle,
   Pencil,
-  RotateCcw,
   Square,
   Trash2,
   Trophy,
@@ -37,12 +36,7 @@ import { usePlayersStore } from "@/store/players-store";
 import { useMatchesStore } from "@/store/matches-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { useSeasonStore } from "@/store/season-store";
-import {
-  buildFixtureShareMessage,
-  buildLineupShareMessage,
-  buildResultShareMessage,
-  resolveBenchOfficials,
-} from "@/lib/matches";
+import { buildFixtureShareMessage, buildLineupShareMessage, buildResultShareMessage } from "@/lib/matches";
 import { exportLineupPdf } from "@/lib/export";
 
 export default function MatchSummaryPage({ params }: { params: Promise<{ id: string }> }) {
@@ -52,7 +46,6 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
   const deleteMatch = useMatchesStore((state) => state.deleteMatch);
   const completeMatch = useMatchesStore((state) => state.completeMatch);
   const cancelMatch = useMatchesStore((state) => state.cancelMatch);
-  const reactivateMatch = useMatchesStore((state) => state.reactivateMatch);
   const players = usePlayersStore((state) => state.players);
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
   const seasons = useSeasonStore((state) => state.seasons);
@@ -63,6 +56,7 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
   const [finishOpen, setFinishOpen] = useState(false);
   const [teamScoreInput, setTeamScoreInput] = useState("");
   const [opponentScoreInput, setOpponentScoreInput] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   if (!match) {
     return (
@@ -83,38 +77,37 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
   const cards = match.events.filter((event) => event.type === "yellow_card" || event.type === "red_card").length;
   const subs = match.events.filter((event) => event.type === "substitution").length;
 
-  const resolvedBenchOfficials = match.lineup
-    ? resolveBenchOfficials(match.lineup.bench_officials, activeTeam.staff)
-    : [];
   const fixtureMessage = buildFixtureShareMessage(match, activeTeam.name);
   const resultMessage = buildResultShareMessage(match, activeTeam.name, playerNames);
-  const lineupMessage = buildLineupShareMessage(match, activeTeam.name, playerNames, resolvedBenchOfficials);
+  const lineupMessage = buildLineupShareMessage(match, activeTeam.name, playerNames);
 
   function handleDownloadLineup() {
     if (!match || !match.lineup) return;
-    exportLineupPdf(match, activeTeam, players, resolvedBenchOfficials);
+    exportLineupPdf(match, activeTeam, players);
   }
 
   function handleDelete() {
-    deleteMatch(id);
-    router.push("/matches");
+    setError(null);
+    deleteMatch(id)
+      .then(() => router.push("/matches"))
+      .catch(() => setError("Couldn't delete this match. Please try again."));
   }
 
   function handleFinish() {
     const team_score = Number(teamScoreInput);
     const opponent_score = Number(opponentScoreInput);
     if (Number.isNaN(team_score) || Number.isNaN(opponent_score)) return;
-    completeMatch(id, team_score, opponent_score);
-    setFinishOpen(false);
+    setError(null);
+    completeMatch(id, team_score, opponent_score)
+      .then(() => setFinishOpen(false))
+      .catch(() => setError("Couldn't save the result. Please try again."));
   }
 
   function handleCancel() {
-    cancelMatch(id);
-    setCancelOpen(false);
-  }
-
-  function handleReactivate() {
-    reactivateMatch(id);
+    setError(null);
+    cancelMatch(id)
+      .then(() => setCancelOpen(false))
+      .catch(() => setError("Couldn't cancel this match. Please try again."));
   }
 
   return (
@@ -162,7 +155,9 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
               </Button>
             </>
           }
-        />
+        >
+          {error && <p className="text-sm text-destructive">{error}</p>}
+        </Modal>
       </div>
 
       <Card>
@@ -224,6 +219,7 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
               </>
             }
           >
+            {error && <p className="pb-2 text-sm text-destructive">{error}</p>}
             <div className="flex items-center gap-3">
               <Field>
                 <FieldLabel htmlFor="teamScoreInput">{activeTeam.name}</FieldLabel>
@@ -257,7 +253,7 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
             onOpenChange={setCancelOpen}
             trigger={<Button variant="ghost">Cancel Match</Button>}
             title="Cancel this match?"
-            description={`The fixture vs ${match.opponent} will be marked as cancelled. You can reactivate it later.`}
+            description={`The fixture vs ${match.opponent} will be marked as cancelled. This can't be undone.`}
             footer={
               <>
                 <Button variant="outline" onClick={() => setCancelOpen(false)}>
@@ -268,16 +264,9 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
                 </Button>
               </>
             }
-          />
-        </div>
-      )}
-
-      {match.status === "cancelled" && (
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={handleReactivate}>
-            <RotateCcw />
-            Reactivate Match
-          </Button>
+          >
+            {error && <p className="text-sm text-destructive">{error}</p>}
+          </Modal>
         </div>
       )}
 
@@ -311,7 +300,7 @@ export default function MatchSummaryPage({ params }: { params: Promise<{ id: str
             <TabsContent value="lineup" className="pt-4">
               {match.lineup ? (
                 <div className="max-h-125 overflow-y-auto pr-1">
-                  <LineupView lineup={match.lineup} players={players} staff={activeTeam.staff} />
+                  <LineupView lineup={match.lineup} players={players} />
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-3 py-6 text-center">

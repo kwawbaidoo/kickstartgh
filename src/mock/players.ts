@@ -21,40 +21,6 @@ export type PlayerSeasonRecord = {
   registered_at: string;
 };
 
-export type EmergencyContact = {
-  name?: string;
-  phone?: string;
-  email?: string;
-};
-
-export type EducationEntry = {
-  institution: string;
-  period: string;
-};
-
-export type SocialLinks = {
-  instagram?: string;
-  twitter?: string;
-  facebook?: string;
-  tiktok?: string;
-};
-
-/**
- * A player's public marketability profile — the details a scout, other club,
- * or tournament organizer would want when the profile is shared outside the
- * team (see the public profile page at /players/[id]/profile). All optional,
- * since most teams will only fill this in for players they're promoting.
- */
-export type MarketabilityProfile = {
-  nationality?: string;
-  height?: string;
-  education?: EducationEntry[];
-  work_experience?: string[];
-  achievements?: string[];
-  other_sports?: string[];
-  social_links?: SocialLinks;
-};
-
 export type Player = {
   id: string;
   team_id: string;
@@ -67,14 +33,13 @@ export type Player = {
   preferred_foot: PreferredFoot;
   date_of_birth: string;
   phone?: string;
-  email?: string;
-  emergency_contact?: EmergencyContact;
+  /** Free-text field — the real backend stores this as a plain string, not a structured contact. */
+  emergency_contact?: string;
   village?: string;
   previous_club?: string;
   status: PlayerStatus;
   status_history: StatusChange[];
   created_at: string;
-  profile?: MarketabilityProfile;
   /**
    * Every player must be registered for at least one season (never empty).
    * The top-level `jersey_number`/`status` above always mirror this player's
@@ -82,16 +47,6 @@ export type Player = {
    * getSeasonRecord in lib/players.ts for how the two stay in sync.
    */
   season_records: PlayerSeasonRecord[];
-  /**
-   * Match-derived numbers (matchesPlayed/goals/assists/cards) are computed
-   * live from matchesStore via getPlayerMatchStats — see lib/matches.ts.
-   * Attendance is computed live too, from attendanceStore + matchesStore —
-   * see getPlayerAttendanceStats in lib/attendance.ts. Only rating is stored
-   * here, since it isn't sourced from any event/session data.
-   */
-  stats: {
-    rating: number;
-  };
 };
 
 export const players: Player[] = [];

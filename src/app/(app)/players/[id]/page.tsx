@@ -93,6 +93,7 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
   const seasons = useSeasonStore((state) => state.seasons);
   const player = players.find((candidate) => candidate.id === id);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [granularity, setGranularity] = useState<TimelineGranularity>("all");
   const [period, setPeriod] = useState<string | null>(null);
   const origin = useOrigin();
@@ -125,7 +126,6 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
   const statsForCard = {
     ...matchStats,
     attendancePercentage: attendanceStats.attendancePercentage,
-    rating: player.stats.rating,
   };
 
   const timeline = buildPlayerTimeline(player, matches);
@@ -133,8 +133,10 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
   const filteredTimeline = filterTimelineByPeriod(timeline, granularity, period);
 
   function handleDelete() {
-    deletePlayer(id);
-    router.push("/players");
+    setDeleteError(null);
+    deletePlayer(id)
+      .then(() => router.push("/players"))
+      .catch(() => setDeleteError("Couldn't remove this player. Please try again."));
   }
 
   function handleGranularityChange(next: TimelineGranularity) {
@@ -202,7 +204,9 @@ export default function PlayerProfilePage({ params }: { params: Promise<{ id: st
                 </Button>
               </>
             }
-          />
+          >
+            {deleteError && <p className="text-sm text-destructive">{deleteError}</p>}
+          </Modal>
         </div>
 
         <Tabs defaultValue="info">

@@ -2,7 +2,7 @@ import { Check, X } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { permissionMatrix, permissionRoles } from "@/config/settings";
+import { permissionMatrix, permissionRoleLabels, permissionRoles } from "@/config/settings";
 
 function PermissionTable() {
   return (
@@ -14,7 +14,7 @@ function PermissionTable() {
               <TableHead>Action</TableHead>
               {permissionRoles.map((role) => (
                 <TableHead key={role} className="text-center">
-                  {role}
+                  {permissionRoleLabels[role]}
                 </TableHead>
               ))}
             </TableRow>

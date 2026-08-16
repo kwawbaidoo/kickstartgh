@@ -40,6 +40,7 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
   const [credentialState, setCredentialState] = useState<CredentialState | null>(null);
   const [copied, setCopied] = useState(false);
   const [formKey, setFormKey] = useState(0);
+  const [removeError, setRemoveError] = useState<string | null>(null);
 
   const form = useForm<StaffFormInput>({
     resolver: zodResolver(staffFormSchema),
@@ -191,7 +192,10 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
                   size="icon-sm"
                   aria-label={`Remove ${member.full_name}`}
                   onClick={() => {
-                    onRemove(member.id).catch(() => {});
+                    setRemoveError(null);
+                    onRemove(member.id).catch(() =>
+                      setRemoveError("Couldn't remove this staff member. Please try again later.")
+                    );
                   }}
                 >
                   <X className="size-4" />
@@ -202,6 +206,10 @@ function StaffManager({ staff, teamName, onAdd, onRemove, onChangeRole }: StaffM
         </Stagger>
       ) : (
         <EmptyState title="No staff members added yet." description="Add coaches and managers to your team." />
+      )}
+
+      {removeError && (
+        <p className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{removeError}</p>
       )}
 
       <Modal

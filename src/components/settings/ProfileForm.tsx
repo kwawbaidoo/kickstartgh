@@ -26,7 +26,7 @@ type ProfileFormProps = {
   defaultValues: ProfileFormInput;
   date_joined: string;
   teamName: string;
-  onSubmit: (data: ProfileFormInput) => void;
+  onSubmit: (data: ProfileFormInput) => Promise<void>;
 };
 
 function ProfileForm({ defaultValues, date_joined, teamName, onSubmit }: ProfileFormProps) {
@@ -113,8 +113,8 @@ function ProfileForm({ defaultValues, date_joined, teamName, onSubmit }: Profile
         </Field>
       </FieldGroup>
 
-      <Button type="submit" size="lg" className="w-full">
-        Save Changes
+      <Button type="submit" size="lg" className="w-full" disabled={form.formState.isSubmitting}>
+        {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
       </Button>
     </form>
   );

@@ -7,15 +7,7 @@ import { FilterPanel } from "@/components/reports/FilterPanel";
 import { ColumnSelector } from "@/components/reports/ColumnSelector";
 import { ReportWizard } from "@/components/reports/ReportWizard";
 import { SavedTemplates } from "@/components/reports/SavedTemplates";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { attendanceReportColumns, attendanceReportDefaultColumns } from "@/config/reports";
-import { attendancePeriodOptions, type AttendancePeriod } from "@/lib/attendance";
 import { useInitialReportColumns } from "@/hooks/useInitialReportColumns";
 import { usePlayersStore } from "@/store/players-store";
 import { useMatchesStore } from "@/store/matches-store";
@@ -26,12 +18,6 @@ import { useSeasonStore } from "@/store/season-store";
 import { buildAttendanceReportTable } from "@/lib/reports";
 import { getSeasonRoster } from "@/lib/players";
 import { getSeasonMatches, getSeasonSessions } from "@/lib/seasons";
-
-const periodLabels: Record<AttendancePeriod, string> = {
-  weekly: "This Week",
-  monthly: "This Month",
-  seasonal: "This Season",
-};
 
 export default function AttendanceReportPage() {
   const activeSeason = useSeasonStore((state) =>
@@ -44,12 +30,11 @@ export default function AttendanceReportPage() {
   const teamName = useOnboardingStore((state) => state.activeTeam.name);
   const addHistoryEntry = useReportsStore((state) => state.addHistoryEntry);
 
-  const [period, setPeriod] = useState<AttendancePeriod>("monthly");
   const [columns, setColumns] = useState<string[]>(
     useInitialReportColumns("attendance", attendanceReportDefaultColumns)
   );
 
-  const table = buildAttendanceReportTable(players, sessions, matches, period, columns);
+  const table = buildAttendanceReportTable(players, sessions, matches, columns);
 
   return (
     <>
@@ -64,25 +49,12 @@ export default function AttendanceReportPage() {
         filename="attendance-report"
         title={`${teamName} — Attendance Report`}
         table={table}
-        onExport={(format) => addHistoryEntry("attendance", format)}
+        onExport={(format) => addHistoryEntry("attendance", format).catch(() => {})}
         filtersSlot={
           <FilterPanel>
-            <Select
-              items={periodLabels}
-              value={period}
-              onValueChange={(value) => setPeriod((value ?? "monthly") as AttendancePeriod)}
-            >
-              <SelectTrigger className="w-full sm:w-auto">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {attendancePeriodOptions.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {periodLabels[option]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <p className="text-sm text-muted-foreground">
+              Attendance reports always cover the full season, so every session counts.
+            </p>
           </FilterPanel>
         }
         columnsSlot={

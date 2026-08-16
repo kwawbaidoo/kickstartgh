@@ -2,9 +2,14 @@ import { format, isToday as isDateToday } from "date-fns";
 
 import type { AttendanceSession, AttendanceStatus } from "@/mock/attendance";
 import type { Player } from "@/mock/players";
-import { getPlayerAttendanceStats, type AttendanceRankingEntry } from "@/lib/attendance";
+import {
+  getPlayerAttendanceStats,
+  type AttendanceRankingEntry,
+} from "@/lib/attendance";
 
-export function getUpcomingSessions(sessions: AttendanceSession[]): AttendanceSession[] {
+export function getUpcomingSessions(
+  sessions: AttendanceSession[],
+): AttendanceSession[] {
   return sessions
     .filter((session) => session.status === "upcoming")
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -12,19 +17,26 @@ export function getUpcomingSessions(sessions: AttendanceSession[]): AttendanceSe
 
 export function getTodaySession(
   sessions: AttendanceSession[],
-  referenceDate = new Date()
+  referenceDate = new Date(),
 ): AttendanceSession | undefined {
   const todayKey = format(referenceDate, "yyyy-MM-dd");
-  return sessions.find((session) => session.date === todayKey && session.status !== "cancelled");
+  return sessions.find(
+    (session) => session.date === todayKey && session.status !== "cancelled",
+  );
 }
 
-export function getCompletedSessions(sessions: AttendanceSession[]): AttendanceSession[] {
+export function getCompletedSessions(
+  sessions: AttendanceSession[],
+): AttendanceSession[] {
   return sessions
     .filter((session) => session.status === "completed")
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-export function getSessionsForDate(sessions: AttendanceSession[], date: Date): AttendanceSession[] {
+export function getSessionsForDate(
+  sessions: AttendanceSession[],
+  date: Date,
+): AttendanceSession[] {
   const key = format(date, "yyyy-MM-dd");
   return sessions.filter((session) => session.date === key);
 }
@@ -39,7 +51,7 @@ export const defaultTrainingFilters: TrainingFilters = {
 
 export function filterTrainingSessions(
   sessions: AttendanceSession[],
-  filters: TrainingFilters
+  filters: TrainingFilters,
 ): AttendanceSession[] {
   const query = filters.search.trim().toLowerCase();
   if (!query) return sessions;
@@ -62,7 +74,10 @@ export type ConsecutiveCounts = {
   consecutiveAbsent: number;
 };
 
-export function getConsecutiveCounts(player_id: string, sessions: AttendanceSession[]): ConsecutiveCounts {
+export function getConsecutiveCounts(
+  player_id: string,
+  sessions: AttendanceSession[],
+): ConsecutiveCounts {
   const recorded = sessions
     .filter((session) => session.records[player_id])
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -101,7 +116,7 @@ export type SessionAttendanceSummary = {
 
 export function getSessionAttendanceSummary(
   session: AttendanceSession,
-  players: Player[]
+  players: Player[],
 ): SessionAttendanceSummary {
   const activePlayers = players.filter((player) => player.status === "Active");
   let present = 0;
@@ -123,9 +138,19 @@ export function getSessionAttendanceSummary(
 
   const total = activePlayers.length;
   const marked = total - unmarked;
-  const attendancePercentage = marked > 0 ? Math.round(((present + late * 0.5) / marked) * 100) : 0;
+  const attendancePercentage =
+    marked > 0 ? Math.round(((present + late * 0.5) / marked) * 100) : 0;
 
-  return { present, late, excused, injured, absent, unmarked, total, attendancePercentage };
+  return {
+    present,
+    late,
+    excused,
+    injured,
+    absent,
+    unmarked,
+    total,
+    attendancePercentage,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -134,8 +159,13 @@ export function getSessionAttendanceSummary(
 
 export type MonthlyAttendance = { month: string; percentage: number };
 
-export function getMonthlyAverages(sessions: AttendanceSession[]): MonthlyAttendance[] {
-  const monthGroups = new Map<string, { sortKey: number; sessions: AttendanceSession[] }>();
+export function getMonthlyAverages(
+  sessions: AttendanceSession[],
+): MonthlyAttendance[] {
+  const monthGroups = new Map<
+    string,
+    { sortKey: number; sessions: AttendanceSession[] }
+  >();
 
   for (const session of sessions) {
     const date = new Date(session.date);
@@ -160,7 +190,10 @@ export function getMonthlyAverages(sessions: AttendanceSession[]): MonthlyAttend
       return {
         month,
         sortKey,
-        percentage: totalRecords > 0 ? Math.round((weightedPresent / totalRecords) * 100) : 0,
+        percentage:
+          totalRecords > 0
+            ? Math.round((weightedPresent / totalRecords) * 100)
+            : 0,
       };
     })
     .sort((a, b) => a.sortKey - b.sortKey)
@@ -174,18 +207,29 @@ export type TeamTrainingStats = {
   monthlyAverages: MonthlyAttendance[];
 };
 
-export function getTeamTrainingStats(players: Player[], sessions: AttendanceSession[]): TeamTrainingStats {
+export function getTeamTrainingStats(
+  players: Player[],
+  sessions: AttendanceSession[],
+): TeamTrainingStats {
   const completedSessions = getCompletedSessions(sessions);
 
   const ranking = players
-    .map((player) => ({ player, stats: getPlayerAttendanceStats(player.id, completedSessions, []) }))
+    .map((player) => ({
+      player,
+      stats: getPlayerAttendanceStats(player.id, completedSessions, []),
+    }))
     .filter((entry) => entry.stats.totalSessions > 0)
-    .sort((a, b) => b.stats.attendancePercentage - a.stats.attendancePercentage);
+    .sort(
+      (a, b) => b.stats.attendancePercentage - a.stats.attendancePercentage,
+    );
 
   const teamAttendancePercentage =
     ranking.length > 0
       ? Math.round(
-          ranking.reduce((sum, entry) => sum + entry.stats.attendancePercentage, 0) / ranking.length
+          ranking.reduce(
+            (sum, entry) => sum + entry.stats.attendancePercentage,
+            0,
+          ) / ranking.length,
         )
       : 0;
 
@@ -217,7 +261,7 @@ export const defaultTrainingHistoryFilters: TrainingHistoryFilters = {
 
 export function filterTrainingHistory(
   sessions: AttendanceSession[],
-  filters: TrainingHistoryFilters
+  filters: TrainingHistoryFilters,
 ): AttendanceSession[] {
   return getCompletedSessions(sessions).filter((session) => {
     if (filters.dateFrom && session.date < filters.dateFrom) return false;
@@ -250,14 +294,21 @@ function formatTimeLabel(time: string): string {
   return `${displayHours}:${minutesStr.padStart(2, "0")} ${period}`;
 }
 
-export function buildTrainingReminderMessage(session: AttendanceSession, teamName: string): string {
+export function buildTrainingReminderMessage(
+  session: AttendanceSession,
+  teamName: string,
+): string {
   const sessionDate = new Date(session.date);
-  const dateLabel = isDateToday(sessionDate) ? "Today" : format(sessionDate, "EEEE, d MMM");
+  const dateLabel = isDateToday(sessionDate)
+    ? "Today"
+    : format(sessionDate, "EEEE, d MMM");
 
   return [
     "⚽ Training Reminder",
     "",
     teamName,
+    "",
+    `Title: ${session.title}`,
     "",
     `${dateLabel}, ${formatTimeLabel(session.start_time)}`,
     "",
@@ -267,13 +318,16 @@ export function buildTrainingReminderMessage(session: AttendanceSession, teamNam
   ].join("\n");
 }
 
-export function buildTrainingShareMessage(session: AttendanceSession, teamName: string): string {
+export function buildTrainingShareMessage(
+  session: AttendanceSession,
+  teamName: string,
+): string {
   return [
     "⚽ Training Session",
     "",
     teamName,
     "",
-    session.title,
+    `Title: ${session.title}`,
     `${format(new Date(session.date), "EEEE, d MMM yyyy")}, ${formatTimeLabel(session.start_time)}–${formatTimeLabel(session.end_time)}`,
     `Venue: ${session.venue}`,
     ...(session.focus ? [`Focus: ${session.focus}`] : []),

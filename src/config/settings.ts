@@ -11,6 +11,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { roleIds, roleOptions, type RoleId } from "@/config/roles";
+
 export type SettingsNavItem = {
   label: string;
   description: string;
@@ -166,15 +168,28 @@ export type PermissionAction =
   | "Manage Staff"
   | "Take Attendance";
 
-export const permissionRoles = ["Manager", "Coach", "Captain", "Player"] as const;
+/**
+ * Shares the same staff-role vocabulary as `config/roles.ts` (`teamManager`/`headCoach`/
+ * `assistantCoach`/`captain` — confirmed real via `PATCH /me/profile`/`preferred_role`
+ * and Staff CRUD) instead of a second, disconnected `Manager`/`Coach`/`Captain`/`Player`
+ * set. "Player" was dropped: players aren't a staff role with app permissions in this
+ * model, and it was already `false` for every action. `headCoach`/`assistantCoach` both
+ * carry what used to be the single "Coach" row's permissions — the original design never
+ * distinguished between them.
+ */
+export const permissionRoles = roleIds;
 
-export const permissionMatrix: { action: PermissionAction; allowed: Record<(typeof permissionRoles)[number], boolean> }[] = [
-  { action: "Add Player", allowed: { Manager: true, Coach: true, Captain: false, Player: false } },
-  { action: "Create Match", allowed: { Manager: true, Coach: true, Captain: false, Player: false } },
-  { action: "Generate Reports", allowed: { Manager: true, Coach: true, Captain: false, Player: false } },
-  { action: "Edit Team", allowed: { Manager: true, Coach: false, Captain: false, Player: false } },
-  { action: "Manage Staff", allowed: { Manager: true, Coach: false, Captain: false, Player: false } },
-  { action: "Take Attendance", allowed: { Manager: true, Coach: true, Captain: true, Player: false } },
+export const permissionRoleLabels: Record<RoleId, string> = Object.fromEntries(
+  roleOptions.map((option) => [option.id, option.label])
+) as Record<RoleId, string>;
+
+export const permissionMatrix: { action: PermissionAction; allowed: Record<RoleId, boolean> }[] = [
+  { action: "Add Player", allowed: { teamManager: true, headCoach: true, assistantCoach: true, captain: false } },
+  { action: "Create Match", allowed: { teamManager: true, headCoach: true, assistantCoach: true, captain: false } },
+  { action: "Generate Reports", allowed: { teamManager: true, headCoach: true, assistantCoach: true, captain: false } },
+  { action: "Edit Team", allowed: { teamManager: true, headCoach: false, assistantCoach: false, captain: false } },
+  { action: "Manage Staff", allowed: { teamManager: true, headCoach: false, assistantCoach: false, captain: false } },
+  { action: "Take Attendance", allowed: { teamManager: true, headCoach: true, assistantCoach: true, captain: true } },
 ];
 
 export const appInfo = {

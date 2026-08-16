@@ -50,7 +50,7 @@ export default function TeamReportPage() {
         filename="team-report"
         title={`${activeTeam.name} — Team Report`}
         table={table}
-        onExport={(format) => addHistoryEntry("team", format)}
+        onExport={(format) => addHistoryEntry("team", format).catch(() => {})}
         filtersSlot={
           <FilterPanel>
             <p className="text-sm text-muted-foreground">

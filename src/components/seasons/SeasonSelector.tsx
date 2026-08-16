@@ -26,6 +26,8 @@ function SeasonSelector() {
   const activeSeasonId = useSeasonStore((state) => state.activeSeasonId);
   const activateSeason = useSeasonStore((state) => state.activateSeason);
   const [pendingSeasonId, setPendingSeasonId] = useState<string | null>(null);
+  const [isActivating, setIsActivating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const activeSeason = seasons.find((season) => season.id === activeSeasonId);
   const pendingSeason = seasons.find((season) => season.id === pendingSeasonId);
@@ -33,6 +35,21 @@ function SeasonSelector() {
   if (!activeSeason) return null;
 
   const items = Object.fromEntries(seasons.map((season) => [season.id, season.name]));
+
+  async function handleActivate() {
+    if (!pendingSeasonId) return;
+    setIsActivating(true);
+    setError(null);
+    try {
+      await activateSeason(pendingSeasonId);
+      setPendingSeasonId(null);
+    } catch {
+      setError("Couldn't activate this season. Please try again.");
+      setPendingSeasonId(null);
+    } finally {
+      setIsActivating(false);
+    }
+  }
 
   return (
     <>
@@ -66,20 +83,17 @@ function SeasonSelector() {
         description={`${activeSeason.name} will move to Completed, and every new player, match, and training session will belong to ${pendingSeason?.name ?? "this season"} from now on.`}
         footer={
           <>
-            <Button variant="outline" onClick={() => setPendingSeasonId(null)}>
+            <Button variant="outline" onClick={() => setPendingSeasonId(null)} disabled={isActivating}>
               Cancel
             </Button>
-            <Button
-              onClick={() => {
-                if (pendingSeasonId) activateSeason(pendingSeasonId);
-                setPendingSeasonId(null);
-              }}
-            >
-              Activate
+            <Button onClick={handleActivate} disabled={isActivating}>
+              {isActivating ? "Activating..." : "Activate"}
             </Button>
           </>
         }
-      />
+      >
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </Modal>
     </>
   );
 }

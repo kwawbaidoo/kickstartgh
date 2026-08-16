@@ -8,15 +8,6 @@ export type MatchResult = "win" | "draw" | "loss";
 
 export type Formation = "4-4-2" | "4-3-3" | "3-5-2" | "5-3-2" | "3-4-3" | "4-2-3-1" | "4-5-1" | "3-4-1-2" | "3-4-2-1" | "5-4-1" | "5-2-3";
 
-/**
- * A bench official is either an existing staff member (looked up live by id, so
- * role/name edits in Settings/Team stay reflected) or a one-off addition for this
- * match only, since not every matchday helper is on the permanent staff roster.
- */
-export type BenchOfficial =
-  | { id: string; source: "staff"; staff_id: string }
-  | { id: string; source: "adhoc"; full_name: string; role: string };
-
 export type Lineup = {
   formation: Formation;
   /**
@@ -28,7 +19,6 @@ export type Lineup = {
   starting_xi: Partial<Record<Slot, string>>;
   substitutes: string[];
   captain_id?: string;
-  bench_officials: BenchOfficial[];
 };
 
 export type MatchEventType = "goal" | "yellow_card" | "red_card" | "substitution" | "injury";

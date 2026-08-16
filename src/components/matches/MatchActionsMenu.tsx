@@ -9,7 +9,6 @@ import {
   MessageCircle,
   MoreVertical,
   Pencil,
-  RotateCcw,
   Trash2,
   Trophy,
   XCircle,
@@ -31,19 +30,13 @@ import type { Match } from "@/mock/matches";
 import { useMatchesStore } from "@/store/matches-store";
 import { usePlayersStore } from "@/store/players-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
-import {
-  buildFixtureShareMessage,
-  buildLineupShareMessage,
-  buildResultShareMessage,
-  resolveBenchOfficials,
-} from "@/lib/matches";
+import { buildFixtureShareMessage, buildLineupShareMessage, buildResultShareMessage } from "@/lib/matches";
 import { exportLineupPdf } from "@/lib/export";
 
 function MatchActionsMenu({ match }: { match: Match }) {
   const deleteMatch = useMatchesStore((state) => state.deleteMatch);
   const completeMatch = useMatchesStore((state) => state.completeMatch);
   const cancelMatch = useMatchesStore((state) => state.cancelMatch);
-  const reactivateMatch = useMatchesStore((state) => state.reactivateMatch);
   const players = usePlayersStore((state) => state.players);
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
 
@@ -52,38 +45,44 @@ function MatchActionsMenu({ match }: { match: Match }) {
   const [finishOpen, setFinishOpen] = useState(false);
   const [teamScoreInput, setTeamScoreInput] = useState("");
   const [opponentScoreInput, setOpponentScoreInput] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const playerNames = Object.fromEntries(players.map((player) => [player.id, player.full_name]));
-  const resolvedBenchOfficials = match.lineup
-    ? resolveBenchOfficials(match.lineup.bench_officials, activeTeam.staff)
-    : [];
   const fixtureMessage = buildFixtureShareMessage(match, activeTeam.name);
   const resultMessage = buildResultShareMessage(match, activeTeam.name, playerNames);
-  const lineupMessage = buildLineupShareMessage(match, activeTeam.name, playerNames, resolvedBenchOfficials);
+  const lineupMessage = buildLineupShareMessage(match, activeTeam.name, playerNames);
 
   function handleDownloadLineup() {
     if (!match.lineup) return;
-    exportLineupPdf(match, activeTeam, players, resolvedBenchOfficials);
+    exportLineupPdf(match, activeTeam, players);
   }
 
   function handleDelete() {
-    deleteMatch(match.id);
-    setDeleteOpen(false);
+    setError(null);
+    deleteMatch(match.id)
+      .then(() => setDeleteOpen(false))
+      .catch(() => setError("Couldn't delete this match. Please try again."));
   }
 
   function handleCancel() {
-    cancelMatch(match.id);
-    setCancelOpen(false);
+    setError(null);
+    cancelMatch(match.id)
+      .then(() => setCancelOpen(false))
+      .catch(() => setError("Couldn't cancel this match. Please try again."));
   }
 
   function handleFinish() {
     const team_score = Number(teamScoreInput);
     const opponent_score = Number(opponentScoreInput);
     if (Number.isNaN(team_score) || Number.isNaN(opponent_score)) return;
-    completeMatch(match.id, team_score, opponent_score);
-    setFinishOpen(false);
-    setTeamScoreInput("");
-    setOpponentScoreInput("");
+    setError(null);
+    completeMatch(match.id, team_score, opponent_score)
+      .then(() => {
+        setFinishOpen(false);
+        setTeamScoreInput("");
+        setOpponentScoreInput("");
+      })
+      .catch(() => setError("Couldn't save the result. Please try again."));
   }
 
   return (
@@ -121,16 +120,6 @@ function MatchActionsMenu({ match }: { match: Match }) {
               <DropdownMenuItem onClick={() => setCancelOpen(true)}>
                 <XCircle />
                 Cancel Match
-              </DropdownMenuItem>
-            </>
-          )}
-
-          {match.status === "cancelled" && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => reactivateMatch(match.id)}>
-                <RotateCcw />
-                Reactivate Match
               </DropdownMenuItem>
             </>
           )}
@@ -210,13 +199,15 @@ function MatchActionsMenu({ match }: { match: Match }) {
             </Button>
           </>
         }
-      />
+      >
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </Modal>
 
       <Modal
         open={cancelOpen}
         onOpenChange={setCancelOpen}
         title="Cancel this match?"
-        description={`The fixture vs ${match.opponent} will be marked as cancelled. You can reactivate it later.`}
+        description={`The fixture vs ${match.opponent} will be marked as cancelled. This can't be undone.`}
         footer={
           <>
             <Button variant="outline" onClick={() => setCancelOpen(false)}>
@@ -227,7 +218,9 @@ function MatchActionsMenu({ match }: { match: Match }) {
             </Button>
           </>
         }
-      />
+      >
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </Modal>
 
       <Modal
         open={finishOpen}
@@ -243,6 +236,7 @@ function MatchActionsMenu({ match }: { match: Match }) {
           </>
         }
       >
+        {error && <p className="pb-2 text-sm text-destructive">{error}</p>}
         <div className="flex items-center gap-3">
           <Field>
             <FieldLabel htmlFor={`team_score-${match.id}`}>{activeTeam.name}</FieldLabel>

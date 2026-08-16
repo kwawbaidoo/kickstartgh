@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -22,6 +22,7 @@ export default function TrainingAttendancePage({ params }: { params: Promise<{ i
   const completeSession = useAttendanceStore((state) => state.completeSession);
   const players = usePlayersStore((state) => state.players);
   const session = sessions.find((candidate) => candidate.id === id);
+  const [error, setError] = useState<string | null>(null);
 
   if (!session) {
     return (
@@ -39,8 +40,10 @@ export default function TrainingAttendancePage({ params }: { params: Promise<{ i
   );
 
   function handleFinish() {
-    completeSession(id);
-    router.push(`/training/${id}`);
+    setError(null);
+    completeSession(id)
+      .then(() => router.push(`/training/${id}`))
+      .catch(() => setError("Couldn't save this session. Please try again."));
   }
 
   return (
@@ -54,11 +57,23 @@ export default function TrainingAttendancePage({ params }: { params: Promise<{ i
       </Link>
       <SectionHeader title="Take Attendance" description={session.title} />
 
+      {error && <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
+
       <AttendanceBoard
         players={activePlayers}
         records={session.records}
-        onSetAttendance={(player_id, status) => setAttendance(id, player_id, status)}
-        onSetBulkAttendance={(playerIds, status) => setBulkAttendance(id, playerIds, status)}
+        onSetAttendance={(player_id, status) => {
+          setError(null);
+          setAttendance(id, player_id, status).catch(() =>
+            setError("Couldn't save attendance. Please try again.")
+          );
+        }}
+        onSetBulkAttendance={(playerIds, status) => {
+          setError(null);
+          setBulkAttendance(id, playerIds, status).catch(() =>
+            setError("Couldn't save attendance. Please try again.")
+          );
+        }}
       />
 
       <div
