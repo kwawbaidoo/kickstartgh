@@ -13,16 +13,17 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { changePasswordSchema, type ChangePasswordInput } from "@/schemas/settings";
+import { applyApiErrors } from "@/lib/api-client";
 import type { Session } from "@/store/settings-store";
 
 type SecurityCardProps = {
   last_login: string;
   two_factor_enabled: boolean;
   sessions: Session[];
-  onToggleTwoFactor: () => void;
-  onLogOutSession: (id: string) => void;
-  onLogOutAllOtherSessions: () => void;
-  onChangePassword: (data: ChangePasswordInput) => void;
+  onToggleTwoFactor: () => Promise<void>;
+  onLogOutSession: (id: string) => Promise<void>;
+  onLogOutAllOtherSessions: () => Promise<void>;
+  onChangePassword: (data: ChangePasswordInput) => Promise<void>;
 };
 
 function SecurityCard({
@@ -36,17 +37,39 @@ function SecurityCard({
 }: SecurityCardProps) {
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [passwordUpdated, setPasswordUpdated] = useState(false);
+  const [sessionsError, setSessionsError] = useState<string | null>(null);
 
   const form = useForm<ChangePasswordInput>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: { current_password: "", new_password: "", confirm_password: "" },
   });
 
-  function handleChangePassword(data: ChangePasswordInput) {
-    onChangePassword(data);
-    form.reset();
-    setShowPasswordForm(false);
-    setPasswordUpdated(true);
+  async function handleChangePassword(data: ChangePasswordInput) {
+    try {
+      await onChangePassword(data);
+      form.reset();
+      setShowPasswordForm(false);
+      setPasswordUpdated(true);
+    } catch (error) {
+      applyApiErrors(error, (field, err) => form.setError(field as keyof ChangePasswordInput, err));
+    }
+  }
+
+  function handleToggleTwoFactor() {
+    setSessionsError(null);
+    onToggleTwoFactor().catch(() => setSessionsError("Couldn't update two-factor authentication. Please try again."));
+  }
+
+  function handleLogOutSession(id: string) {
+    setSessionsError(null);
+    onLogOutSession(id).catch(() => setSessionsError("Couldn't log out that device. Please try again."));
+  }
+
+  function handleLogOutAllOtherSessions() {
+    setSessionsError(null);
+    onLogOutAllOtherSessions().catch(() =>
+      setSessionsError("Couldn't log out other devices. Please try again.")
+    );
   }
 
   return (
@@ -89,8 +112,8 @@ function SecurityCard({
                 </Field>
               </FieldGroup>
               <div className="flex gap-2">
-                <Button type="submit" className="flex-1">
-                  Update Password
+                <Button type="submit" className="flex-1" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting ? "Updating..." : "Update Password"}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => setShowPasswordForm(false)}>
                   Cancel
@@ -126,7 +149,7 @@ function SecurityCard({
                 {two_factor_enabled ? "Enabled" : "Disabled"}
               </span>
             </div>
-            <Switch checked={two_factor_enabled} onCheckedChange={onToggleTwoFactor} aria-label="Two-factor authentication" />
+            <Switch checked={two_factor_enabled} onCheckedChange={handleToggleTwoFactor} aria-label="Two-factor authentication" />
           </div>
         </CardContent>
       </Card>
@@ -140,6 +163,7 @@ function SecurityCard({
             Last login: {format(new Date(last_login), "d MMM yyyy, HH:mm")}
           </p>
           <Separator />
+          {sessionsError && <p className="text-sm text-destructive">{sessionsError}</p>}
           {sessions.map((session) => (
             <div key={session.id} className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -154,14 +178,14 @@ function SecurityCard({
                 </div>
               </div>
               {!session.current && (
-                <Button variant="ghost" size="sm" onClick={() => onLogOutSession(session.id)}>
+                <Button variant="ghost" size="sm" onClick={() => handleLogOutSession(session.id)}>
                   Log out
                 </Button>
               )}
             </div>
           ))}
           {sessions.some((session) => !session.current) && (
-            <Button variant="outline" className="w-full" onClick={onLogOutAllOtherSessions}>
+            <Button variant="outline" className="w-full" onClick={handleLogOutAllOtherSessions}>
               <LogOut />
               Log Out From All Other Devices
             </Button>

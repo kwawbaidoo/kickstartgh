@@ -73,7 +73,7 @@ export default function PlayerReportPage() {
         filename="player-report"
         title={`${teamName} — Player Report`}
         table={table}
-        onExport={(format) => addHistoryEntry("player", format)}
+        onExport={(format) => addHistoryEntry("player", format).catch(() => {})}
         filtersSlot={
           <FilterPanel>
             <Select

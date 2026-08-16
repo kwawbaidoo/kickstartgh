@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 
 import { apiFetch } from "@/lib/api-client";
 import type { LoginInput, RegisterInput } from "@/schemas/auth";
+import type { ProfileFormInput } from "@/schemas/settings";
 
 export type AuthUser = {
   id: string;
@@ -27,6 +28,12 @@ export type AuthUser = {
  *   personal access token, format "{id}|{plaintext}", sent back verbatim as-is
  * - GET /me -> data: UserResponse & { teams: unknown[] } (team-membership shape not
  *   exercised yet — empty array on a brand-new account)
+ * - PATCH /me/profile -> data: UserResponse, identical shape to GET /me/GET /me/profile.
+ *   Confirmed live (Sprint I8) that `GET /me/profile` returns the exact same fields as
+ *   `GET /me` — there is no separate "profile" concept server-side, just a dedicated
+ *   PATCH-able endpoint for your own basic info. `updateProfile` below reuses `mapUser`
+ *   and writes into this same `user` state, rather than Settings maintaining its own
+ *   separate (and previously 100% fake, never-synced) `profile` copy.
  */
 type UserResponse = {
   id: string;
@@ -67,6 +74,7 @@ type AuthState = {
   register: (input: RegisterInput) => Promise<void>;
   login: (input: LoginInput) => Promise<void>;
   fetchCurrentUser: () => Promise<void>;
+  updateProfile: (input: ProfileFormInput) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -106,6 +114,14 @@ export const useAuthStore = create<AuthState>()(
       fetchCurrentUser: async () => {
         const response = await apiFetch<MeResponse>("/me", { method: "GET" });
         set({ user: mapUser(response), isAuthenticated: true });
+      },
+
+      updateProfile: async (input) => {
+        const response = await apiFetch<UserResponse>("/me/profile", {
+          method: "PATCH",
+          body: input,
+        });
+        set({ user: mapUser(response) });
       },
 
       signOut: async () => {

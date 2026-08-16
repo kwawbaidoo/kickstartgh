@@ -12,12 +12,7 @@ import type { Match, MatchStatus } from "@/mock/matches";
 import type { AgeGroup } from "@/config/players";
 import type { Player, PlayerStatus, Position } from "@/mock/players";
 import type { AttendanceSession } from "@/mock/attendance";
-import {
-  getAttendanceRanking,
-  getPeriodCutoff,
-  getPlayerAttendanceStats,
-  type AttendancePeriod,
-} from "@/lib/attendance";
+import { getAttendanceRanking, getPlayerAttendanceStats } from "@/lib/attendance";
 import { getPlayerMatchStats, getTeamStats } from "@/lib/matches";
 import { getAgeGroup } from "@/lib/players";
 
@@ -221,14 +216,9 @@ export function buildAttendanceReportTable(
   players: Player[],
   sessions: AttendanceSession[],
   matches: Match[],
-  period: AttendancePeriod,
   columnKeys: string[]
 ): ReportTable {
-  const cutoff = getPeriodCutoff(period);
-  const periodSessions = sessions.filter((session) => new Date(session.date) >= cutoff);
-  const periodMatches = matches.filter((match) => new Date(match.date) >= cutoff);
-
-  const ranking = getAttendanceRanking(players, periodSessions, periodMatches);
+  const ranking = getAttendanceRanking(players, sessions, matches);
 
   const rows = ranking.map((entry, index) => {
     const row: Record<string, string> = {

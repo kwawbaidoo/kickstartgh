@@ -1,0 +1,860 @@
+{
+  "info": {
+    "_postman_id": "b6e2c1a0-4c1a-4a2e-9c1a-kickstartgh0001",
+    "name": "KickStartGH API",
+    "description": "SRS.md-derived backend API for KickStartGH. All routes under {{base_url}} (default http://localhost:8000/api). Auth via Bearer token issued by /auth/register, /auth/login, or /auth/otp/verify.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api" },
+    { "key": "token", "value": "" },
+    { "key": "team_id", "value": "" },
+    { "key": "season_id", "value": "" },
+    { "key": "player_id", "value": "" },
+    { "key": "match_id", "value": "" },
+    { "key": "event_id", "value": "" },
+    { "key": "session_id", "value": "" },
+    { "key": "staff_id", "value": "" },
+    { "key": "report_template_id", "value": "" },
+    { "key": "token_id", "value": "" },
+    { "key": "invite_code", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Kwame Owusu\",\n  \"phone\": \"0244000000\",\n  \"password\": \"password123\",\n  \"email\": null\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"0244000000\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Request OTP",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"0244000000\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/otp/request", "host": ["{{base_url}}"], "path": ["auth", "otp", "request"] }
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"0244000000\",\n  \"code\": \"123456\",\n  \"full_name\": \"Kwame Owusu\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/otp/verify", "host": ["{{base_url}}"], "path": ["auth", "otp", "verify"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/auth/logout", "host": ["{{base_url}}"], "path": ["auth", "logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Me",
+      "item": [
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/me", "host": ["{{base_url}}"], "path": ["me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teams",
+      "item": [
+        {
+          "name": "Get Team",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}"] }
+          }
+        },
+        {
+          "name": "Create Team",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Accra Lions FC\",\n  \"nickname\": \"ALF\",\n  \"region\": \"Greater Accra\",\n  \"district\": \"Accra Metro\",\n  \"home_ground\": \"Legon Park\",\n  \"year_established\": 2015,\n  \"color_primary\": \"#1e3a8a\",\n  \"color_secondary\": \"#2563eb\",\n  \"slogan\": \"One Team, One Dream\",\n  \"facebook\": null,\n  \"instagram\": null,\n  \"tiktok\": null,\n  \"website\": null\n}"
+            },
+            "url": { "raw": "{{base_url}}/teams", "host": ["{{base_url}}"], "path": ["teams"] }
+          }
+        },
+        {
+          "name": "Update Team",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Accra Lions FC\",\n  \"nickname\": \"ALF\",\n  \"region\": \"Greater Accra\",\n  \"district\": \"Accra Metro\",\n  \"home_ground\": \"Legon Park\",\n  \"year_established\": 2015,\n  \"color_primary\": \"#1e3a8a\",\n  \"color_secondary\": \"#2563eb\",\n  \"slogan\": \"One Team, One Dream\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Staff",
+      "item": [
+        {
+          "name": "List Staff",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}/staff", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}", "staff"] }
+          }
+        },
+        {
+          "name": "Add Staff Member",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"headCoach\",\n  \"full_name\": \"Yaw Asante\",\n  \"phone\": \"0201234567\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}/staff", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}", "staff"] }
+          }
+        },
+        {
+          "name": "Update Staff Member",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"role\": \"assistantCoach\"\n}" },
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}/staff/{{staff_id}}", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}", "staff", "{{staff_id}}"] }
+          }
+        },
+        {
+          "name": "Remove Staff Member",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}/staff/{{staff_id}}", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}", "staff", "{{staff_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invites",
+      "item": [
+        {
+          "name": "Create Invite",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"player\",\n  \"expires_at\": null\n}"
+            },
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}/invites", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}", "invites"] }
+          }
+        },
+        {
+          "name": "Redeem Invite",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/invites/{{invite_code}}/redeem", "host": ["{{base_url}}"], "path": ["invites", "{{invite_code}}", "redeem"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Seasons",
+      "item": [
+        {
+          "name": "List Seasons",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}/seasons", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}", "seasons"] }
+          }
+        },
+        {
+          "name": "Create Season",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"2026 Season\",\n  \"start_date\": \"2026-01-01\",\n  \"end_date\": \"2026-12-31\",\n  \"description\": null,\n  \"objectives\": null,\n  \"competition_category\": \"League\",\n  \"budget\": 5000,\n  \"color_primary\": \"#1e3a8a\",\n  \"color_secondary\": \"#2563eb\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}/seasons", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}", "seasons"] }
+          }
+        },
+        {
+          "name": "Get Season",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/seasons/{{season_id}}", "host": ["{{base_url}}"], "path": ["seasons", "{{season_id}}"] }
+          }
+        },
+        {
+          "name": "Update Season",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"2026 Season\",\n  \"start_date\": \"2026-01-01\",\n  \"end_date\": \"2026-12-31\",\n  \"budget\": 6000\n}"
+            },
+            "url": { "raw": "{{base_url}}/seasons/{{season_id}}", "host": ["{{base_url}}"], "path": ["seasons", "{{season_id}}"] }
+          }
+        },
+        {
+          "name": "Activate Season",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/seasons/{{season_id}}/activate", "host": ["{{base_url}}"], "path": ["seasons", "{{season_id}}", "activate"] }
+          }
+        },
+        {
+          "name": "Archive Season",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/seasons/{{season_id}}/archive", "host": ["{{base_url}}"], "path": ["seasons", "{{season_id}}", "archive"] }
+          }
+        },
+        {
+          "name": "Rename Season",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"2026/27 Season\"\n}" },
+            "url": { "raw": "{{base_url}}/seasons/{{season_id}}/rename", "host": ["{{base_url}}"], "path": ["seasons", "{{season_id}}", "rename"] }
+          }
+        },
+        {
+          "name": "Duplicate Season",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"2027 Season\"\n}" },
+            "url": { "raw": "{{base_url}}/seasons/{{season_id}}/duplicate", "host": ["{{base_url}}"], "path": ["seasons", "{{season_id}}", "duplicate"] }
+          }
+        },
+        {
+          "name": "Season Stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/seasons/{{season_id}}/stats", "host": ["{{base_url}}"], "path": ["seasons", "{{season_id}}", "stats"] }
+          }
+        },
+        {
+          "name": "Season Analytics",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/seasons/{{season_id}}/analytics", "host": ["{{base_url}}"], "path": ["seasons", "{{season_id}}", "analytics"] }
+          }
+        },
+        {
+          "name": "Season Roster",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/seasons/{{season_id}}/players", "host": ["{{base_url}}"], "path": ["seasons", "{{season_id}}", "players"] }
+          }
+        },
+        {
+          "name": "Season Roster Performance Stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/seasons/{{season_id}}/players/stats", "host": ["{{base_url}}"], "path": ["seasons", "{{season_id}}", "players", "stats"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Players",
+      "item": [
+        {
+          "name": "List Players",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/teams/{{team_id}}/players?seasonId={{season_id}}&search=&position=&ageGroup=&status=&sort=name",
+              "host": ["{{base_url}}"],
+              "path": ["teams", "{{team_id}}", "players"],
+              "query": [
+                { "key": "seasonId", "value": "{{season_id}}" },
+                { "key": "search", "value": "" },
+                { "key": "position", "value": "" },
+                { "key": "ageGroup", "value": "" },
+                { "key": "status", "value": "" },
+                { "key": "sort", "value": "name" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Player",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/players/{{player_id}}", "host": ["{{base_url}}"], "path": ["players", "{{player_id}}"] }
+          }
+        },
+        {
+          "name": "Create Player",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Kojo Mensah\",\n  \"nickname\": null,\n  \"position\": \"Forward\",\n  \"secondary_position\": null,\n  \"jersey_number\": 9,\n  \"preferred_foot\": \"Right\",\n  \"date_of_birth\": \"2000-05-10\",\n  \"phone\": null,\n  \"emergency_contact\": null,\n  \"village\": null,\n  \"previous_club\": null,\n  \"status\": \"Active\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}/players", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}", "players"] }
+          }
+        },
+        {
+          "name": "Update Player",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Kojo Mensah\",\n  \"position\": \"Forward\",\n  \"jersey_number\": 9,\n  \"preferred_foot\": \"Right\",\n  \"date_of_birth\": \"2000-05-10\",\n  \"status\": \"Active\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/players/{{player_id}}", "host": ["{{base_url}}"], "path": ["players", "{{player_id}}"] }
+          }
+        },
+        {
+          "name": "Update Player Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"Injured\"\n}" },
+            "url": { "raw": "{{base_url}}/players/{{player_id}}/status", "host": ["{{base_url}}"], "path": ["players", "{{player_id}}", "status"] }
+          }
+        },
+        {
+          "name": "Delete Player",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/players/{{player_id}}", "host": ["{{base_url}}"], "path": ["players", "{{player_id}}"] }
+          }
+        },
+        {
+          "name": "Register Player For Season",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"player_id\": \"{{player_id}}\",\n  \"jersey_number\": 9\n}"
+            },
+            "url": { "raw": "{{base_url}}/seasons/{{season_id}}/players", "host": ["{{base_url}}"], "path": ["seasons", "{{season_id}}", "players"] }
+          }
+        },
+        {
+          "name": "Carry Forward Roster",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source_season_id\": \"{{season_id}}\",\n  \"source_player_ids\": [\"{{player_id}}\"]\n}"
+            },
+            "url": { "raw": "{{base_url}}/seasons/{{season_id}}/players/carry-forward", "host": ["{{base_url}}"], "path": ["seasons", "{{season_id}}", "players", "carry-forward"] }
+          }
+        },
+        {
+          "name": "Remove Player From Season",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/seasons/{{season_id}}/players/{{player_id}}", "host": ["{{base_url}}"], "path": ["seasons", "{{season_id}}", "players", "{{player_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Matches",
+      "item": [
+        {
+          "name": "List Matches",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/teams/{{team_id}}/matches?seasonId={{season_id}}&search=&competition=&homeAway=",
+              "host": ["{{base_url}}"],
+              "path": ["teams", "{{team_id}}", "matches"],
+              "query": [
+                { "key": "seasonId", "value": "{{season_id}}" },
+                { "key": "search", "value": "" },
+                { "key": "competition", "value": "" },
+                { "key": "homeAway", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Match",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/matches/{{match_id}}", "host": ["{{base_url}}"], "path": ["matches", "{{match_id}}"] }
+          }
+        },
+        {
+          "name": "Create Match",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"opponent\": \"Kumasi Warriors\",\n  \"competition\": \"Regional League\",\n  \"match_type\": \"League\",\n  \"venue\": \"Legon Park\",\n  \"is_home\": true,\n  \"date\": \"2026-08-15\",\n  \"kickoff_time\": \"15:00\",\n  \"referee\": null,\n  \"notes\": null,\n  \"poster\": null\n}"
+            },
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}/matches", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}", "matches"] }
+          }
+        },
+        {
+          "name": "Update Match",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"opponent\": \"Kumasi Warriors\",\n  \"competition\": \"Regional League\",\n  \"match_type\": \"League\",\n  \"venue\": \"Legon Park\",\n  \"is_home\": true,\n  \"date\": \"2026-08-15\",\n  \"kickoff_time\": \"15:00\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/matches/{{match_id}}", "host": ["{{base_url}}"], "path": ["matches", "{{match_id}}"] }
+          }
+        },
+        {
+          "name": "Delete Match",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/matches/{{match_id}}", "host": ["{{base_url}}"], "path": ["matches", "{{match_id}}"] }
+          }
+        },
+        {
+          "name": "Set Lineup",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"formation\": \"4-4-2\",\n  \"starting_xi\": {\n    \"GK\": \"{{player_id}}\"\n  },\n  \"substitutes\": [],\n  \"captain_id\": null\n}"
+            },
+            "url": { "raw": "{{base_url}}/matches/{{match_id}}/lineup", "host": ["{{base_url}}"], "path": ["matches", "{{match_id}}", "lineup"] }
+          }
+        },
+        {
+          "name": "Add Match Event",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"goal\",\n  \"minute\": 23,\n  \"player_id\": \"{{player_id}}\",\n  \"assist_player_id\": null\n}"
+            },
+            "url": { "raw": "{{base_url}}/matches/{{match_id}}/events", "host": ["{{base_url}}"], "path": ["matches", "{{match_id}}", "events"] }
+          }
+        },
+        {
+          "name": "Delete Match Event",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/matches/{{match_id}}/events/{{event_id}}", "host": ["{{base_url}}"], "path": ["matches", "{{match_id}}", "events", "{{event_id}}"] }
+          }
+        },
+        {
+          "name": "Complete Match",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"team_score\": 2,\n  \"opponent_score\": 1\n}" },
+            "url": { "raw": "{{base_url}}/matches/{{match_id}}/complete", "host": ["{{base_url}}"], "path": ["matches", "{{match_id}}", "complete"] }
+          }
+        },
+        {
+          "name": "Cancel Match",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/matches/{{match_id}}/cancel", "host": ["{{base_url}}"], "path": ["matches", "{{match_id}}", "cancel"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Training / Attendance",
+      "item": [
+        {
+          "name": "List Sessions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/teams/{{team_id}}/sessions?seasonId={{season_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["teams", "{{team_id}}", "sessions"],
+              "query": [{ "key": "seasonId", "value": "{{season_id}}" }]
+            }
+          }
+        },
+        {
+          "name": "Get Session",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/sessions/{{session_id}}", "host": ["{{base_url}}"], "path": ["sessions", "{{session_id}}"] }
+          }
+        },
+        {
+          "name": "Create Session",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Tuesday Drills\",\n  \"date\": \"2026-08-12\",\n  \"start_time\": \"16:00\",\n  \"end_time\": \"18:00\",\n  \"venue\": \"Training Ground\",\n  \"description\": null,\n  \"focus\": \"Fitness\",\n  \"equipment\": [\"Cones\", \"Bibs\"],\n  \"notes\": null\n}"
+            },
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}/sessions", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}", "sessions"] }
+          }
+        },
+        {
+          "name": "Update Session",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Tuesday Drills\",\n  \"date\": \"2026-08-12\",\n  \"start_time\": \"16:00\",\n  \"end_time\": \"18:00\",\n  \"venue\": \"Training Ground\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/sessions/{{session_id}}", "host": ["{{base_url}}"], "path": ["sessions", "{{session_id}}"] }
+          }
+        },
+        {
+          "name": "Delete Session",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/sessions/{{session_id}}", "host": ["{{base_url}}"], "path": ["sessions", "{{session_id}}"] }
+          }
+        },
+        {
+          "name": "Set Attendance (single player)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"present\"\n}" },
+            "url": {
+              "raw": "{{base_url}}/sessions/{{session_id}}/attendance/{{player_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["sessions", "{{session_id}}", "attendance", "{{player_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Bulk Set Attendance",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"player_ids\": [\"{{player_id}}\"],\n  \"status\": \"present\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/sessions/{{session_id}}/attendance", "host": ["{{base_url}}"], "path": ["sessions", "{{session_id}}", "attendance"] }
+          }
+        },
+        {
+          "name": "Complete Session",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/sessions/{{session_id}}/complete", "host": ["{{base_url}}"], "path": ["sessions", "{{session_id}}", "complete"] }
+          }
+        },
+        {
+          "name": "Cancel Session",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/sessions/{{session_id}}/cancel", "host": ["{{base_url}}"], "path": ["sessions", "{{session_id}}", "cancel"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Player Report",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/teams/{{team_id}}/reports/player?position=&ageGroup=&status=&columns[]=fullName&columns[]=goals&columns[]=attendance",
+              "host": ["{{base_url}}"],
+              "path": ["teams", "{{team_id}}", "reports", "player"],
+              "query": [
+                { "key": "position", "value": "" },
+                { "key": "ageGroup", "value": "" },
+                { "key": "status", "value": "" },
+                { "key": "columns[]", "value": "fullName" },
+                { "key": "columns[]", "value": "goals" },
+                { "key": "columns[]", "value": "attendance" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Team Report",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/teams/{{team_id}}/reports/team?columns[]=name&columns[]=wins&columns[]=winPercentage",
+              "host": ["{{base_url}}"],
+              "path": ["teams", "{{team_id}}", "reports", "team"],
+              "query": [
+                { "key": "columns[]", "value": "name" },
+                { "key": "columns[]", "value": "wins" },
+                { "key": "columns[]", "value": "winPercentage" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Match Report",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/teams/{{team_id}}/reports/match?status=&competition=&columns[]=opponent&columns[]=scoreline",
+              "host": ["{{base_url}}"],
+              "path": ["teams", "{{team_id}}", "reports", "match"],
+              "query": [
+                { "key": "status", "value": "" },
+                { "key": "competition", "value": "" },
+                { "key": "columns[]", "value": "opponent" },
+                { "key": "columns[]", "value": "scoreline" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Attendance Report",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/teams/{{team_id}}/reports/attendance?period=weekly&columns[]=rank&columns[]=fullName&columns[]=attendancePercentage",
+              "host": ["{{base_url}}"],
+              "path": ["teams", "{{team_id}}", "reports", "attendance"],
+              "query": [
+                { "key": "period", "value": "weekly" },
+                { "key": "columns[]", "value": "rank" },
+                { "key": "columns[]", "value": "fullName" },
+                { "key": "columns[]", "value": "attendancePercentage" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Report Templates",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}/report-templates", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}", "report-templates"] }
+          }
+        },
+        {
+          "name": "Create Report Template",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Top Scorers\",\n  \"report_type\": \"player\",\n  \"columns\": [\"fullName\", \"goals\", \"assists\"]\n}"
+            },
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}/report-templates", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}", "report-templates"] }
+          }
+        },
+        {
+          "name": "Update Report Template",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Top Scorers\",\n  \"report_type\": \"player\",\n  \"columns\": [\"fullName\", \"goals\"]\n}"
+            },
+            "url": { "raw": "{{base_url}}/report-templates/{{report_template_id}}", "host": ["{{base_url}}"], "path": ["report-templates", "{{report_template_id}}"] }
+          }
+        },
+        {
+          "name": "Duplicate Report Template",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/report-templates/{{report_template_id}}/duplicate", "host": ["{{base_url}}"], "path": ["report-templates", "{{report_template_id}}", "duplicate"] }
+          }
+        },
+        {
+          "name": "Delete Report Template",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/report-templates/{{report_template_id}}", "host": ["{{base_url}}"], "path": ["report-templates", "{{report_template_id}}"] }
+          }
+        },
+        {
+          "name": "List Report History",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}/report-history", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}", "report-history"] }
+          }
+        },
+        {
+          "name": "Log Report History Entry",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"report_type\": \"player\",\n  \"format\": \"PDF\",\n  \"template_name\": \"Top Scorers\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/teams/{{team_id}}/report-history", "host": ["{{base_url}}"], "path": ["teams", "{{team_id}}", "report-history"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/me/profile", "host": ["{{base_url}}"], "path": ["me", "profile"] }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Kwame Owusu\",\n  \"phone\": \"0244000000\",\n  \"email\": \"kwame@example.com\",\n  \"photo\": null,\n  \"preferred_role\": \"teamManager\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/me/profile", "host": ["{{base_url}}"], "path": ["me", "profile"] }
+          }
+        },
+        {
+          "name": "Get Preferences",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/me/preferences", "host": ["{{base_url}}"], "path": ["me", "preferences"] }
+          }
+        },
+        {
+          "name": "Update Preferences",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"theme\": \"dark\"\n}" },
+            "url": { "raw": "{{base_url}}/me/preferences", "host": ["{{base_url}}"], "path": ["me", "preferences"] }
+          }
+        },
+        {
+          "name": "Get Notification Settings",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/me/notifications", "host": ["{{base_url}}"], "path": ["me", "notifications"] }
+          }
+        },
+        {
+          "name": "Update Notification Settings",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"matchReminders\": {\n    \"whatsapp\": false\n  }\n}"
+            },
+            "url": { "raw": "{{base_url}}/me/notifications", "host": ["{{base_url}}"], "path": ["me", "notifications"] }
+          }
+        },
+        {
+          "name": "Get Security Settings",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/me/security", "host": ["{{base_url}}"], "path": ["me", "security"] }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"password123\",\n  \"new_password\": \"newpassword123\",\n  \"new_password_confirmation\": \"newpassword123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/me/security/password", "host": ["{{base_url}}"], "path": ["me", "security", "password"] }
+          }
+        },
+        {
+          "name": "Toggle 2FA",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/me/security/2fa/toggle", "host": ["{{base_url}}"], "path": ["me", "security", "2fa", "toggle"] }
+          }
+        },
+        {
+          "name": "Logout One Session",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/me/security/sessions/{{token_id}}", "host": ["{{base_url}}"], "path": ["me", "security", "sessions", "{{token_id}}"] }
+          }
+        },
+        {
+          "name": "Logout Other Sessions",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/me/security/sessions", "host": ["{{base_url}}"], "path": ["me", "security", "sessions"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Uploads",
+      "item": [
+        {
+          "name": "Upload File",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "file", "type": "file", "src": [] }]
+            },
+            "url": { "raw": "{{base_url}}/uploads", "host": ["{{base_url}}"], "path": ["uploads"] }
+          }
+        }
+      ]
+    }
+  ]
+}

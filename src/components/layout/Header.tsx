@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell, LogOut, Menu, User } from "lucide-react";
@@ -32,6 +33,7 @@ const moreNavItems = sidebarNavItems.filter(
 function Header() {
   const pathname = usePathname();
   const router = useRouter();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
   const signOut = useAuthStore((state) => state.signOut);
   const activeItem = sidebarNavItems.find(
@@ -64,7 +66,7 @@ function Header() {
           <Bell className="size-5" />
         </Button>
 
-        <Sheet>
+        <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
           <SheetTrigger
             render={
               <Button variant="ghost" size="icon" className="lg:hidden" aria-label="More" />
@@ -83,6 +85,7 @@ function Header() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={() => setMobileNavOpen(false)}
                     className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-foreground hover:bg-muted"
                   >
                     <Icon className="size-5 text-muted-foreground" />

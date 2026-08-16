@@ -1,6 +1,7 @@
 "use client";
 
 import { SectionHeader } from "@/components/dashboard/SectionHeader";
+import { LoadingSkeleton } from "@/components/common/LoadingSkeleton";
 import { SecurityCard } from "@/components/settings/SecurityCard";
 import { useSettingsStore } from "@/store/settings-store";
 
@@ -9,6 +10,13 @@ export default function SecuritySettingsPage() {
   const toggleTwoFactor = useSettingsStore((state) => state.toggleTwoFactor);
   const logOutSession = useSettingsStore((state) => state.logOutSession);
   const logOutAllOtherSessions = useSettingsStore((state) => state.logOutAllOtherSessions);
+  const changePassword = useSettingsStore((state) => state.changePassword);
+  const hasHydrated = useSettingsStore((state) => state.hasHydrated);
+  const isLoading = useSettingsStore((state) => state.isLoading);
+
+  if (!hasHydrated || isLoading) {
+    return <LoadingSkeleton className="h-64 w-full" />;
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -20,7 +28,7 @@ export default function SecuritySettingsPage() {
         onToggleTwoFactor={toggleTwoFactor}
         onLogOutSession={logOutSession}
         onLogOutAllOtherSessions={logOutAllOtherSessions}
-        onChangePassword={() => {}}
+        onChangePassword={changePassword}
       />
     </div>
   );

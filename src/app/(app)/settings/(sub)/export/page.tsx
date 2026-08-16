@@ -68,7 +68,6 @@ export default function DataExportPage() {
     players,
     sessions,
     matches,
-    "seasonal",
     attendanceReportColumns.map((column) => column.key)
   );
 
@@ -102,7 +101,7 @@ export default function DataExportPage() {
         description={`${players.length} players in your squad.`}
         icon={Users}
         table={playerTable}
-        onExport={(format) => addHistoryEntry("player", format)}
+        onExport={(format) => addHistoryEntry("player", format).catch(() => {})}
       />
 
       <ExportCard
@@ -111,7 +110,7 @@ export default function DataExportPage() {
         description="Team identity, staff, and season record."
         icon={Shield}
         table={teamTable}
-        onExport={(format) => addHistoryEntry("team", format)}
+        onExport={(format) => addHistoryEntry("team", format).catch(() => {})}
       />
 
       <ExportCard
@@ -120,7 +119,7 @@ export default function DataExportPage() {
         description={`${matches.length} fixtures and results.`}
         icon={CalendarDays}
         table={matchTable}
-        onExport={(format) => addHistoryEntry("match", format)}
+        onExport={(format) => addHistoryEntry("match", format).catch(() => {})}
       />
 
       <ExportCard
@@ -129,7 +128,7 @@ export default function DataExportPage() {
         description="Full-season attendance ranking."
         icon={ClipboardCheck}
         table={attendanceTable}
-        onExport={(format) => addHistoryEntry("attendance", format)}
+        onExport={(format) => addHistoryEntry("attendance", format).catch(() => {})}
       />
 
       {historyEntries.length > 0 ? (

@@ -8,6 +8,7 @@ import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { Stagger } from "@/components/common/Stagger";
+import { ListRowSkeleton } from "@/components/common/LoadingSkeleton";
 import { ReportHistory } from "@/components/reports/ReportHistory";
 import { TemplateCard } from "@/components/reports/TemplateCard";
 import { buttonVariants } from "@/components/ui/button";
@@ -27,6 +28,18 @@ export default function ReportsHomePage() {
   const renameTemplate = useReportsStore((state) => state.renameTemplate);
   const duplicateTemplate = useReportsStore((state) => state.duplicateTemplate);
   const deleteTemplate = useReportsStore((state) => state.deleteTemplate);
+  const hasHydrated = useReportsStore((state) => state.hasHydrated);
+  const isLoading = useReportsStore((state) => state.isLoading);
+
+  if (!hasHydrated || isLoading) {
+    return (
+      <div className="flex flex-col gap-3">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <ListRowSkeleton key={index} />
+        ))}
+      </div>
+    );
+  }
 
   const recentHistory = history.slice(0, 3);
   const recentTemplates = [...templates]
