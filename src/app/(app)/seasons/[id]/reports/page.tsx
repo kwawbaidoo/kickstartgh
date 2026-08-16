@@ -123,7 +123,7 @@ export default function SeasonReportsPage({ params }: { params: Promise<{ id: st
         ? buildTeamReportTable(activeTeam, seasonPlayers, periodMatches, columns)
         : report_type === "match"
           ? buildMatchReportTable(periodMatches, playerNames, defaultMatchReportFilters, columns)
-          : buildAttendanceReportTable(seasonPlayers, seasonSessions, seasonMatches, "seasonal", columns);
+          : buildAttendanceReportTable(seasonPlayers, seasonSessions, seasonMatches, columns);
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
@@ -151,7 +151,7 @@ export default function SeasonReportsPage({ params }: { params: Promise<{ id: st
         filename={`${season.name.toLowerCase().replace(/\s+/g, "-")}-${report_type}-report`}
         title={`${teamName} — ${reportTypeTabs.find((tab) => tab.value === report_type)?.label} Report`}
         table={table}
-        onExport={(format) => addHistoryEntry(report_type, format)}
+        onExport={(format) => addHistoryEntry(report_type, format).catch(() => {})}
         filtersSlot={
           <FilterPanel>
             {report_type === "attendance" ? (

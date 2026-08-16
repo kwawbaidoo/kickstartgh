@@ -3,10 +3,6 @@ import type { Match } from "@/mock/matches";
 import type { Player } from "@/mock/players";
 import { getStartingPlayerIds } from "@/lib/matches";
 
-export type AttendancePeriod = "weekly" | "monthly" | "seasonal";
-
-export const attendancePeriodOptions: AttendancePeriod[] = ["weekly", "monthly", "seasonal"];
-
 export type PlayerAttendanceStats = {
   presentCount: number;
   absentCount: number;
@@ -16,27 +12,6 @@ export type PlayerAttendanceStats = {
   totalSessions: number;
   attendancePercentage: number;
 };
-
-export function getPeriodCutoff(period: AttendancePeriod, referenceDate = new Date()): Date {
-  const cutoff = new Date(referenceDate);
-  if (period === "weekly") cutoff.setDate(cutoff.getDate() - 7);
-  else if (period === "monthly") cutoff.setMonth(cutoff.getMonth() - 1);
-  else cutoff.setMonth(cutoff.getMonth() - 6);
-  return cutoff;
-}
-
-export function getSessionsInPeriod(
-  sessions: AttendanceSession[],
-  period: AttendancePeriod,
-  referenceDate = new Date()
-): AttendanceSession[] {
-  const cutoff = getPeriodCutoff(period, referenceDate);
-
-  return sessions.filter((session) => {
-    const sessionDate = new Date(session.date);
-    return sessionDate >= cutoff && sessionDate <= referenceDate;
-  });
-}
 
 export function getPlayerAttendanceStats(
   player_id: string,

@@ -63,7 +63,7 @@ export default function MatchReportPage() {
         filename="match-report"
         title={`${teamName} — Match Report`}
         table={table}
-        onExport={(format) => addHistoryEntry("match", format)}
+        onExport={(format) => addHistoryEntry("match", format).catch(() => {})}
         filtersSlot={
           <FilterPanel>
             <Select

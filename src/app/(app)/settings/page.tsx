@@ -7,12 +7,12 @@ import { SettingsCard } from "@/components/settings/SettingsCard";
 import { settingsNavItems } from "@/config/settings";
 import { roleOptions } from "@/config/roles";
 import { useOnboardingStore } from "@/store/onboarding-store";
-import { useSettingsStore } from "@/store/settings-store";
+import { useAuthStore } from "@/store/auth-store";
 import { getInitials } from "@/lib/utils";
 
 export default function SettingsPage() {
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
-  const preferred_role = useSettingsStore((state) => state.profile.preferred_role);
+  const preferred_role = useAuthStore((state) => state.user?.preferred_role);
   const roleLabel = roleOptions.find((option) => option.id === preferred_role)?.label ?? "Team Member";
 
   return (

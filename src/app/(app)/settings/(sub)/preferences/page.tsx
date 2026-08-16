@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
+
 import { SectionHeader } from "@/components/dashboard/SectionHeader";
+import { LoadingSkeleton } from "@/components/common/LoadingSkeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldContent, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -24,10 +27,23 @@ export default function PreferencesPage() {
   const preferences = useSettingsStore((state) => state.preferences);
   const updatePreferences = useSettingsStore((state) => state.updatePreferences);
   const toggleFavoriteShortcut = useSettingsStore((state) => state.toggleFavoriteShortcut);
+  const hasHydrated = useSettingsStore((state) => state.hasHydrated);
+  const isLoading = useSettingsStore((state) => state.isLoading);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!hasHydrated || isLoading) {
+    return <LoadingSkeleton className="h-64 w-full" />;
+  }
+
+  function handleUpdate(input: Partial<typeof preferences>) {
+    setError(null);
+    updatePreferences(input).catch(() => setError("Couldn't save that preference. Please try again."));
+  }
 
   return (
     <div className="flex flex-col gap-6">
       <SectionHeader title="Preferences" description="Customize how KickStartGH looks and works for you." />
+      {error && <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
 
       <Card>
         <CardHeader>
@@ -36,7 +52,7 @@ export default function PreferencesPage() {
         <CardContent>
           <RadioGroup
             value={preferences.theme}
-            onValueChange={(value) => updatePreferences({ theme: value as typeof preferences.theme })}
+            onValueChange={(value) => handleUpdate({ theme: value as typeof preferences.theme })}
             className="grid-flow-col"
           >
             {themeOptions.map((option) => (
@@ -56,7 +72,7 @@ export default function PreferencesPage() {
         <CardContent>
           <RadioGroup
             value={preferences.language}
-            onValueChange={(value) => updatePreferences({ language: value as typeof preferences.language })}
+            onValueChange={(value) => handleUpdate({ language: value as typeof preferences.language })}
           >
             {languageOptions.map((option) => (
               <FieldLabel key={option.value} className="font-normal has-disabled:opacity-50">
@@ -75,7 +91,7 @@ export default function PreferencesPage() {
         <CardContent>
           <RadioGroup
             value={preferences.date_format}
-            onValueChange={(value) => updatePreferences({ date_format: value as typeof preferences.date_format })}
+            onValueChange={(value) => handleUpdate({ date_format: value as typeof preferences.date_format })}
           >
             {dateFormatOptions.map((option) => (
               <FieldLabel key={option.value} className="font-normal">
@@ -98,7 +114,7 @@ export default function PreferencesPage() {
               <Select
                 items={homeScreenItems}
                 value={preferences.default_home_screen}
-                onValueChange={(value) => value && updatePreferences({ default_home_screen: value })}
+                onValueChange={(value) => value && handleUpdate({ default_home_screen: value })}
               >
                 <SelectTrigger id="default_home_screen" className="w-full">
                   <SelectValue />
@@ -122,7 +138,12 @@ export default function PreferencesPage() {
                   <label key={option.value} className="flex items-center gap-2 text-sm text-foreground">
                     <Checkbox
                       checked={preferences.favorite_shortcuts.includes(option.value)}
-                      onCheckedChange={() => toggleFavoriteShortcut(option.value)}
+                      onCheckedChange={() => {
+                        setError(null);
+                        toggleFavoriteShortcut(option.value).catch(() =>
+                          setError("Couldn't save that preference. Please try again.")
+                        );
+                      }}
                     />
                     {option.label}
                   </label>

@@ -26,12 +26,17 @@ function SavedTemplates({ report_type, currentColumns, onApply }: SavedTemplates
 
   const [saveOpen, setSaveOpen] = useState(false);
   const [name, setName] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   function handleSave() {
     if (name.trim().length < 2) return;
-    saveTemplate(name.trim(), report_type, currentColumns);
-    setName("");
-    setSaveOpen(false);
+    setError(null);
+    saveTemplate(name.trim(), report_type, currentColumns)
+      .then(() => {
+        setName("");
+        setSaveOpen(false);
+      })
+      .catch(() => setError("Couldn't save this template. Please try again."));
   }
 
   return (
@@ -63,6 +68,7 @@ function SavedTemplates({ report_type, currentColumns, onApply }: SavedTemplates
             onChange={(event) => setName(event.target.value)}
             placeholder="e.g. Coach Report"
           />
+          {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
         </Modal>
       </div>
 
