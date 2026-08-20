@@ -39,6 +39,7 @@ export default function TeamPage() {
   const addStaffMember = useOnboardingStore((state) => state.addStaffMember);
   const removeStaffMember = useOnboardingStore((state) => state.removeStaffMember);
   const updateStaffMemberRole = useOnboardingStore((state) => state.updateStaffMemberRole);
+  const inviteStaffMember = useOnboardingStore((state) => state.inviteStaffMember);
   const addTeamPhoto = useOnboardingStore((state) => state.addTeamPhoto);
   const removeTeamPhoto = useOnboardingStore((state) => state.removeTeamPhoto);
   const allPlayers = usePlayersStore((state) => state.players);
@@ -179,6 +180,7 @@ export default function TeamPage() {
             onAdd={addStaffMember}
             onRemove={removeStaffMember}
             onChangeRole={updateStaffMemberRole}
+            onInvite={inviteStaffMember}
           />
         </TabsContent>
 

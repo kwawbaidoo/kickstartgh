@@ -104,25 +104,18 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
   return unwrapEnvelope(payload) as T;
 }
 
-type UploadResponse = { url: string };
-
 /**
- * POST /uploads (multipart/form-data) — SRS.md §8.9's suggested `{ url }` response
- * shape is still unconfirmed against the real server (not covered by the live test
- * that confirmed register/login/me/teams). `dataUrl` is the output of `compressImage`
- * (lib/image.ts); this converts it back to a Blob for the multipart body.
+ * Multipart POST. Deliberately does NOT set Content-Type — the browser has to add the
+ * multipart boundary itself. Same auth, error-envelope and unwrap behaviour as
+ * `apiFetch`, so `applyApiErrors` works on failures from here too.
  */
-export async function apiUpload(dataUrl: string, filename = "upload.jpg"): Promise<UploadResponse> {
-  const blob = await (await fetch(dataUrl)).blob();
-  const formData = new FormData();
-  formData.append("file", blob, filename);
-
+export async function apiPostForm<T>(path: string, formData: FormData): Promise<T> {
   const requestHeaders = new Headers();
   requestHeaders.set("Accept", "application/json");
   const token = useAuthStore.getState().token;
   if (token) requestHeaders.set("Authorization", `Bearer ${token}`);
 
-  const response = await fetch(`${getBaseUrl()}/uploads`, {
+  const response = await fetch(`${getBaseUrl()}${path}`, {
     method: "POST",
     headers: requestHeaders,
     body: formData,
@@ -135,5 +128,20 @@ export async function apiUpload(dataUrl: string, filename = "upload.jpg"): Promi
     throw new ApiError(response.status, payload?.message ?? "Upload failed.", payload?.errors);
   }
 
-  return unwrapEnvelope(payload) as UploadResponse;
+  return unwrapEnvelope(payload) as T;
+}
+
+type UploadResponse = { url: string };
+
+/**
+ * POST /uploads (multipart/form-data) — SRS.md §8.9's suggested `{ url }` response
+ * shape is still unconfirmed against the real server (not covered by the live test
+ * that confirmed register/login/me/teams). `dataUrl` is the output of `compressImage`
+ * (lib/image.ts); this converts it back to a Blob for the multipart body.
+ */
+export async function apiUpload(dataUrl: string, filename = "upload.jpg"): Promise<UploadResponse> {
+  const blob = await (await fetch(dataUrl)).blob();
+  const formData = new FormData();
+  formData.append("file", blob, filename);
+  return apiPostForm<UploadResponse>("/uploads", formData);
 }

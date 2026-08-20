@@ -21,7 +21,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { SeasonSelector } from "@/components/seasons/SeasonSelector";
-import { mobileNavItems, sidebarNavItems } from "@/config/navigation";
+import { mobileNavItems, navItemsForTeamState, sidebarNavItems } from "@/config/navigation";
 import { useAuthStore } from "@/store/auth-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { getInitials } from "@/lib/utils";
@@ -35,7 +35,12 @@ function Header() {
   const router = useRouter();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
+  const teamId = useOnboardingStore((state) => state.team_id);
+  const userName = useAuthStore((state) => state.user?.full_name);
   const signOut = useAuthStore((state) => state.signOut);
+  const sheetNavItems = navItemsForTeamState(moreNavItems, !!teamId);
+  // Same reasoning as the sidebar footer: never show the placeholder team as if it were real.
+  const identityLabel = teamId ? activeTeam.name : (userName ?? "Your account");
   const activeItem = sidebarNavItems.find(
     (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
   );
@@ -60,42 +65,44 @@ function Header() {
       </h1>
 
       <div className="flex items-center gap-1.5">
-        <SeasonSelector />
+        {teamId && <SeasonSelector />}
 
         <Button variant="ghost" size="icon" aria-label="Notifications">
           <Bell className="size-5" />
         </Button>
 
-        <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-          <SheetTrigger
-            render={
-              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="More" />
-            }
-          >
-            <Menu className="size-5" />
-          </SheetTrigger>
-          <SheetContent side="right">
-            <SheetHeader>
-              <SheetTitle>{activeTeam.name}</SheetTitle>
-            </SheetHeader>
-            <nav className="flex flex-col gap-1 px-4">
-              {moreNavItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileNavOpen(false)}
-                    className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-foreground hover:bg-muted"
-                  >
-                    <Icon className="size-5 text-muted-foreground" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-          </SheetContent>
-        </Sheet>
+        {sheetNavItems.length > 0 && (
+          <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+            <SheetTrigger
+              render={
+                <Button variant="ghost" size="icon" className="lg:hidden" aria-label="More" />
+              }
+            >
+              <Menu className="size-5" />
+            </SheetTrigger>
+            <SheetContent side="right">
+              <SheetHeader>
+                <SheetTitle>{identityLabel}</SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col gap-1 px-4">
+                {sheetNavItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileNavOpen(false)}
+                      className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-foreground hover:bg-muted"
+                    >
+                      <Icon className="size-5 text-muted-foreground" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </SheetContent>
+          </Sheet>
+        )}
 
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -107,11 +114,11 @@ function Header() {
               />
             }
           >
-            {activeTeam.logo ? (
+            {teamId && activeTeam.logo ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={activeTeam.logo} alt="" className="size-full object-cover" />
             ) : (
-              getInitials(activeTeam.name)
+              getInitials(identityLabel)
             )}
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

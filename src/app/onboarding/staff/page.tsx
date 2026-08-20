@@ -13,20 +13,11 @@ import { Stagger } from "@/components/common/Stagger";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldContent, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { staffRoleOptions } from "@/config/roles";
+import { RolePicker } from "@/components/settings/RolePicker";
+import { customRolesInUse } from "@/config/roles";
 import { staffFormSchema, type StaffFormInput } from "@/schemas/onboarding";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { applyApiErrors } from "@/lib/api-client";
-import { toSelectItems } from "@/lib/utils";
-
-const staffRoleItems = toSelectItems(staffRoleOptions);
 
 export default function StaffSetupPage() {
   const router = useRouter();
@@ -34,6 +25,7 @@ export default function StaffSetupPage() {
   const addStaffMember = useOnboardingStore((state) => state.addStaffMember);
   const removeStaffMember = useOnboardingStore((state) => state.removeStaffMember);
   const [removeError, setRemoveError] = useState<string | null>(null);
+  const roleSuggestions = customRolesInUse(staff.map((member) => member.role));
 
   const form = useForm<StaffFormInput>({
     resolver: zodResolver(staffFormSchema),
@@ -63,28 +55,19 @@ export default function StaffSetupPage() {
       <form onSubmit={form.handleSubmit(handleAdd)} className="flex flex-col gap-4">
         <FieldGroup>
           <Field data-invalid={!!form.formState.errors.role}>
-            <FieldLabel htmlFor="role" required>Role</FieldLabel>
+            <FieldLabel required>Role</FieldLabel>
             <FieldContent>
               <Controller
                 control={form.control}
                 name="role"
                 render={({ field }) => (
-                  <Select
-                    items={staffRoleItems}
-                    value={field.value ?? null}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger id="role" className="w-full">
-                      <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {staffRoleOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <RolePicker
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    suggestions={roleSuggestions}
+                    invalid={!!form.formState.errors.role}
+                    inputId="onboarding-custom-role"
+                  />
                 )}
               />
               <FieldError errors={[form.formState.errors.role]} />

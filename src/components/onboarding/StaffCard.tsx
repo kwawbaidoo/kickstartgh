@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { staffRoleOptions } from "@/config/roles";
+import { StaffAccessBadge } from "@/components/settings/StaffAccessBadge";
+import { staffRoleLabel } from "@/config/roles";
 import type { StaffMember } from "@/schemas/onboarding";
 import { fadeInUp } from "@/lib/motion";
 import { getInitials } from "@/lib/utils";
@@ -15,8 +16,6 @@ type StaffCardProps = {
 };
 
 function StaffCard({ member, onRemove }: StaffCardProps) {
-  const roleLabel = staffRoleOptions.find((option) => option.value === member.role)?.label;
-
   return (
     <motion.div
       variants={fadeInUp}
@@ -25,12 +24,14 @@ function StaffCard({ member, onRemove }: StaffCardProps) {
       <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
         {getInitials(member.full_name)}
       </div>
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="truncate text-sm font-medium text-foreground">{member.full_name}</span>
         <span className="truncate text-xs text-muted-foreground">
-          {roleLabel} · {member.phone}
+          {staffRoleLabel(member.role)} · {member.phone}
         </span>
       </div>
+
+      <StaffAccessBadge status={member.access_status} className="shrink-0" />
       {onRemove && (
         <Button
           type="button"

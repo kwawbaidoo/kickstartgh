@@ -8,6 +8,7 @@ import {
   FileSpreadsheet,
   FileText,
   Plus,
+  Upload,
   UserCheck,
   Users,
 } from "lucide-react";
@@ -150,6 +151,13 @@ export default function PlayersPage() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Link
+              href="/players/import"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              <Upload />
+              Import
+            </Link>
             <Link href="/players/new" className={buttonVariants({ size: "sm" })}>
               <Plus />
               Add Player
