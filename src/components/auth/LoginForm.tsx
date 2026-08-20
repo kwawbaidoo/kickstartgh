@@ -12,26 +12,21 @@ import { PasswordField } from "@/components/auth/PasswordField";
 import { loginSchema, type LoginInput } from "@/schemas/auth";
 import { applyApiErrors } from "@/lib/api-client";
 import { useAuthStore } from "@/store/auth-store";
-import { useOnboardingStore } from "@/store/onboarding-store";
+import { postSignInPath } from "@/lib/auth-routing";
 
-type LoginFormProps = {
-  defaultPhone?: string;
-};
-
-function LoginForm({ defaultPhone = "" }: LoginFormProps) {
+function LoginForm() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { phone: defaultPhone, password: "" },
+    defaultValues: { phone: "", password: "" },
   });
 
   async function handleLogin(data: LoginInput) {
     try {
       await login(data);
-      const hasOnboarded = useOnboardingStore.getState().hasOnboarded;
-      router.push(hasOnboarded ? "/dashboard" : "/onboarding");
+      router.push(postSignInPath());
     } catch (error) {
       applyApiErrors(error, (field, err) => form.setError(field as keyof LoginInput, err));
     }

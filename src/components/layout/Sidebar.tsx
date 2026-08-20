@@ -4,13 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 
-import { sidebarNavItems } from "@/config/navigation";
+import { navItemsForTeamState, sidebarNavItems } from "@/config/navigation";
+import { useAuthStore } from "@/store/auth-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { cn, getInitials } from "@/lib/utils";
 
 function Sidebar() {
   const pathname = usePathname();
   const activeTeam = useOnboardingStore((state) => state.activeTeam);
+  const teamId = useOnboardingStore((state) => state.team_id);
+  const userName = useAuthStore((state) => state.user?.full_name);
+  const navItems = navItemsForTeamState(sidebarNavItems, !!teamId);
+  // `activeTeam` is seeded from mock data until a real team is adopted, so falling back to
+  // the signed-in user keeps the footer from advertising a team that doesn't exist.
+  const footerTitle = teamId ? activeTeam.name : (userName ?? "Your account");
+  const footerSubtitle = teamId ? activeTeam.region : "No team yet";
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-sidebar text-sidebar-foreground lg:flex">
@@ -22,7 +30,7 @@ function Sidebar() {
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 px-3 py-2">
-        {sidebarNavItems.map((item) => {
+        {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return (
@@ -57,16 +65,16 @@ function Sidebar() {
 
       <div className="mx-3 mb-4 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-3">
         <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-sidebar-accent text-xs font-semibold text-sidebar-accent-foreground">
-          {activeTeam.logo ? (
+          {teamId && activeTeam.logo ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={activeTeam.logo} alt="" className="size-full object-cover" />
           ) : (
-            getInitials(activeTeam.name)
+            getInitials(footerTitle)
           )}
         </div>
         <div className="flex min-w-0 flex-col">
-          <span className="truncate text-sm font-medium">{activeTeam.name}</span>
-          <span className="truncate text-xs text-sidebar-foreground/60">{activeTeam.region}</span>
+          <span className="truncate text-sm font-medium">{footerTitle}</span>
+          <span className="truncate text-xs text-sidebar-foreground/60">{footerSubtitle}</span>
         </div>
       </div>
     </aside>
