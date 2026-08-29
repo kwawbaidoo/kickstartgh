@@ -1,5 +1,5 @@
 import { GalleryTile } from "@/components/team/GalleryTile";
-import { staffRoleOptions } from "@/config/roles";
+import { staffRoleLabel } from "@/config/roles";
 import type { StaffMember } from "@/schemas/onboarding";
 import type { Player } from "@/mock/players";
 
@@ -22,7 +22,7 @@ function TeamGallery({ staff, players }: TeamGalleryProps) {
                 key={member.id}
                 name={member.full_name}
                 identification={
-                  staffRoleOptions.find((option) => option.value === member.role)?.label ?? "Staff"
+                  staffRoleLabel(member.role)
                 }
               />
             ))}

@@ -1,4 +1,4 @@
-import { Check, X } from "lucide-react";
+import { Check, Info, X } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -36,6 +36,13 @@ function PermissionTable() {
             ))}
           </TableBody>
         </Table>
+
+        <p className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
+          <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+          Custom roles you add when creating staff aren&apos;t in this table — they carry no
+          permissions of their own yet. Give someone one of the four roles above if they need
+          these actions.
+        </p>
       </CardContent>
     </Card>
   );

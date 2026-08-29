@@ -3,7 +3,8 @@ import { persist, createJSONStorage } from "zustand/middleware";
 
 import type { Player, PlayerSeasonRecord, PlayerStatus } from "@/mock/players";
 import type { PlayerFormInput } from "@/schemas/player";
-import { apiFetch } from "@/lib/api-client";
+import type { ColumnMapping } from "@/lib/player-import";
+import { apiFetch, apiPostForm } from "@/lib/api-client";
 import { useOnboardingStore } from "@/store/onboarding-store";
 import { useSeasonStore } from "@/store/season-store";
 
@@ -14,6 +15,7 @@ type PlayersState = {
   fetchPlayers: () => Promise<void>;
   fetchSeasonRoster: (season_id: string) => Promise<void>;
   addPlayer: (input: PlayerFormInput) => Promise<Player>;
+  bulkUploadPlayers: (file: File, mapping: ColumnMapping) => Promise<BulkUploadResult>;
   updatePlayer: (id: string, input: PlayerFormInput) => Promise<void>;
   setPlayerStatus: (id: string, status: PlayerStatus) => Promise<void>;
   deletePlayer: (id: string) => Promise<void>;
@@ -70,6 +72,73 @@ type PaginatedResponse<T> = {
   items: T[];
   meta: { current_page: number; per_page: number; total: number; last_page: number };
 };
+
+/**
+ * `POST /teams/:team_id/players/bulk-upload/columns` — takes the spreadsheet plus a
+ * `columns[<player_field>] = <sheet heading>` mapping and creates every row in one call.
+ *
+ * NOT in `postman_collection.json` and NOT confirmed live — unlike every other endpoint
+ * in this store, this contract came from the product owner rather than a verified
+ * response, so the response mapper below is deliberately tolerant about field names and
+ * shapes instead of assuming one. If the real payload differs, `mapBulkResult` is the
+ * only thing that needs changing. See BACKEND_GAPS.md §8.
+ */
+type BulkUploadResponse = {
+  created?: number | PlayerResponse[] | null;
+  createdCount?: number | null;
+  imported?: number | null;
+  importedCount?: number | null;
+  successCount?: number | null;
+  failed?: BulkUploadFailure[] | null;
+  failures?: BulkUploadFailure[] | null;
+  errors?: BulkUploadFailure[] | null;
+  skipped?: BulkUploadFailure[] | null;
+};
+
+type BulkUploadFailure = {
+  row?: number | null;
+  line?: number | null;
+  rowNumber?: number | null;
+  message?: string | null;
+  error?: string | null;
+  errors?: string[] | Record<string, string[]> | null;
+};
+
+export type BulkUploadResult = {
+  created: number;
+  failures: { row?: number; messages: string[] }[];
+};
+
+function failureMessages(failure: BulkUploadFailure): string[] {
+  if (Array.isArray(failure.errors)) return failure.errors.filter(Boolean);
+  if (failure.errors && typeof failure.errors === "object") {
+    return Object.values(failure.errors).flat().filter(Boolean);
+  }
+  const single = failure.message ?? failure.error;
+  return single ? [single] : ["This row was rejected."];
+}
+
+function mapBulkResult(response: BulkUploadResponse | null): BulkUploadResult {
+  const raw = response ?? {};
+  const created = Array.isArray(raw.created)
+    ? raw.created.length
+    : raw.created ??
+      raw.createdCount ??
+      raw.imported ??
+      raw.importedCount ??
+      raw.successCount ??
+      0;
+
+  const failures = raw.failed ?? raw.failures ?? raw.errors ?? raw.skipped ?? [];
+
+  return {
+    created: typeof created === "number" ? created : 0,
+    failures: failures.map((failure) => ({
+      row: failure.row ?? failure.line ?? failure.rowNumber ?? undefined,
+      messages: failureMessages(failure),
+    })),
+  };
+}
 
 function mapPlayer(response: PlayerResponse, season_records: PlayerSeasonRecord[] = []): Player {
   return {
@@ -200,6 +269,38 @@ export const usePlayersStore = create<PlayersState>()(
         );
         set((state) => ({ players: [...state.players, player] }));
         return player;
+      },
+
+      /**
+       * Refetches the roster afterwards rather than trusting the response to carry full
+       * player objects — the response shape isn't confirmed (see `BulkUploadResponse`),
+       * but `fetchPlayers` definitely is, so the list is correct either way. A failed
+       * refetch doesn't fail the import: the players were still created.
+       */
+      bulkUploadPlayers: async (file, mapping) => {
+        const team_id = useOnboardingStore.getState().team_id;
+        if (!team_id) throw new Error("Create the team before importing players.");
+
+        const formData = new FormData();
+        formData.append("file", file, file.name);
+        for (const [field, column] of Object.entries(mapping)) {
+          if (column) formData.append(`columns[${field}]`, column);
+        }
+
+        const response = await apiPostForm<BulkUploadResponse>(
+          `/teams/${team_id}/players/bulk-upload/columns`,
+          formData
+        );
+
+        const result = mapBulkResult(response);
+        if (result.created > 0) {
+          await get().fetchPlayers().catch(() => {});
+          const activeSeasonId = useSeasonStore.getState().activeSeasonId;
+          if (activeSeasonId) {
+            await get().fetchSeasonRoster(activeSeasonId).catch(() => {});
+          }
+        }
+        return result;
       },
 
       updatePlayer: async (id, input) => {

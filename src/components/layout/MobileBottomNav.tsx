@@ -3,15 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { mobileNavItems } from "@/config/navigation";
+import { mobileNavItems, navItemsForTeamState } from "@/config/navigation";
+import { useOnboardingStore } from "@/store/onboarding-store";
 import { cn } from "@/lib/utils";
 
 function MobileBottomNav() {
   const pathname = usePathname();
+  const teamId = useOnboardingStore((state) => state.team_id);
+  const navItems = navItemsForTeamState(mobileNavItems, !!teamId);
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm lg:hidden">
-      {mobileNavItems.map((item) => {
+      {navItems.map((item) => {
         const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
         const Icon = item.icon;
         return (

@@ -9,38 +9,31 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoadingSkeleton } from "@/components/common/LoadingSkeleton";
 import { AuthHero } from "@/components/auth/AuthHero";
 import { LoginForm } from "@/components/auth/LoginForm";
-import { RegisterForm } from "@/components/auth/RegisterForm";
+import { RequestAccessForm } from "@/components/auth/RequestAccessForm";
 import { fadeInUp } from "@/lib/motion";
 import { useAuthStore } from "@/store/auth-store";
+import { postSignInPath } from "@/lib/auth-routing";
 import { useOnboardingStore } from "@/store/onboarding-store";
 
-type AuthTab = "signin" | "signup";
+type AuthTab = "signin" | "request";
 
 const copy: Record<AuthTab, { title: string; description: string }> = {
   signin: {
     title: "Welcome back",
     description: "Sign in to get back to your team.",
   },
-  signup: {
-    title: "Create your account",
-    description: "Set up KickStartGH for your team in a minute.",
+  request: {
+    title: "Get set up on KickStartGH",
+    description: "Tell us about your team and we'll create your account.",
   },
 };
 
 function AuthScreen() {
   const router = useRouter();
   const [tab, setTab] = useState<AuthTab>("signin");
-  const [registeredPhone, setRegisteredPhone] = useState<string | null>(null);
   const authHydrated = useAuthStore((state) => state.hasHydrated);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const onboardingHydrated = useOnboardingStore((state) => state.hasHydrated);
-
-  // Registering only creates the account — it never signs the user in. Hand off to the
-  // Sign In tab with the phone prefilled so the explicit sign-in step is one field away.
-  function handleRegistered(phone: string) {
-    setRegisteredPhone(phone);
-    setTab("signin");
-  }
 
   // This page sits outside the (app)/onboarding layouts (and their StoreHydration), so
   // it rehydrates the two stores it needs itself — same pattern as the public player
@@ -51,9 +44,8 @@ function AuthScreen() {
   }, []);
 
   useEffect(() => {
-    if (authHydrated && onboardingHydrated && isAuthenticated) {
-      router.replace(useOnboardingStore.getState().hasOnboarded ? "/dashboard" : "/onboarding");
-    }
+    if (!authHydrated || !onboardingHydrated || !isAuthenticated) return;
+    router.replace(postSignInPath());
   }, [authHydrated, onboardingHydrated, isAuthenticated, router]);
 
   if (!authHydrated || !onboardingHydrated || isAuthenticated) {
@@ -84,29 +76,17 @@ function AuthScreen() {
                 <p className="text-sm text-muted-foreground">{copy[tab].description}</p>
               </div>
 
-              {registeredPhone && tab === "signin" && (
-                <p className="rounded-lg bg-primary/10 px-3 py-2 text-sm text-primary">
-                  Account created. Sign in with your new password to continue.
-                </p>
-              )}
-
-              <Tabs
-                value={tab}
-                onValueChange={(value) => {
-                  setTab(value as AuthTab);
-                  if (value !== "signin") setRegisteredPhone(null);
-                }}
-              >
+              <Tabs value={tab} onValueChange={(value) => setTab(value as AuthTab)}>
                 <TabsList className="w-full">
                   <TabsTrigger value="signin">Sign In</TabsTrigger>
-                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                  <TabsTrigger value="request">Request Access</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="signin" className="pt-6">
-                  <LoginForm key={registeredPhone ?? "signin"} defaultPhone={registeredPhone ?? ""} />
+                  <LoginForm />
                 </TabsContent>
-                <TabsContent value="signup" className="pt-6">
-                  <RegisterForm onRegistered={handleRegistered} />
+                <TabsContent value="request" className="pt-6">
+                  <RequestAccessForm />
                 </TabsContent>
               </Tabs>
             </CardContent>

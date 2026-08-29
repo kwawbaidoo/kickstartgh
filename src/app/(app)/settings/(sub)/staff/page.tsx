@@ -11,10 +11,14 @@ export default function StaffSettingsPage() {
   const addStaffMember = useOnboardingStore((state) => state.addStaffMember);
   const removeStaffMember = useOnboardingStore((state) => state.removeStaffMember);
   const updateStaffMemberRole = useOnboardingStore((state) => state.updateStaffMemberRole);
+  const inviteStaffMember = useOnboardingStore((state) => state.inviteStaffMember);
 
   return (
     <div className="flex flex-col gap-8">
-      <SectionHeader title="Staff & Roles" description="Add coaches and managers, and see what each role can do." />
+      <SectionHeader
+        title="Staff & Roles"
+        description="Add coaches and managers, set what each can do, and invite the ones who need to sign in."
+      />
 
       <StaffManager
         staff={staff}
@@ -22,6 +26,7 @@ export default function StaffSettingsPage() {
         onAdd={addStaffMember}
         onRemove={removeStaffMember}
         onChangeRole={updateStaffMemberRole}
+        onInvite={inviteStaffMember}
       />
 
       <section className="flex flex-col gap-3">
