@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(firebase --version)",
+      "Bash(gcloud --version)",
+      "Bash(gcloud config *)",
+      "Bash(gcloud builds *)",
+      "Bash(firebase apphosting:backends:list --project=kickstartgh-a6204)",
+      "Bash(firebase apphosting:rollouts:list kick-start-web-app --project=kickstartgh-a6204)",
+      "Bash(firebase deploy *)",
+      "Bash(xargs -I{} dirname {})",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" https://kick-start-web-app--kickstartgh-a6204.europe-west4.hosted.app)",
+      "Bash(curl -sIL https://kick-start-web-app--kickstartgh-a6204.europe-west4.hosted.app)",
+      "Bash(gcloud alpha *)",
+      "Bash(gcloud auth *)",
+      "Bash(curl -s -H 'Authorization: Bearer __CMDSUB_OUTPUT__' https://firebaseapphosting.googleapis.com/v1/projects/kickstartgh-a6204/locations/europe-west4/backends/kick-start-web-app/rollouts?pageSize=5)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" \"https://kick-start-web-app--kickstartgh-a6204.europe-west4.hosted.app/?t=$\\(date +%s\\)\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" \"https://kick-start-web-app-259014428057.europe-west4.run.app/\")",
+      "Bash(curl -sI \"https://kick-start-web-app-259014428057.europe-west4.run.app/\")",
+      "Bash(firebase apphosting *)",
+      "Bash(firebase --help)",
+      "Bash(curl -s -H 'Authorization: Bearer __CMDSUB_OUTPUT__' https://firebaseapphosting.googleapis.com/v1/projects/kickstartgh-a6204/locations/europe-west4/backends/kick-start-web-app/domains)",
+      "Bash(nslookup -type=A kickstartgh.com)",
+      "Bash(nslookup -type=TXT kickstartgh.com)",
+      "Bash(nslookup -type=A kickstartgh.com ns25.domaincontrol.com)",
+      "Bash(nslookup -type=TXT kickstartgh.com ns25.domaincontrol.com)",
+      "Bash(curl -s -H 'Authorization: Bearer __CMDSUB_OUTPUT__' https://firebaseapphosting.googleapis.com/v1/projects/kickstartgh-a6204/locations/europe-west4/backends/kick-start-web-app/domains/kickstartgh.com)"
+    ]
+  }
+}
