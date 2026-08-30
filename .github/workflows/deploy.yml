@@ -19,4 +19,4 @@ jobs:
           credentials_json: ${{ secrets.FIREBASE_DEPLOYER_KEY }}
 
       - name: Deploy
-        run: npx firebase-tools deploy --only apphosting --project=kickstartgh-cba35 --non-interactive
+        run: npx firebase-tools deploy --only apphosting --project=kickstartgh-a6204 --non-interactive
